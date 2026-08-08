@@ -7,11 +7,14 @@
 ESM-only · zero dependencies · no build step required · works inside any framework
 
 [![CI](https://github.com/bmartel/alacris/actions/workflows/ci.yml/badge.svg)](https://github.com/bmartel/alacris/actions/workflows/ci.yml)
+[![Docs](https://github.com/bmartel/alacris/actions/workflows/docs.yml/badge.svg)](https://bmartel.github.io/alacris/)
 [![npm](https://img.shields.io/npm/v/alacris.svg)](https://www.npmjs.com/package/alacris)
 [![core size](https://img.shields.io/badge/core-5.90%20kB%20gzip-blue)](#size)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ***alacris*** *(Latin)* — brisk, lively, quick.
+
+**[Documentation →](https://bmartel.github.io/alacris/)**
 
 </div>
 
@@ -644,6 +647,21 @@ custom-element upgrade, `adoptedStyleSheets`, listener options and SVG layout.
 `bench/` is the performance harness — it checks that every implementation
 renders identical output before timing any of them.
 
+
+## Documentation
+
+Full documentation, with every example running live on the page, is at
+**[bmartel.github.io/alacris](https://bmartel.github.io/alacris/)**:
+
+- [What is Alacris?](https://bmartel.github.io/alacris/start/what-is-alacris/) — the idea, and what it is not good at
+- [Your first component](https://bmartel.github.io/alacris/start/first-component/)
+- [Lists](https://bmartel.github.io/alacris/guides/lists/) — `each` and why it scales
+- [Theming for consumers](https://bmartel.github.io/alacris/guides/theming/) — letting other people restyle your components
+- [State that scales](https://bmartel.github.io/alacris/guides/state/) — the store and `selector`
+- [API reference](https://bmartel.github.io/alacris/reference/api/)
+- [Performance](https://bmartel.github.io/alacris/reference/performance/) — the benchmark, and the create-path tax
+
+The site is built from `docs/` and deploys on every push to `main`.
 
 ## Contributing
 

@@ -19,7 +19,7 @@ it directly.
 
 | command | what it does |
 | --- | --- |
-| `npm test` | 99 tests on happy-dom — signals, rendering, lists, store, context, and the built bundle |
+| `npm test` | 130 tests on happy-dom — signals, rendering, lists, styles, store, context, the release config, and the built bundle |
 | `npm run build` | writes `dist/` and regenerates `SIZE.md` |
 | `npm run typecheck` | compiles the type-level tests against the shipped `.d.ts` files |
 | `npm run size` | re-measures `dist/` without rebuilding |
@@ -62,6 +62,28 @@ working if you add an implementation.
 If a change is meant to make something faster, include before and after numbers
 from `bench/`. If it makes one thing slower to make another faster, say which,
 and why the trade is worth it.
+
+## The documentation site
+
+`docs/` is an Astro + Starlight site, published to
+[bmartel.github.io/alacris](https://bmartel.github.io/alacris/) on every push to
+`main`. It is a standalone package, so the library's own install stays small.
+
+```bash
+npm run build          # in the repo root first — the docs run the real bundle
+cd docs
+npm install
+npm run dev
+```
+
+Every example on the site is **live**. Demo sources live in `docs/src/demos/`
+and are rendered by `<Demo>` as both a highlighted code block and a module
+script, from the same string — so what a reader sees is what executed, and the
+two cannot drift. The site carries an import map pointing `alacris` at the
+built bundle, which `npm run build` syncs into `docs/public/lib`.
+
+`npm run build` in `docs/` also checks every internal link and fails on a broken
+one.
 
 ## Commit messages decide the version
 
