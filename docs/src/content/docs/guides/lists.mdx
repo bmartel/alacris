@@ -7,7 +7,6 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components';
 import Demo from '../../../components/Demo.astro';
-import todos from '../../../demos/todos.js?raw';
 
 Lists are where a rendering model is decided. Alacris gives you two, and the
 difference between them is where the work lands.
@@ -37,11 +36,7 @@ Three consequences, and they are the reason `each` exists:
 - **Appending touches nothing else.** Matching runs at the head and tail, so a
   push never looks at the rows already there.
 
-<Demo
-  code={todos}
-  preview={`<demo-todos></demo-todos>`}
-  title="each, live"
-/>
+<Demo demo="todos" title="each, live" />
 
 Tick a box, then press **Shuffle**. The checkboxes keep their state, because
 those are the same DOM nodes moved — not new ones rendered with the same data.

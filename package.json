@@ -40,6 +40,7 @@
     "test": "node --import ./test/setup.js --test test/*.test.js",
     "typecheck": "tsc -p tsconfig.json",
     "size": "node scripts/size.js",
+    "sync-docs": "node scripts/sync-docs.mjs",
     "demo": "npm run build && node scripts/serve.js",
     "prepublishOnly": "npm run build && npm test && npm run typecheck"
   },
@@ -69,6 +70,7 @@
   },
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/exec": "^7.1.0",
     "@semantic-release/git": "^10.0.1",
     "conventional-changelog-conventionalcommits": "^9.3.1",
     "esbuild": "^0.25.0",

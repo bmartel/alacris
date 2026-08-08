@@ -7,16 +7,11 @@ sidebar:
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 import Demo from '../../../components/Demo.astro';
-import counter from '../../../demos/counter.js?raw';
 
 The whole model fits in one file. Here is the finished thing — it is running on
 this page, from the real bundle:
 
-<Demo
-  code={counter}
-  preview={`<demo-counter start="3" step="1"></demo-counter>`}
-  title="demo-counter"
-/>
+<Demo demo="counter" title="demo-counter" />
 
 Now the same thing, built up a piece at a time.
 

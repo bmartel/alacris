@@ -1,0 +1,34 @@
+---
+title: Playground
+description: Run and edit Alacris in your browser. An editor and a live page, with alacris installed from npm — nothing to clone and nothing to set up.
+tableOfContents: false
+sidebar:
+  order: 0
+---
+
+import Playground from '../../components/Playground.astro';
+
+Pick an example and start it. You get an editor on the left and the running page
+on the right, with `alacris` installed from npm. Change the source and the
+preview updates.
+
+<Playground height="min(78vh, 52rem)" />
+
+**Open on StackBlitz** takes the same example into a tab of its own, as a full
+Vite project with a `package.json` — the version to fork, clone, or copy into
+your own repo. (It has to be a separate tab: StackBlitz's Node runtime needs
+cross-origin isolation headers, and a static host like GitHub Pages cannot send
+them. The embed above uses their classic runtime, which does not.)
+
+Nothing here is specific to this site. Alacris itself needs no build step; Vite
+appears in the exported project only so that `import 'alacris'` resolves from
+`node_modules`. In a plain HTML page an import map does the same job:
+
+```html
+<script type="importmap">
+  { "imports": { "alacris": "https://esm.sh/alacris" } }
+</script>
+<script type="module" src="./main.js"></script>
+```
+
+See [Installation](../start/installation/) for the other ways to load it.

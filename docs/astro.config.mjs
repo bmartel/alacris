@@ -12,6 +12,10 @@ export default defineConfig({
   site: 'https://bmartel.github.io',
   base: BASE,
 
+  // src/lib/version.ts imports the repo's package.json, which sits above the
+  // docs root. Vite refuses to serve outside its root in dev without this.
+  vite: { server: { fs: { allow: ['..'] } } },
+
   integrations: [
     starlight({
       title: 'Alacris',
@@ -49,6 +53,7 @@ export default defineConfig({
             { label: 'What is Alacris?', slug: 'start/what-is-alacris' },
             { label: 'Installation', slug: 'start/installation' },
             { label: 'Your first component', slug: 'start/first-component' },
+            { label: 'Playground', slug: 'playground', badge: 'Live' },
           ],
         },
         {

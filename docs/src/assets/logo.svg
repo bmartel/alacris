@@ -1,3 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-  <path d="M13.5 2 4 13.2h6.2L9.4 22 20 10.4h-6.6L13.5 2Z" fill="#d9a441"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Alacris">
+  <!--
+    A bolt split along its own waist. The fracture is the point: an update in
+    Alacris moves one piece, not the whole shape.
+
+    Flat fills and sharp corners on purpose — no gradient, no rounded joins.
+    The facets stay crisp down to 16 px, where softened edges turn to mush.
+  -->
+  <path d="M20.48 1.22 5.25 17.79l7.48-.82 5.38-3.8Z" fill="#f5b719" />
+  <path d="M13.89 18.61 12.19 30.78 26.75 13.98l-7.48.82Z" fill="#c07f08" />
 </svg>

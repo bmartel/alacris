@@ -1,0 +1,214 @@
+---
+/**
+ * A live StackBlitz workspace: a real Vite project that installs `alacris`
+ * from npm and boots in the browser. Edit the source, see the result — no
+ * clone, no install, nothing to download.
+ *
+ * The embed is behind a click. A WebContainer is a heavy thing to start, and
+ * starting one for every visitor who scrolls past would be rude. Once it is
+ * running, switching examples swaps files over the live VM instead of booting
+ * a second one, so the second example appears instantly.
+ */
+import { demos } from '../demos/index.ts';
+import { ALACRIS_RANGE } from '../lib/version.ts';
+// Inlined rather than re-drawn, so the poster and the site header are the
+// same mark and can never drift apart.
+import mark from '../assets/logo.svg?raw';
+
+interface Props {
+  /** Restrict and order the picker. Defaults to every demo. */
+  ids?: string[];
+  /** Which example loads first. Overridden by `?demo=` in the URL. */
+  initial?: string;
+  /** Height of the embed. Any CSS length. */
+  height?: string;
+}
+
+const { ids, initial, height = 'min(74vh, 46rem)' } = Astro.props;
+
+const list = ids ? ids.map((id) => demos.find((d) => d.id === id)!) : demos;
+
+const config = {
+  range: ALACRIS_RANGE,
+  initial: initial ?? list[0].id,
+  demos: list.map(({ id, title, blurb, code, markup }) => ({
+    id,
+    title,
+    blurb,
+    code,
+    markup,
+  })),
+};
+
+// `<` is escaped so demo markup can never close this script element early.
+const configJson = JSON.stringify(config).replace(/</g, '\\u003c');
+---
+
+<div class="playground not-content" data-playground style={`--pg-height:${height}`}>
+  <div class="pg-bar">
+    <div class="pg-tabs" role="group" aria-label="Example">
+      {
+        list.map((demo, i) => (
+          <button
+            type="button"
+            class="pg-tab"
+            data-pg-tab={demo.id}
+            aria-pressed={i === 0 ? 'true' : 'false'}
+          >
+            {demo.title}
+          </button>
+        ))
+      }
+    </div>
+    <button type="button" class="pg-action" data-pg-open>
+      Open on StackBlitz
+      <span aria-hidden="true">↗</span>
+    </button>
+  </div>
+
+  <p class="pg-blurb" data-pg-blurb>{list[0].blurb}</p>
+
+  <div class="pg-frame">
+    <div class="pg-poster" data-pg-poster>
+      <span class="pg-poster-mark" aria-hidden="true" set:html={mark} />
+      <button type="button" class="pg-run" data-pg-run>Start the playground</button>
+      <p>
+        An editor and a live page, with <code>alacris</code> installed from npm.
+        It takes a couple of seconds to start; after that, switching examples is
+        instant.
+      </p>
+    </div>
+    <div class="pg-mount" data-pg-mount></div>
+  </div>
+
+  <script type="application/json" data-pg-config is:inline set:html={configJson} />
+</div>
+
+<script>
+  import sdk, { type VM } from '@stackblitz/sdk';
+  import {
+    EMBED_ENTRY,
+    VITE_ENTRY,
+    embedProjectFor,
+    openProjectFor,
+  } from '../lib/stackblitz.ts';
+  import type { PlaygroundConfig, PlaygroundDemo } from '../lib/stackblitz.ts';
+
+  const siteTheme = () =>
+    document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+
+  function setup(root: HTMLElement) {
+    const configEl = root.querySelector<HTMLScriptElement>('[data-pg-config]');
+    const mount = root.querySelector<HTMLElement>('[data-pg-mount]');
+    const poster = root.querySelector<HTMLElement>('[data-pg-poster]');
+    const blurb = root.querySelector<HTMLElement>('[data-pg-blurb]');
+    if (!configEl || !mount || !poster || !blurb) return;
+
+    const config = JSON.parse(configEl.textContent!) as PlaygroundConfig & {
+      initial: string;
+    };
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-pg-tab]')];
+    const find = (id: string) =>
+      config.demos.find((d) => d.id === id) ?? config.demos[0];
+
+    let current: PlaygroundDemo = find(
+      new URL(location.href).searchParams.get('demo') ?? config.initial
+    );
+    // The VM is awaited rather than stored, so a tab pressed while the
+    // container is still installing still lands on the right example.
+    let vm: Promise<VM> | null = null;
+    let generation = 0;
+
+    function paint() {
+      for (const tab of tabs) {
+        tab.setAttribute(
+          'aria-pressed',
+          String(tab.dataset.pgTab === current.id)
+        );
+      }
+      blurb!.textContent = current.blurb;
+    }
+
+    /** Reflect the selection in the URL so a tab is linkable. */
+    function syncUrl() {
+      const url = new URL(location.href);
+      url.searchParams.set('demo', current.id);
+      history.replaceState(null, '', url);
+    }
+
+    async function boot() {
+      if (vm) return;
+      poster!.hidden = true;
+      const target = document.createElement('div');
+      mount!.replaceChildren(target);
+      vm = sdk.embedProject(target, embedProjectFor(current, config.range), {
+        openFile: EMBED_ENTRY,
+        height: '100%',
+        theme: siteTheme(),
+        hideExplorer: true,
+        hideNavigation: false,
+        hideDevTools: true,
+      });
+      try {
+        await vm;
+      } catch (err) {
+        // A blocked iframe or an offline visitor should get an explanation,
+        // not an empty box.
+        vm = null;
+        poster!.hidden = false;
+        mount!.replaceChildren();
+        console.error('[playground] could not start the embed', err);
+      }
+    }
+
+    async function select(id: string) {
+      const next = find(id);
+      if (next.id === current.id) return;
+      current = next;
+      paint();
+      syncUrl();
+      if (!vm) return;
+
+      const mine = ++generation;
+      const files = embedProjectFor(current, config.range).files;
+      const instance = await vm.catch(() => null);
+      // A slower switch must not overwrite a later one.
+      if (!instance || mine !== generation) return;
+      // Every example has the same dependencies, so swapping the source files
+      // over the running project avoids a second install.
+      await instance.applyFsDiff({ create: files, destroy: [] });
+      await instance.editor.openFile(EMBED_ENTRY);
+    }
+
+    for (const tab of tabs) {
+      tab.addEventListener('click', () => void select(tab.dataset.pgTab!));
+    }
+    root
+      .querySelector('[data-pg-run]')
+      ?.addEventListener('click', () => void boot());
+    root.querySelector('[data-pg-open]')?.addEventListener('click', () => {
+      // A new tab is cross-origin isolated, so this one can be the full
+      // WebContainer project: a package.json, Vite, and a real install.
+      sdk.openProject(openProjectFor(current, config.range), {
+        openFile: VITE_ENTRY,
+        newWindow: true,
+      });
+    });
+
+    // Follow the site's theme toggle without restarting the container.
+    new MutationObserver(() => {
+      void vm?.then((instance) => instance.editor.setTheme(siteTheme())).catch(
+        () => {}
+      );
+    }).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+
+    paint();
+    // Arriving with an explicit ?demo= is a deliberate choice — start it.
+    if (new URL(location.href).searchParams.has('demo')) void boot();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-playground]').forEach(setup);
+</script>

@@ -5,6 +5,14 @@ on:
     branches: [main]
   pull_request:
     paths: ['docs/**', 'src/**', '.github/workflows/docs.yml']
+  # semantic-release pushes its version bump as `chore(release): x.y.z [skip
+  # ci]`, and GitHub honours that marker by not running push workflows for it.
+  # Without this trigger the site would keep serving the tree from *before* the
+  # bump, so the playground would install the previous release and the pinned
+  # examples would show the previous version. The release event is not subject
+  # to [skip ci], and by the time it fires the bump commit is on main.
+  release:
+    types: [published]
   workflow_dispatch:
 
 # Never deploy two builds at once, but let a newer commit supersede an

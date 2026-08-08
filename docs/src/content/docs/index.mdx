@@ -5,11 +5,15 @@ template: splash
 hero:
   tagline: Web components with signals and fine-grained DOM updates — in 6&nbsp;kB. ESM-only, zero dependencies, and no build step to adopt it.
   image:
-    file: ../../assets/logo.svg
+    file: ../../assets/hero.svg
   actions:
     - text: Get started
       link: start/what-is-alacris/
       icon: right-arrow
+    - text: Open the playground
+      link: playground/
+      icon: rocket
+      variant: minimal
     - text: View on GitHub
       link: https://github.com/bmartel/alacris
       icon: external
@@ -18,18 +22,13 @@ hero:
 
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import Demo from '../../components/Demo.astro';
-import counter from '../../demos/counter.js?raw';
 
 ## One script tag
 
 No bundler, no config, no build step. The element below is running the real
 library, loaded from this page.
 
-<Demo
-  code={counter}
-  preview={`<demo-counter start="3" step="1"></demo-counter>`}
-  title="Try it"
-/>
+<Demo demo="counter" title="Try it" />
 
 Every example on this site works the same way: the code you read is executed on
 the page, imported from the published bundle under its real specifier. Nothing

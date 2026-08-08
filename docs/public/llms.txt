@@ -14,6 +14,7 @@ for deep state, `selector` for O(1) selection.
 - [What is Alacris?](https://bmartel.github.io/alacris/start/what-is-alacris/): the idea, the trade-offs, and what it is not good at
 - [Installation](https://bmartel.github.io/alacris/start/installation/): npm, or a CDN import with no install at all
 - [Your first component](https://bmartel.github.io/alacris/start/first-component/): define, props, events, in one page
+- [Playground](https://bmartel.github.io/alacris/playground/): every example running in an editor, no install
 
 ## Guides
 
