@@ -6,6 +6,29 @@ automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 
 ## [0.2.0](https://github.com/bmartel/alacris/compare/v0.1.0...v0.2.0) (2026-08-08)
 
+<!-- Written by hand: this release shipped with empty notes because the
+     configured changelog preset was incompatible with semantic-release's
+     changelog writer and silently produced nothing. Fixed in 0.2.1, and
+     test/release.test.js now fails if notes ever come out empty again. -->
+
+### Features
+
+- **style:** `css` returns a cached, constructed stylesheet. Identical CSS is
+  interned, so a stylesheet is parsed once for the whole page however many
+  components use it; adopting it into a shadow root is a pointer copy.
+  Interpolating one sheet into another composes them without re-parsing.
+- **style:** `styles` accepts a sheet, a CSS string, or an array of them.
+- **style:** `Sheet.replace()` rewrites a stylesheet in place, so every element
+  that adopted it reskins on a single write.
+- **style:** `style=${}` accepts objects, custom properties included, and clears
+  keys that stop being passed; `class=${}` accepts objects and arrays.
+- **style:** `vars(prefix, defaults)` declares the custom properties a component
+  is themed by, each compiling to `var(--btn-bg, #111)`, with `names` exposing
+  the contract.
+- **style:** `adoptGlobal(...)` pushes styles into every component including
+  ones created later, applied after component styles so a theme wins ties
+  without `!important`. Returns a remover.
+
 ## 0.1.0 (2026-08-08)
 
 First public release.
