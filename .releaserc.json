@@ -48,8 +48,8 @@
     [
       "@semantic-release/exec",
       {
-        "//": "Repoint every pinned alacris@x.y.z in the README and the docs at the release being cut, before the commit below picks the files up.",
-        "prepareCmd": "node scripts/sync-version.mjs ${nextRelease.version}"
+        "//": "Repoint the pinned versions and the quoted size figures in the README and the docs at the release being cut, before the commit below picks the files up.",
+        "prepareCmd": "node scripts/sync-docs.mjs ${nextRelease.version}"
       }
     ],
     [

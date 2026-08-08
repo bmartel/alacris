@@ -40,7 +40,7 @@
     "test": "node --import ./test/setup.js --test test/*.test.js",
     "typecheck": "tsc -p tsconfig.json",
     "size": "node scripts/size.js",
-    "sync-version": "node scripts/sync-version.mjs",
+    "sync-docs": "node scripts/sync-docs.mjs",
     "demo": "npm run build && node scripts/serve.js",
     "prepublishOnly": "npm run build && npm test && npm run typecheck"
   },

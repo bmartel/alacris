@@ -148,37 +148,53 @@ and typechecks the exact commit, then runs semantic-release, which:
 1. reads the commits since the last `v*` tag and decides the next version,
 2. publishes to npm,
 3. writes `CHANGELOG.md` and bumps `package.json`,
-4. runs `npm run sync-version` so the docs point at the version being cut,
+4. runs `npm run sync-docs` so the docs quote the version and sizes being cut,
 5. commits those back to `main` as `chore(release): x.y.z [skip ci]`,
 6. tags the commit and opens a GitHub release with the notes.
 
 If no commit since the last tag warrants a release, it says so and stops. That
 is the normal outcome for a docs-only or CI-only change.
 
-### Nothing documents a version by hand
+### Nothing documents a version or a size by hand
 
-<!-- sync-version:ignore — this section names versions to explain the rule, so
-     it must not be rewritten by the rule. -->
+<!-- sync-docs:ignore — this section names versions to explain the rule, so it
+     must not be rewritten by the rule. -->
 
+`package.json` is the only place a version is set and `SIZE.md` is the only
+place a size is measured. Everything the docs say about either is derived from
+those two by `scripts/sync-docs.mjs`.
 
-Most examples on the site are deliberately unpinned — `unpkg.com/alacris`
-always resolves to the newest release. The ones that *are* pinned exist to show
-how pinning works, so the number in them is illustrative and should always be
-the version that shipped last.
+**Versions.** Most examples on the site are deliberately unpinned —
+`unpkg.com/alacris` always resolves to the newest release. The ones that *are*
+pinned exist to show how pinning works, so the number in them is illustrative
+and should be whatever shipped last. The script rewrites every `alacris@x.y.z`
+in the tracked prose. The shape of a pin is its intent, so it survives:
+`alacris@0.2` stays a minor pin and only becomes `alacris@0.3`, while
+`alacris@0.2.1` is rewritten in full.
 
-`scripts/sync-version.mjs` rewrites every `alacris@x.y.z` in the tracked
-Markdown, MDX and prose to match `package.json`. The shape of a pin is its
-intent, so it is preserved: `alacris@0.2` stays a minor pin and only becomes
-`alacris@0.3`, while `alacris@0.2.1` is rewritten in full.
+**Sizes.** The figures in the size tables and in the README's size badge are
+rewritten from `SIZE.md`. The tables are anchored on themselves rather than on
+markers — a header names the metrics, the first cell of each row names the
+bundle — so which number belongs where is read off the table instead of
+guessed. That works for the Markdown table in the README and for the
+`<table class="sizes">` blocks in the docs alike.
+
+A figure loose in a sentence cannot be placed automatically; nothing says which
+bundle "0.97 kB" is describing. Those are checked instead: every one has to be
+a figure that is currently true of *something*, and the script fails and names
+the file if it is not. Editing that sentence is a person's job.
 
 - The release runs it, so a release updates the docs with it.
-- CI runs `npm run sync-version -- --check` and fails a pull request that
-  introduces a pin at the wrong version.
-- Run `npm run sync-version` yourself if that check ever fails.
-- A file that needs to name a version in prose — like this one — opts out with
-  a `sync-version:ignore` marker anywhere in it.
+- CI runs `npm run sync-docs -- --check` and fails a pull request that
+  introduces a stale figure. It runs after `SIZE.md` is regenerated, so the
+  sizes it compares against are the ones the commit actually produces.
+- Run `npm run sync-docs` yourself if that check ever fails.
+- A file that needs to name a version or a size in prose — like this one — opts
+  out with a `sync-docs:ignore` marker anywhere in it.
+- `CHANGELOG.md` is never touched. It records what was true at each release,
+  and rewriting a number into it would be falsifying history.
 
-The playground does not need it: it reads the version out of `package.json` at
+The playground needs none of it: it reads the version out of `package.json` at
 build time, and the demos on the site import the bundle built from the same
 commit.
 

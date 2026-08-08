@@ -1,0 +1,264 @@
+// Keep the documentation honest about the release it describes.
+//
+// Two kinds of fact go stale on their own, and both had:
+//
+// - **Pinned versions.** Most examples are deliberately unpinned —
+//   `unpkg.com/alacris` always resolves to the newest release. The pinned ones
+//   exist to *show* how to pin, so the number in them is illustrative. The
+//   README pinned 0.1.0 and the docs pinned 0.2.1 while npm served 0.2.2.
+//
+// - **Size figures.** `SIZE.md` is generated from the built bundles, but the
+//   same numbers were retyped by hand into four tables, a shields.io badge and
+//   half a dozen sentences — about thirty five of them, all of which move
+//   together the moment the bundle does.
+//
+// SIZE.md is the one place a size is measured; package.json is the one place a
+// version is set. Everything below is derived from those two.
+//
+// Run by hand with `npm run sync-docs`, from semantic-release's prepare step so
+// the release commit carries the update, and with `--check` in CI so a pull
+// request cannot introduce a stale figure.
+import { execFileSync } from 'node:child_process';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { extname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = fileURLToPath(new URL('..', import.meta.url));
+
+const args = process.argv.slice(2);
+const check = args.includes('--check');
+const version =
+  args.find((a) => !a.startsWith('-')) ??
+  JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
+
+if (!/^\d+\.\d+\.\d+/.test(version)) {
+  console.error(`  sync-docs: '${version}' is not a version.`);
+  process.exit(1);
+}
+
+// Prose and examples only, enumerated with git so generated output — the
+// bundles synced into docs/public/lib, dist, node_modules — is never touched.
+const SCANNED = new Set(['.md', '.mdx', '.html', '.txt', '.astro', '.ts', '.js']);
+
+// CHANGELOG.md is a record of what *was* true at each release; rewriting a
+// version or a size into it would be falsifying history. SIZE.md belongs to
+// scripts/size.js, which measures rather than copies.
+const OWNED_ELSEWHERE = new Set(['CHANGELOG.md', 'SIZE.md']);
+
+// A file that documents *how* any of this works needs to name a version or a
+// size without having it rewritten out from under the sentence. It says so.
+const IGNORE = 'sync-docs:ignore';
+
+// ------------------------------------------------------------------ versions
+
+const PIN = /\balacris@(\d+(?:\.\d+){0,2})\b/g;
+
+const parts = version.split('.');
+/** Rewrite a pin to the current version, keeping however precise it was. */
+const reshape = (pin) => parts.slice(0, pin.split('.').length).join('.');
+
+function syncPins(text, note) {
+  return text.replace(PIN, (match, pin) => {
+    const next = reshape(pin);
+    if (next !== pin) note(`${pin} -> ${next}`);
+    return `alacris@${next}`;
+  });
+}
+
+// --------------------------------------------------------------------- sizes
+
+const SIZE_ROW =
+  /^\|\s*`([\w.]+)`\s*\|\s*([\d.]+)\s*KB\s*\|\s*\*\*([\d.]+)\s*KB\*\*\s*\|\s*([\d.]+)\s*KB\s*\|/gm;
+
+const sizes = new Map();
+for (const [, file, raw, gzip, brotli] of readFileSync(
+  join(root, 'SIZE.md'),
+  'utf8'
+).matchAll(SIZE_ROW)) {
+  sizes.set(file, { raw, gzip, brotli });
+}
+
+if (!sizes.size) {
+  console.error('  sync-docs: could not read any rows from SIZE.md.');
+  process.exit(1);
+}
+
+/** Every figure that is currently true of some bundle. */
+const measured = new Set([...sizes.values()].flatMap((m) => Object.values(m)));
+
+const METRICS = ['raw', 'gzip', 'brotli'];
+const FIGURE = /(\d+\.\d+)(\s*)([kK]B)/;
+
+/** Which bundle a table row is about, read from its first cell. */
+function bundleOf(cell) {
+  const text = cell.replace(/`/g, '');
+  const subpath = text.match(/\balacris\/(\w+)/); // `alacris/store`
+  if (subpath) return `${subpath[1]}.js`;
+  const named = text.match(/([\w.]+\.js)\b/); // `dist/alacris.js`, `store.js`
+  if (named) return named[1];
+  return /\balacris\b/.test(text) ? 'alacris.js' : null;
+}
+
+/** Column index -> metric, read from a header row's cells. */
+function columnsOf(cells) {
+  const cols = new Map();
+  cells.forEach((cell, i) => {
+    const metric = METRICS.find((m) => new RegExp(`\\b${m}\\b`, 'i').test(cell));
+    if (metric) cols.set(i, metric);
+  });
+  return cols.size ? cols : null;
+}
+
+/** Replace the figure in one cell, keeping the unit casing the doc chose. */
+function syncCell(cell, bundle, metric, note) {
+  const size = sizes.get(bundle);
+  if (!size) return cell;
+  return cell.replace(FIGURE, (match, was, gap, unit) => {
+    if (was !== size[metric]) note(`${bundle} ${metric} ${was} -> ${size[metric]}`);
+    return `${size[metric]}${gap}${unit}`;
+  });
+}
+
+/**
+ * Rewrite the figures in any table that reports sizes.
+ *
+ * The tables are anchored on themselves rather than on markers: a header names
+ * the metrics, the first cell of each row names the bundle, so which number
+ * belongs where is read off the table instead of guessed. Both the Markdown
+ * table in the README and the <table> blocks in the docs work this way.
+ */
+function syncTables(text, note) {
+  const lines = text.split('\n');
+  let cols = null;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (/<th[\s>]/.test(line)) {
+      cols = columnsOf([...line.matchAll(/<th[^>]*>([\s\S]*?)<\/th>/g)].map((m) => m[1]));
+      continue;
+    }
+
+    if (/<\/table>/.test(line)) {
+      cols = null;
+      continue;
+    }
+
+    if (cols && /<td[\s>]/.test(line)) {
+      const cells = [...line.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((m) => m[1]);
+      const bundle = bundleOf(cells[0] ?? '');
+      if (!bundle) continue;
+      let col = -1;
+      lines[i] = line.replace(
+        /(<td[^>]*>)([\s\S]*?)(<\/td>)/g,
+        (match, open, inner, close) => {
+          col++;
+          const metric = cols.get(col);
+          return metric ? open + syncCell(inner, bundle, metric, note) + close : match;
+        }
+      );
+      continue;
+    }
+
+    if (line.trimStart().startsWith('|')) {
+      if (/^\s*\|[\s:|-]+\|\s*$/.test(line)) continue; // the --- separator
+      const cells = line.split('|').slice(1, -1);
+      const header = columnsOf(cells);
+      if (header && !bundleOf(cells[0] ?? '')) {
+        cols = header;
+        continue;
+      }
+      const bundle = cols && bundleOf(cells[0] ?? '');
+      if (bundle) {
+        lines[i] =
+          '|' +
+          cells
+            .map((cell, col) =>
+              cols.get(col) ? syncCell(cell, bundle, cols.get(col), note) : cell
+            )
+            .join('|') +
+          '|';
+      }
+      continue;
+    }
+
+    if (!line.trim()) cols = null; // a blank line ends a Markdown table
+  }
+
+  return lines.join('\n');
+}
+
+const BADGE = /(img\.shields\.io\/badge\/core-)(\d+\.\d+)(%20kB)/i;
+
+function syncBadge(text, note) {
+  const core = sizes.get('alacris.js');
+  if (!core) return text;
+  return text.replace(BADGE, (match, prefix, was, suffix) => {
+    if (was !== core.gzip) note(`badge ${was} -> ${core.gzip}`);
+    return prefix + core.gzip + suffix;
+  });
+}
+
+/**
+ * Figures loose in a sentence cannot be placed automatically — nothing says
+ * which bundle "0.97 kB" is describing. They can still be caught: every one of
+ * them should be a figure that is currently true of *something*.
+ */
+function strayFigures(text) {
+  return [...text.matchAll(/(\d+\.\d+)\s*[kK]B/g)]
+    .map((m) => m[1])
+    .filter((figure) => !measured.has(figure));
+}
+
+// ---------------------------------------------------------------------- run
+
+const files = execFileSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8' })
+  .split('\0')
+  .filter((f) => f && SCANNED.has(extname(f)) && !OWNED_ELSEWHERE.has(f));
+
+const stale = [];
+const strays = [];
+
+for (const file of files) {
+  const path = join(root, file);
+  const before = readFileSync(path, 'utf8');
+  if (before.includes(IGNORE)) continue;
+
+  const changes = new Set();
+  const note = (what) => changes.add(what);
+
+  let after = syncPins(before, note);
+  after = syncTables(after, note);
+  after = syncBadge(after, note);
+
+  if (after !== before) {
+    stale.push({ file, changes: [...changes] });
+    if (!check) writeFileSync(path, after);
+  }
+
+  const loose = strayFigures(after);
+  if (loose.length) strays.push({ file, loose: [...new Set(loose)] });
+}
+
+if (stale.length) {
+  console.log(`  sync-docs: ${stale.length} file(s) ${check ? 'stale' : 'updated'} for ${version}`);
+  for (const { file, changes } of stale) {
+    console.log(`    ${file}\n      ${changes.join('\n      ')}`);
+  }
+} else {
+  console.log(`  sync-docs: every version and size already reads ${version}`);
+}
+
+if (strays.length) {
+  console.error('\n  These figures match no current bundle size, so a sentence needs editing:');
+  for (const { file, loose } of strays) {
+    console.error(`    ${file}  (${loose.map((f) => `${f} kB`).join(', ')})`);
+  }
+}
+
+if (check && (stale.length || strays.length)) {
+  if (stale.length) console.error('\n  Run `npm run sync-docs` and commit the result.');
+  process.exit(1);
+}
+
+if (strays.length) process.exit(1);

@@ -70,8 +70,10 @@ jobs:
       - name: Report size
         run: cat SIZE.md >> "$GITHUB_STEP_SUMMARY"
 
-      # Pinned `alacris@x.y.z` examples in the README and the docs are rewritten
-      # by the release, so a pull request must not hand-edit one to a version
-      # that is about to be overwritten — or add a new pin that is already old.
-      - name: Version pins are current
-        run: npm run sync-version -- --check
+      # Pinned versions and quoted size figures are derived from package.json
+      # and SIZE.md, and rewritten by the release. A pull request must not
+      # hand-edit one to something that is about to be overwritten, or add a
+      # new one that is already stale. Runs after SIZE.md is regenerated above,
+      # because the size figures are read from it.
+      - name: Versions and sizes in the docs are current
+        run: npm run sync-docs -- --check
