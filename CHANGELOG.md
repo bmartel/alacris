@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.2.2](https://github.com/bmartel/alacris/compare/v0.2.1...v0.2.2) (2026-08-08)
+
+### Bug Fixes
+
+* harden the store against prototype pollution; parse templates via Trusted Types ([68c42e1](https://github.com/bmartel/alacris/commit/68c42e130512212c2749e615772f08f6fd1bc044))
+
 ## [0.2.1](https://github.com/bmartel/alacris/compare/v0.2.0...v0.2.1) (2026-08-08)
 
 ### Bug Fixes
