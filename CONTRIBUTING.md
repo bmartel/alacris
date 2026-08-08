@@ -100,9 +100,11 @@ BREAKING CHANGE: selector(source, keys) is now selector(source, equals).
 Pass a comparison function, or omit the second argument for ===.
 ```
 
-While the package is `0.x`, a breaking change bumps the minor version rather
-than the major — that is semver's rule for pre-1.0, and it is why the API is
-still `0.x`.
+Be deliberate with that marker while the package is `0.x`: semantic-release does
+**not** special-case pre-1.0 versions, so a breaking change takes 0.1.0 straight
+to **1.0.0**, not 0.2.0. If the API is still settling and you do not mean to
+declare it stable, use a plain `feat:` and describe the change in the body
+instead — and save the `!` for when 1.0 is genuinely intended.
 
 Some real examples from this repo:
 
