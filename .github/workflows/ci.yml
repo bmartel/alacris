@@ -69,3 +69,9 @@ jobs:
 
       - name: Report size
         run: cat SIZE.md >> "$GITHUB_STEP_SUMMARY"
+
+      # Pinned `alacris@x.y.z` examples in the README and the docs are rewritten
+      # by the release, so a pull request must not hand-edit one to a version
+      # that is about to be overwritten — or add a new pin that is already old.
+      - name: Version pins are current
+        run: npm run sync-version -- --check

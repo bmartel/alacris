@@ -92,7 +92,7 @@ anything you merge into state.
 - `dist/` is built in CI from the sources in the same package — `src/` ships
   alongside it, so you can diff what you serve against what you read.
 - Pin CDN URLs to an exact version in production
-  (`https://cdn.jsdelivr.net/npm/alacris@0.2.1/dist/alacris.js`), or use
+  (`https://cdn.jsdelivr.net/npm/alacris@0.2.2/dist/alacris.js`), or use
   [subresource-integrity-capable tooling](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity)
   if your pipeline supports it.
 
