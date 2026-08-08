@@ -1,0 +1,52 @@
+---
+/**
+ * A runnable example.
+ *
+ * The source is rendered as a highlighted code block *and* executed as a module
+ * script — from the same string, so the two can never disagree. Demo sources
+ * live in `src/demos/*.js` and are imported with `?raw`.
+ *
+ * They import `alacris` under its real specifier, which the site's import map
+ * points at the built bundle in `public/lib`. What you read is exactly what you
+ * can paste into your own project.
+ */
+import { Code } from 'astro:components';
+
+interface Props {
+  /** The demo source, imported with `?raw`. */
+  code: string;
+  /** Markup the demo renders into. Usually the custom element tags. */
+  preview?: string;
+  /** Show the source expanded rather than behind a disclosure. */
+  open?: boolean;
+  /** Label above the live area. */
+  title?: string;
+}
+
+const { code, preview = '', open = true, title = 'Live' } = Astro.props;
+---
+
+<figure class="demo not-content">
+  <figcaption class="demo-label">
+    {title}
+    <span class="demo-note">running the real bundle</span>
+  </figcaption>
+
+  <div class="demo-stage" set:html={preview} />
+
+  {
+    open ? (
+      <div class="demo-source">
+        <Code code={code.trim()} lang="js" />
+      </div>
+    ) : (
+      <details class="demo-source">
+        <summary>Source</summary>
+        <Code code={code.trim()} lang="js" />
+      </details>
+    )
+  }
+</figure>
+
+{/* is:inline keeps Astro from bundling this, so the import map resolves it in the browser. */}
+<script type="module" is:inline set:html={code} />

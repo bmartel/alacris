@@ -1,0 +1,134 @@
+---
+title: Styling
+description: Stylesheets parsed once per page, composition, and driving CSS from signals.
+sidebar:
+  order: 5
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Styles are plain CSS in a `css` template.
+
+```js
+import { define, html, css } from 'alacris';
+
+define('x-card', {
+  styles: css`
+    :host { display: block; border: 1px solid #ddd; border-radius: 8px }
+    h3    { margin: 0 }
+  `,
+  setup: () => html`<h3><slot name="title"></slot></h3><slot></slot>`,
+});
+```
+
+## Parsed once for the whole page
+
+`css` interns by text: identical CSS always returns the same constructed
+stylesheet. Two components sharing a reset share the parse, and adopting a sheet
+into a shadow root is a pointer copy, not a parse.
+
+```js
+const reset = css`*, ::before, ::after { box-sizing: border-box }`;
+
+define('x-a', { styles: [reset, css`:host { display: block }`], setup });
+define('x-b', { styles: [reset, css`:host { display: flex }`], setup });
+// `reset` is parsed once, and both components adopt the same object
+```
+
+A thousand elements of the same component cost one parse and a thousand pointer
+copies.
+
+## Composition
+
+Interpolating one sheet into another inlines its text, so stylesheets compose
+without anything being parsed twice:
+
+```js
+const tokens = css`:host { --gap: .75rem }`;
+const base   = css`${tokens} :host { display: grid; gap: var(--gap) }`;
+```
+
+`styles` accepts a sheet, a raw CSS string, a `CSSStyleSheet`, or an array of
+any of those, applied in order:
+
+```js
+styles: [reset, tokens, css`:host { color: red }`]
+```
+
+## Dynamic values belong in custom properties
+
+Do not rebuild a stylesheet to change a colour. Bind a custom property instead —
+one property write, no CSS re-parse, and the browser does the rest:
+
+```js
+html`<div style=${() => ({ '--bar-fill': pct() + '%', opacity: fade() })}>`
+```
+
+```css
+.bar { width: var(--bar-fill) }
+```
+
+`style` accepts an object with custom properties included, and clears any key
+you stop passing. `class` accepts objects and arrays:
+
+```js
+html`<button class=${() => ({ btn: true, 'btn--on': active() })}>`
+```
+
+## Reskinning without re-adopting
+
+A sheet can be rewritten in place. Every element that adopted it updates on a
+single write — no re-adoption, no new rules, no re-render:
+
+```js
+const skin = css`:host { --tone: #111 }`;
+
+skin.replace(':host { --tone: #eee }');  // every instance, immediately
+```
+
+That is the cheapest possible theme switch.
+
+## :host
+
+Style the element itself:
+
+```css
+:host { display: block }
+:host([disabled]) { opacity: .5 }
+:host(.compact) { padding: .25rem }
+```
+
+`:host` only matches from *inside* the component. Note that a bare tag selector
+in the page beats it, which is usually what you want — see
+[theming](../theming/).
+
+## Slotted content
+
+Content passed in from the page stays in the light DOM. Reach it with
+`::slotted()`, which matches only top-level slotted elements:
+
+```css
+::slotted(p)    { margin: 0 }
+::slotted(.tag) { font-size: .85rem }
+```
+
+## Light DOM
+
+With `shadow: false` there is nothing to encapsulate — your page's CSS applies
+normally, and `styles` are added to the containing document once rather than per
+element.
+
+## The one rule
+
+<Aside type="danger" title="Never use !important in a component">
+It is the only inner declaration a consumer cannot override. It defeats
+`::part`, custom properties and `adoptGlobal` alike, and turns a themeable
+component into a fork.
+
+Alacris never emits it, and neither should your components.
+</Aside>
+
+## Next
+
+- [Theming for consumers](../theming/) — the harder half: letting other people
+  restyle what you built

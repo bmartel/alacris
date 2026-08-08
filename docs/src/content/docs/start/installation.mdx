@@ -1,0 +1,121 @@
+---
+title: Installation
+description: Install from npm, or skip installing and load it from a CDN.
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+Alacris is ESM-only and has no dependencies. There is nothing to configure.
+
+## From a CDN
+
+The fastest way to try it, and a perfectly good way to ship it. No bundler, no
+install:
+
+```html
+<script type="module">
+  import { define, html, signal } from 'https://unpkg.com/alacris';
+
+  define('hello-world', () => html`<p>hello</p>`);
+</script>
+
+<hello-world></hello-world>
+```
+
+<Aside type="tip" title="Pin the version in production">
+`https://unpkg.com/alacris` always resolves to the newest release. For anything
+you ship, pin it so an upgrade cannot surprise you:
+
+```js
+import { define } from 'https://unpkg.com/alacris@0.2.1/dist/alacris.js';
+```
+</Aside>
+
+<Tabs>
+  <TabItem label="unpkg">
+    ```js
+    import { define, html, signal } from 'https://unpkg.com/alacris';
+    import { store } from 'https://unpkg.com/alacris/dist/store.js';
+    import { createContext } from 'https://unpkg.com/alacris/dist/context.js';
+    ```
+  </TabItem>
+  <TabItem label="jsDelivr">
+    ```js
+    import { define, html, signal } from 'https://cdn.jsdelivr.net/npm/alacris/+esm';
+    ```
+  </TabItem>
+  <TabItem label="import map">
+    An import map lets you write bare specifiers without a bundler — the same
+    thing this documentation site does for its live examples.
+
+    ```html
+    <script type="importmap">
+      {
+        "imports": {
+          "alacris": "https://unpkg.com/alacris@0.2.1/dist/alacris.js",
+          "alacris/store": "https://unpkg.com/alacris@0.2.1/dist/store.js",
+          "alacris/context": "https://unpkg.com/alacris@0.2.1/dist/context.js"
+        }
+      }
+    </script>
+    <script type="module">
+      import { define, html, signal } from 'alacris';
+    </script>
+    ```
+  </TabItem>
+</Tabs>
+
+## From npm
+
+```sh
+npm install alacris
+```
+
+```js
+import { define, html, signal, computed, effect } from 'alacris';
+import { store, selector } from 'alacris/store';
+import { createContext, provide, consume } from 'alacris/context';
+```
+
+TypeScript declarations ship with the package. There is nothing to add.
+
+## The entry points
+
+Add-ons import the core rather than bundling it, so there is exactly one
+reactive graph at runtime however many you use.
+
+<table class="sizes">
+  <thead>
+    <tr><th>Import</th><th>What it is</th><th>gzip</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>`alacris`</td><td>signals, templates, styling, custom elements</td><td>5.90 kB</td></tr>
+    <tr><td>`alacris/store`</td><td>deep reactive state, `selector`</td><td>0.98 kB</td></tr>
+    <tr><td>`alacris/context`</td><td>the context protocol</td><td>0.54 kB</td></tr>
+    <tr><td>`alacris/signal`</td><td>reactivity alone, no DOM</td><td>0.97 kB</td></tr>
+  </tbody>
+</table>
+
+If you use a bundler, anything you do not import is tree-shaken away — the
+package is marked `sideEffects: false`.
+
+<Aside type="caution" title="Do not mix `alacris` and `alacris/signal`">
+`alacris/signal` is a standalone build for non-DOM use, such as a worker or a
+server. It carries its own copy of the reactive core, so signals created with it
+are in a *different* dependency graph from anything rendered by `alacris`. If
+you are rendering, import your signals from `alacris`.
+</Aside>
+
+## Browser support
+
+Alacris uses `<template>`, `TreeWalker`, custom elements and — for `styles` —
+constructable stylesheets, with a `<style>` fallback where those are missing.
+
+That means Chrome and Edge 73+, Safari 16.4+, and Firefox 101+. There are no
+polyfills and no transpiled build; the published code is modern ESM.
+
+## Next
+
+- [Your first component](../first-component/)

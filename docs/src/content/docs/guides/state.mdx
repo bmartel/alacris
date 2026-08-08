@@ -1,0 +1,147 @@
+---
+title: State that scales
+description: The store — deep reactive objects with path-level granularity — and selector for O(1) selection.
+sidebar:
+  order: 7
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Demo from '../../../components/Demo.astro';
+import storeDemo from '../../../demos/store.js?raw';
+
+A signal holds one value. When that value is a large object, handing it a fresh
+copy tells the renderer only *something changed*, so everything reading it
+re-runs. A store tells it exactly **which path** changed.
+
+```js
+import { store } from 'alacris/store';
+
+const state = store({ rows: [], filter: '', selected: -1 });
+
+state.rows.push({ id: 1, label: 'first', done: false });
+state.rows[0].label = 'renamed';   // wakes the one text node showing it
+state.rows.splice(3, 1);           // structural: the list re-syncs
+```
+
+Read a path and the reading binding subscribes to that path. Write it and only
+those readers run. `state.rows[3].label = 'x'` does not re-diff the list, does
+not rebuild the row, and does not consult any other row.
+
+<Demo
+  code={storeDemo}
+  preview={`<demo-store></demo-store>`}
+  title="Path-level updates, live"
+  open={false}
+/>
+
+## It is a normal object
+
+No setters, no immutable update helpers, no spread gymnastics:
+
+```js
+state.filter = 'done';
+state.rows[2].done = true;
+state.rows.sort((a, b) => a.label.localeCompare(b.label));
+delete state.draft;
+```
+
+Plain objects and arrays become reactive recursively. `Date`, `Map`, `Set`,
+class instances and DOM nodes are stored and returned untouched — the store does
+not try to proxy things that would break.
+
+## Array mutators are atomic
+
+`splice` shifts every element after the cut, one assignment at a time. Left
+unbatched, an observer would run against a half-shifted array — with holes where
+elements have not landed yet. Alacris wraps the mutators so that cannot happen:
+
+```js
+state.rows.splice(1, 2);  // observers see one consistent update
+```
+
+`push`, `pop`, `shift`, `unshift`, `splice`, `sort`, `reverse`, `fill` and
+`copyWithin` all apply as a single update.
+
+## unwrap and update
+
+```js
+import { store, unwrap, update } from 'alacris/store';
+
+JSON.stringify(state);        // works — the proxy is transparent
+const raw = unwrap(state.rows); // the underlying array, untracked
+
+update(state, (d) => {        // many mutations, one pass for readers
+  d.filter = '';
+  d.selected = -1;
+  d.rows.length = 0;
+});
+```
+
+## selector — O(1) instead of O(n)
+
+"Which row is selected?" is the classic accidental O(n). A thousand rows each
+comparing against `selected` means a thousand subscribers, so every selection
+change wakes every row.
+
+```js
+import { selector } from 'alacris/store';
+
+const isSelected = selector(() => state.selected);
+
+html`<tr class=${() => (isSelected(row().id) ? 'danger' : '')}>`
+```
+
+A selector keeps one small signal per key it is asked about and flips exactly
+two of them — the row losing the match and the row gaining it. In the benchmark
+this takes selecting a row from **0.61 ms to 0.010 ms**, which is the floor.
+
+## Pairing with each
+
+This is the combination that makes large lists cheap. `each` handles structure,
+the store handles contents:
+
+```js
+import { html, each } from 'alacris';
+import { store } from 'alacris/store';
+
+const state = store({ rows: [/* … */] });
+
+html`<ul>
+  ${each(
+    () => state.rows,
+    (row) => html`<li>${() => row().label}</li>`,
+    (row) => row.id
+  )}
+</ul>`;
+
+state.rows[3].label = 'changed';  // one text node. No list work at all.
+```
+
+`each` reads the array's length and slots tracked — so a push or a reorder
+rebuilds — but diffs untracked, so a write deep inside one row never triggers a
+list re-sync.
+
+## When to use which
+
+| Shape | Reach for |
+| --- | --- |
+| A handful of independent values | `signal` |
+| A value derived from others | `computed` |
+| A large object mutated in place | `store` |
+| Structural churn on a big list | `each` + `signal` |
+| Deep, targeted updates on a big list | `each` + `store` |
+| "Which one is selected?" | `selector` |
+
+<Aside type="caution" title="The store is not free">
+Every read goes through a proxy. For bulk structural rewrites of huge arrays —
+replacing ten thousand rows wholesale — a plain signal is faster, because the
+proxy overhead is paid per access.
+
+The store wins decisively where it is designed to: deep, targeted updates. The
+[benchmark](../../reference/performance/) shows both sides.
+</Aside>
+
+## Next
+
+- [Context](../context/) — getting state to components that are far apart
+- [Performance](../../reference/performance/) — the numbers behind all of this

@@ -1,0 +1,139 @@
+---
+title: Your first component
+description: From an empty file to a reactive, themeable custom element.
+sidebar:
+  order: 3
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import Demo from '../../../components/Demo.astro';
+import counter from '../../../demos/counter.js?raw';
+
+The whole model fits in one file. Here is the finished thing — it is running on
+this page, from the real bundle:
+
+<Demo
+  code={counter}
+  preview={`<demo-counter start="3" step="1"></demo-counter>`}
+  title="demo-counter"
+/>
+
+Now the same thing, built up a piece at a time.
+
+<Steps>
+
+1. **Define an element.**
+
+   `define` takes a tag name and a setup function. The name needs a hyphen —
+   that is the platform's rule for custom elements, not ours.
+
+   ```js
+   import { define, html } from 'alacris';
+
+   define('demo-counter', () => html`<p>hello</p>`);
+   ```
+
+   ```html
+   <demo-counter></demo-counter>
+   ```
+
+2. **Add state with a signal.**
+
+   A signal is a function. Call it to read, call it with an argument to write.
+
+   ```js
+   import { define, html, signal } from 'alacris';
+
+   define('demo-counter', () => {
+     const count = signal(0);
+     return html`<p>${count} clicks</p>`;
+   });
+   ```
+
+   Interpolating `count` — the function itself, not `count()` — is what makes
+   the binding live. That one text node now updates on its own forever.
+
+3. **Handle an event.**
+
+   ```js
+   define('demo-counter', () => {
+     const count = signal(0);
+     return html`
+       <button @click=${() => count(count() + 1)}>+</button>
+       <output>${count}</output>`;
+   });
+   ```
+
+   `setup` does **not** run again when `count` changes. Only the `<output>`
+   text node is written.
+
+4. **Accept props from the outside.**
+
+   Declare them with defaults. The *type* of the default decides how the
+   matching attribute is parsed.
+
+   ```js
+   define('demo-counter', {
+     props: { start: 0, step: 1 },
+     setup({ start, step }) {
+       const count = signal(start());
+       return html`
+         <button @click=${() => count(count() - step())}>&minus;</button>
+         <output>${count}</output>
+         <button @click=${() => count(count() + step())}>+</button>`;
+     },
+   });
+   ```
+
+   Each prop is now three things at once — a signal inside, an observed
+   attribute outside, and a real DOM property:
+
+   ```html
+   <demo-counter start="3" step="5"></demo-counter>
+   ```
+   ```js
+   document.querySelector('demo-counter').step = 10;
+   ```
+
+   That is what makes the element behave natively in every framework: React
+   sets attributes, Vue and Angular set properties, and both work.
+
+5. **Add styles.**
+
+   `styles` is parsed once for the whole page and shared by every instance.
+
+   ```js
+   define('demo-counter', {
+     props: { start: 0, step: 1 },
+     styles: `
+       :host { display: inline-flex; align-items: center; gap: .75rem }
+       output { font-variant-numeric: tabular-nums; font-weight: 700 }
+     `,
+     setup({ start, step }) { /* … */ },
+   });
+   ```
+
+</Steps>
+
+## What just happened
+
+- `setup` ran **once** per element.
+- The template was parsed **once** for the whole page, then cloned per element.
+- Clicking writes to one text node. Nothing else is consulted, compared or
+  re-rendered.
+
+<Aside type="tip" title="The one rule to remember">
+A **function** in a `${}` is a live binding. A **value** is written once.
+
+```js
+html`<p>${count}</p>`            // live — updates forever
+html`<p>${count()}</p>`          // a snapshot, taken now
+html`<p>${() => a() + b()}</p>`  // live, derived from both
+```
+</Aside>
+
+## Next
+
+- [Signals](../../guides/signals/) — computed values, effects and cleanup
+- [Templates](../../guides/templates/) — the full binding syntax
+- [Components](../../guides/components/) — props, events, lifecycle and slots

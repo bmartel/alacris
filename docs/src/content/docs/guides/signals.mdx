@@ -1,0 +1,203 @@
+---
+title: Signals
+description: The reactive core — signal, computed, effect — and why updates are glitch-free.
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Demo from '../../../components/Demo.astro';
+import signals from '../../../demos/signals.js?raw';
+
+A signal is a function that holds a value and remembers who read it.
+
+```js
+import { signal } from 'alacris';
+
+const count = signal(0);
+
+count();                    // 0 — read, and subscribe if inside a computation
+count(5);                   // 5 — write
+count.set(6);               //     the same thing, when you prefer it explicit
+count.update((n) => n + 1); // 7 — write from the current value
+count.peek();               // 7 — read without subscribing
+```
+
+Reading inside an effect or a computed creates a dependency. Writing wakes the
+things that depend on it, and nothing else.
+
+## computed
+
+A derived value. It is **lazy** — it does not recompute until something reads
+it — and **memoised**, so repeated reads are free.
+
+```js
+import { signal, computed } from 'alacris';
+
+const width = signal(4);
+const height = signal(3);
+const area = computed(() => width() * height());
+
+area(); // 12 — computed now
+area(); // 12 — cached
+width(5);
+area(); // 15 — recomputed on read, not on write
+```
+
+<Demo
+  code={signals}
+  preview={`<demo-signals></demo-signals>`}
+  title="computed, live"
+/>
+
+## effect
+
+Runs immediately, then again whenever a value it read changes. It returns a
+disposer, and the function can return its own cleanup.
+
+```js
+import { signal, effect } from 'alacris';
+
+const query = signal('');
+
+const stop = effect(() => {
+  const controller = new AbortController();
+  fetch(`/search?q=${query()}`, { signal: controller.signal });
+  return () => controller.abort(); // before the next run, and on dispose
+});
+
+stop();
+```
+
+The cleanup runs *before each re-run* as well as on disposal, which is what
+makes subscriptions, timers and listeners safe to create inside one:
+
+```js
+effect(() => {
+  const id = setInterval(tick, delay());
+  return () => clearInterval(id); // the old interval is always cleared
+});
+```
+
+## Updates are glitch-free
+
+Two properties matter, and both are tested.
+
+**A diamond runs its effect once.** If two computed values depend on the same
+signal and an effect depends on both, the effect runs a single time per change,
+never with one branch stale:
+
+```js
+const a = signal(1);
+const b = computed(() => a() + 1);
+const c = computed(() => a() * 10);
+
+effect(() => console.log(b() + c())); // 12
+a(2);                                 // 23 — logged once, not twice
+```
+
+**A computed that lands on the same value stops there.** Nothing downstream is
+woken:
+
+```js
+const n = signal(2);
+const isEven = computed(() => n() % 2 === 0);
+
+effect(() => console.log(isEven())); // true
+n(4);                                // silent — still true
+n(5);                                // false
+```
+
+That second property is what makes fine-grained rendering practical: a signal
+can change constantly, and the DOM only hears about it when a value the DOM
+actually shows has changed.
+
+## Dependencies are dynamic
+
+They are recollected on every run, so a branch that stops executing stops
+subscribing:
+
+```js
+effect(() => {
+  if (enabled()) console.log(value());
+});
+```
+
+While `enabled()` is false, writing `value` does nothing at all.
+
+## batch
+
+Writes apply synchronously. Group a burst so dependents run once at the end:
+
+```js
+import { batch } from 'alacris';
+
+batch(() => {
+  first('Ada');
+  last('Lovelace');
+  age(36);
+}); // one pass, not three
+```
+
+## untrack
+
+Read without creating a dependency:
+
+```js
+import { untrack } from 'alacris';
+
+effect(() => {
+  send(payload(), untrack(() => sessionId())); // re-runs for payload only
+});
+```
+
+## root and onCleanup
+
+`root` creates an ownership scope. Disposing it disposes every effect created
+inside — which is exactly what a component does when it is removed.
+
+```js
+import { root, onCleanup } from 'alacris';
+
+const dispose = root(() => {
+  effect(() => { /* … */ });
+  effect(() => { /* … */ });
+  onCleanup(() => console.log('scope torn down'));
+});
+
+dispose(); // both effects stop
+```
+
+Inside a component you rarely call `root` yourself — `define` wraps `setup` in
+one and disposes it when the element is removed.
+
+<Aside type="note" title="Equality">
+Signals compare with `===` by default, so writing the same value changes
+nothing. Pass a comparator for value objects:
+
+```js
+const point = signal({ x: 0, y: 0 }, (a, b) => a.x === b.x && a.y === b.y);
+```
+
+For deeply reactive objects, reach for [the store](../state/) instead of
+comparators.
+</Aside>
+
+## Using signals without the DOM
+
+`alacris/signal` is the reactive core on its own, 0.97 kB, with no DOM
+dependency — useful in a worker, on a server, or in tests.
+
+```js
+import { signal, computed, effect } from 'alacris/signal';
+```
+
+<Aside type="caution">
+It is a **separate build with its own graph**. If you are rendering, import your
+signals from `alacris`, not from `alacris/signal`.
+</Aside>
+
+## Next
+
+- [Templates](../templates/) — putting signals into the DOM
+- [State that scales](../state/) — when one signal per value stops being enough

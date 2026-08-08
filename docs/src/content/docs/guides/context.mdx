@@ -1,0 +1,133 @@
+---
+title: Context
+description: The W3C context protocol — pass values through a deep tree, across shadow boundaries and across libraries.
+sidebar:
+  order: 8
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Demo from '../../../components/Demo.astro';
+import contextDemo from '../../../demos/context.js?raw';
+
+Threading a value through five elements that do not care about it is the thing
+that actually stops people building large trees out of web components.
+
+Alacris implements the **W3C community context protocol** — the same
+`context-request` event `@lit/context` uses — so it works *between* libraries,
+not just inside Alacris.
+
+```js
+import { createContext, provide, consume } from 'alacris/context';
+
+export const ThemeCtx = createContext('theme');
+```
+
+## Providing
+
+```js
+define('app-shell', {
+  setup(_props, host) {
+    const theme = signal('dark');
+    provide(host, ThemeCtx, theme);   // a value, a signal, or any function
+    return html`<slot></slot>`;
+  },
+});
+```
+
+If the value is reactive, subscribers are pushed the new value automatically
+when it changes.
+
+## Consuming
+
+```js
+define('deep-button', {
+  setup(_props, host) {
+    const theme = consume(host, ThemeCtx, 'light');  // a read-only signal
+    return html`<button class=${theme}><slot></slot></button>`;
+  },
+});
+```
+
+`consume` returns a signal, so it drops straight into a binding and updates on
+its own.
+
+<Demo
+  code={contextDemo}
+  preview={`<demo-provider></demo-provider>`}
+  title="Two levels down, no props, live"
+  open={false}
+/>
+
+The middle component knows nothing about themes. It does not receive one, it
+does not forward one, and it never re-renders when the theme changes — only the
+leaf does.
+
+## How it resolves
+
+The request is a **composed, bubbling event**, which gives you the semantics you
+would expect from a scope chain:
+
+- It crosses shadow boundaries, so nesting depth is irrelevant.
+- The **nearest provider wins**; an inner provider shadows an outer one.
+- A consumer created before its provider exists holds the fallback and updates
+  as soon as one appears — so script order does not matter.
+
+```js
+consume(host, ThemeCtx, 'light');
+//                       ^^^^^^^ used until a provider answers
+```
+
+## Cross-library interoperability
+
+Because it is the shared protocol rather than a private mechanism, a Alacris
+element can consume context provided by a Lit element, and a Lit element can
+consume one provided by Alacris. Both directions are covered by the test suite.
+
+That matters if you are adopting Alacris incrementally inside an existing
+component library, or shipping components into an app you do not control.
+
+## Cleaning up
+
+`provide` returns a function that stops providing. Inside a component, prefer
+`provideTo`, which ties it to the enclosing scope so it is released when the
+element is removed:
+
+```js
+import { provideTo } from 'alacris/context';
+
+setup(_props, host) {
+  provideTo(host, ThemeCtx, theme);   // released automatically
+}
+```
+
+## When not to use it
+
+Context is for values that are genuinely ambient — theme, locale, a router, a
+service client, the current user. It is not a general state container.
+
+<Aside type="caution">
+If a value is only needed one level down, pass it as a property. Context makes
+data flow invisible, which is a real cost; spend it only where prop-drilling is
+worse.
+
+For application state, reach for [the store](../state/) and share the object
+itself — through context if it needs to be ambient.
+</Aside>
+
+The natural combination:
+
+```js
+export const StoreCtx = createContext('app-store');
+
+// once, at the top
+provideTo(host, StoreCtx, store({ user: null, items: [] }));
+
+// anywhere below
+const state = consume(host, StoreCtx)();
+state.items.push({ id: 1 });   // path-level updates, from any depth
+```
+
+## Next
+
+- [State that scales](../state/) — what to put in the context
+- [Using it from a framework](../frameworks/)

@@ -1,0 +1,205 @@
+---
+title: Components
+description: define(), props that work from every direction, events, lifecycle and slots.
+sidebar:
+  order: 4
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+`define` registers a custom element. What comes out is a standards tag with no
+Alacris-shaped API bolted onto it.
+
+```js
+import { define, html, css, signal, computed } from 'alacris';
+
+define('user-card', {
+  props: { name: 'anon', age: 0, tags: [] },
+  styles: css`
+    :host { display: block; font: inherit }
+    h3    { margin: 0 }
+  `,
+  shadow: 'open',
+  setup({ name, age, tags }, host) {
+    const grown = computed(() => age() >= 18);
+    return html`
+      <h3>${name}</h3>
+      <p>${() => (grown() ? 'adult' : 'minor')} · ${() => tags().join(', ')}</p>
+      <button @click=${() => host.emit('greet', { name: name() })}>say hi</button>`;
+  },
+});
+```
+
+Shorthand, when there are no props or styles:
+
+```js
+define('hello-world', () => html`<p>hello</p>`);
+```
+
+## Options
+
+| option | default | meaning |
+| --- | --- | --- |
+| `props` | `{}` | prop names and defaults; the default's *type* drives attribute coercion |
+| `setup` | — | runs **once** per element; return a template to render it |
+| `styles` | — | a sheet, a CSS string, or an array; parsed once per unique stylesheet |
+| `shadow` | `'open'` | `'open'`, `'closed'`, or `false` for light DOM |
+
+## setup runs once
+
+This is the part that differs most from React and friends. `setup` is not a
+render function — there is nothing to re-run, because each binding updates
+itself.
+
+```js
+setup({ count }) {
+  console.log('this logs once per element, ever');
+  return html`<p>${count}</p>`;
+}
+```
+
+Which means ordinary JavaScript works: local variables persist, closures are
+stable, and there are no dependency arrays anywhere.
+
+## Props work from every direction
+
+Each declared prop is simultaneously a signal, an observed attribute, and a real
+DOM property:
+
+```js
+el.setAttribute('max', '20'); // React, plain HTML, server-rendered markup
+el.max = 20;                  // Vue, Angular, Svelte, imperative JS
+props.max();                  // inside setup
+props.max.set(20);            // inside setup
+```
+
+The default's type decides how the attribute is parsed:
+
+| default | attribute `"12"` becomes | notes |
+| --- | --- | --- |
+| `0` | `12` | number |
+| `''` | `'12'` | string |
+| `false` | `true` | presence is truth; `"false"` is false |
+| `[]` or `{}` | parsed as JSON | invalid JSON falls back to the default |
+
+`camelCase` props observe `kebab-case` attributes — `maxItems` watches
+`max-items`.
+
+<Aside type="tip" title="Set before the definition loads">
+Properties assigned before the element is upgraded are replayed, so
+server-rendered markup and framework hydration work regardless of script order:
+
+```js
+el.value = 'early';   // the definition has not loaded yet
+// … alacris and the definition load …
+el.value;             // still 'early', and rendered
+```
+</Aside>
+
+## Events out
+
+`host.emit` dispatches a `CustomEvent` that bubbles and is composed, so it
+crosses the shadow boundary and reaches listeners on the outside:
+
+```js
+setup(props, host) {
+  return html`<button @click=${() => host.emit('picked', { id: 3 })}>pick</button>`;
+}
+```
+
+```js
+el.addEventListener('picked', (e) => console.log(e.detail.id));
+```
+
+It returns `false` when a listener called `preventDefault()`, so it doubles as a
+cancellable action:
+
+```js
+if (host.emit('closing')) close();
+```
+
+## Lifecycle
+
+`setup` runs on first connect. Removing the element disposes every effect it
+created. Teardown is deferred by a microtask, so *moving* an element between
+parents does not destroy it:
+
+```js
+parent.append(el);      // setup runs
+other.append(el);       // moved — nothing is torn down
+el.remove();            // effects disposed
+document.body.append(el); // reconnected — setup runs again
+```
+
+Anything you create in `setup` can clean itself up through an effect:
+
+```js
+setup() {
+  effect(() => {
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);   // cleared when the element goes away
+  });
+}
+```
+
+## Slots
+
+Shadow DOM already solves children — use `<slot>` and the browser composes for
+you. No library feature is involved:
+
+```js
+define('info-card', {
+  setup: () => html`
+    <section>
+      <h3><slot name="title">Untitled</slot></h3>
+      <slot></slot>
+    </section>`,
+});
+```
+
+```html
+<info-card>
+  <span slot="title">Deploys</span>
+  <p>Everything green.</p>
+</info-card>
+```
+
+Slotted content stays in the light DOM, so the **page's** CSS styles it, not the
+component's. Reach inside with `::slotted()`:
+
+```css
+:host ::slotted(p) { margin: 0 }
+```
+
+## Light DOM
+
+`shadow: false` renders into the element itself. Your page's CSS applies
+normally, there is no encapsulation, and `styles` go to the containing document
+once rather than per element.
+
+```js
+define('x-plain', { shadow: false, setup: () => html`<p>styled by the page</p>` });
+```
+
+Useful when a component must participate in an existing design system, or where
+form association and global CSS matter more than isolation.
+
+## Composition
+
+Components nest like any other tag. Pass data down with a property binding:
+
+```js
+define('x-list', {
+  props: { rows: [] },
+  setup: ({ rows }) => html`
+    ${each(rows, (row) => html`<x-row .data=${row}></x-row>`, (r) => r.id)}`,
+});
+```
+
+For a value that needs to reach far down a tree without every layer forwarding
+it, use [context](../context/).
+
+## Next
+
+- [Styling](../styling/) — stylesheets, and why they are parsed once
+- [Context](../context/) — passing values through a deep tree

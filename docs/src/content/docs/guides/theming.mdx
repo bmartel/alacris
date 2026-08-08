@@ -1,0 +1,170 @@
+---
+title: Theming for consumers
+description: Letting other people restyle your components — custom properties, ::part and adoptable stylesheets.
+sidebar:
+  order: 6
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Demo from '../../../components/Demo.astro';
+import theming from '../../../demos/theming.js?raw';
+
+This is the part most web components get wrong, and the reason many teams reject
+them outright. A shadow root is opaque: it protects the author and blocks
+everyone else. If a consumer cannot make your button match their design system,
+they will not use your button.
+
+The platform provides three ways through the boundary. Alacris leans on all
+three rather than inventing a fourth.
+
+<Demo
+  code={theming}
+  preview={`<demo-chip>default</demo-chip><demo-chip tone="warn">warn</demo-chip><demo-chip tone="ok">ok</demo-chip><demo-theme-switch></demo-theme-switch>`}
+  title="All three, live"
+  open={false}
+/>
+
+## 1. Custom properties — the theming contract
+
+Custom properties inherit straight through a shadow boundary, which makes them
+the natural channel. `vars` declares the ones your component honours, with
+defaults baked into each declaration:
+
+```js
+import { define, html, css, vars } from 'alacris';
+
+const t = vars('btn', { bg: '#111', fg: '#fff', radius: '8px' });
+// t.bg === 'var(--btn-bg, #111)'
+
+define('x-btn', {
+  styles: css`
+    :host { background: ${t.bg}; color: ${t.fg}; border-radius: ${t.radius} }
+  `,
+  setup: () => html`<button part="control"><slot></slot></button>`,
+});
+```
+
+A consumer overrides it from anywhere above the element, with plain CSS and no
+knowledge of Alacris:
+
+```css
+x-btn             { --btn-bg: rebeccapurple }
+.dark x-btn       { --btn-bg: #eee; --btn-fg: #111 }
+[data-density=sm] { --btn-radius: 4px }
+```
+
+`camelCase` keys become `kebab-case` properties, and `t.names` is the generated
+list — the component's documented theming contract, and something a docs
+generator can read:
+
+```js
+t.names; // ['--btn-bg', '--btn-fg', '--btn-radius']
+```
+
+<Aside type="tip" title="Design the contract deliberately">
+Every property in `vars` is public API. A handful of meaningful tokens — colour,
+radius, spacing, font — ages far better than one property per declaration.
+</Aside>
+
+## 2. `::part` — reach specific internals
+
+Mark the elements you are willing to expose. Consumers then style them directly,
+with the full power of CSS:
+
+```js
+html`<button part="control"><slot></slot></button>`
+```
+
+```css
+x-btn::part(control)       { padding: 1rem; letter-spacing: .02em }
+x-btn::part(control):hover { transform: translateY(-1px) }
+```
+
+**Outer `::part` rules beat the component's own rules.** That is the platform's
+cascade order, and it means a consumer always wins without specificity games.
+
+<Aside type="note" title="Verified, not assumed">
+This behaviour is checked in the project's browser conformance suite against a
+real CSS engine. The same suite confirms that `@layer` changes nothing here —
+which is why Alacris does not use it — and that `!important` inside a component
+is the one thing that *does* block a consumer.
+</Aside>
+
+A `part` is public API. Renaming one is a breaking change, so expose
+deliberately.
+
+For a part inside a nested component, forward it with the platform's
+`exportparts`:
+
+```js
+html`<x-icon exportparts="glyph: btn-glyph"></x-icon>`
+```
+
+```css
+x-btn::part(btn-glyph) { opacity: .6 }
+```
+
+## 3. `adoptGlobal` — restyle a library you do not control
+
+Sometimes you need to theme a component set whose source you cannot edit.
+`adoptGlobal` pushes a stylesheet into **every** Alacris component — those
+already on the page, and every one created afterwards:
+
+```js
+import { adoptGlobal, css } from 'alacris';
+
+const remove = adoptGlobal(css`
+  :host  { font-family: Inter, system-ui }
+  button { border-radius: 999px }
+`);
+
+remove(); // undo it
+```
+
+Global styles are applied **after** each component's own, so they win ties
+without `!important`. Combined with `Sheet.replace()`, a whole-page theme switch
+is a single write:
+
+```js
+const theme = css`:host { --btn-bg: #111 }`;
+adoptGlobal(theme);
+
+theme.replace(':host { --btn-bg: #eee }'); // every component, immediately
+```
+
+## Choosing between them
+
+| You want | Use |
+| --- | --- |
+| A value the component expects to vary | **custom properties** |
+| To restyle a specific internal element | **`::part`** |
+| To theme a whole component library at once | **`adoptGlobal`** |
+| To change layout inside a component you do not own | reconsider — that is a fork, and the author should expose a part |
+
+## Documenting your contract
+
+A component's public styling surface is its props, its parts, its slots and its
+custom properties. Listing them is what makes a component adoptable:
+
+```md
+### <x-btn>
+
+| Custom property | Default | Effect          |
+| --------------- | ------- | --------------- |
+| `--btn-bg`      | `#111`  | background      |
+| `--btn-fg`      | `#fff`  | text colour     |
+| `--btn-radius`  | `8px`   | corner radius   |
+
+| Part      | What it is             |
+| --------- | ---------------------- |
+| `control` | the inner `<button>`   |
+
+| Slot      | What goes in it        |
+| --------- | ---------------------- |
+| (default) | the label              |
+```
+
+## Next
+
+- [Styling](../styling/) — the author's side
+- [API reference](../../reference/api/) — `css`, `vars`, `adoptGlobal`

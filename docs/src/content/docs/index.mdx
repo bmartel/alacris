@@ -1,0 +1,84 @@
+---
+title: Alacris
+description: Web components with signals and fine-grained DOM updates, in 5.9 kB. ESM-only, zero dependencies, no build step.
+template: splash
+hero:
+  tagline: Web components with signals and fine-grained DOM updates — in 5.9&nbsp;kB. ESM-only, zero dependencies, and no build step to adopt it.
+  image:
+    file: ../../assets/logo.svg
+  actions:
+    - text: Get started
+      link: start/what-is-alacris/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/bmartel/alacris
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import Demo from '../../components/Demo.astro';
+import counter from '../../demos/counter.js?raw';
+
+## One script tag
+
+No bundler, no config, no build step. The element below is running the real
+library, loaded from this page.
+
+<Demo
+  code={counter}
+  preview={`<demo-counter start="3" step="1"></demo-counter>`}
+  title="Try it"
+/>
+
+Every example on this site works the same way: the code you read is executed on
+the page, imported from the published bundle under its real specifier. Nothing
+is transcribed by hand, so nothing can quietly fall out of date.
+
+<CardGrid>
+  <Card title="Signals, not re-renders" icon="rocket">
+    A component's `setup` runs **once**. After that every binding is its own
+    subscription, so changing a value writes to exactly one attribute or one
+    text node. No virtual DOM, no diffing, no component re-render.
+  </Card>
+  <Card title="Actually small" icon="seti:json">
+    5.9 kB gzipped for the whole runtime — reactivity, templates, styling and
+    the custom-element layer. The store and context add-ons are 0.98 kB and
+    0.54 kB, and you only pay for what you import.
+  </Card>
+  <Card title="Styling that other people can use" icon="pencil">
+    Custom properties, `::part` and adoptable stylesheets, so a consumer can
+    theme your components without forking them. Verified against a real CSS
+    engine, not assumed.
+  </Card>
+  <Card title="It is just a tag" icon="puzzle">
+    The output is a standards custom element. React, Vue, Svelte, Angular,
+    Rails and Django already know how to render it — there is nothing to
+    integrate.
+  </Card>
+</CardGrid>
+
+## Where to go next
+
+<CardGrid>
+  <LinkCard
+    title="What is Alacris?"
+    href="start/what-is-alacris/"
+    description="The idea in two minutes, and an honest account of what it is not good at."
+  />
+  <LinkCard
+    title="Your first component"
+    href="start/first-component/"
+    description="From an empty file to a themed, reactive custom element."
+  />
+  <LinkCard
+    title="Signals"
+    href="guides/signals/"
+    description="The reactive core: signal, computed, effect, and why updates are glitch-free."
+  />
+  <LinkCard
+    title="API reference"
+    href="reference/api/"
+    description="Every export, in one page."
+  />
+</CardGrid>

@@ -1,0 +1,160 @@
+---
+title: Using it from a framework
+description: A Alacris component is a real custom element, so there is nothing to integrate.
+sidebar:
+  order: 9
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+The output is a tag. There is no adapter package, no wrapper, and nothing to
+install on the other side.
+
+```js
+define('user-card', {
+  props: { name: '', age: 0, tags: [] },
+  setup: ({ name, age, tags }, host) => html`…`,
+});
+```
+
+<Tabs syncKey="framework">
+  <TabItem label="HTML">
+    ```html
+    <script type="module" src="https://unpkg.com/alacris"></script>
+    <script type="module" src="./user-card.js"></script>
+
+    <user-card name="Ada" age="36"></user-card>
+    ```
+  </TabItem>
+
+  <TabItem label="React">
+    React 19 passes objects as properties and maps `onX` to custom events, so
+    everything works directly:
+
+    ```jsx
+    <user-card
+      name="Ada"
+      age={36}
+      tags={['a', 'b']}
+      onGreet={(e) => console.log(e.detail)}
+    />
+    ```
+
+    On React 18 and older, every value is set as an attribute string. Rely on
+    the attribute coercion for primitives, and use a ref for objects and events:
+
+    ```jsx
+    const ref = useRef();
+    useEffect(() => {
+      ref.current.tags = ['a', 'b'];
+      const on = (e) => console.log(e.detail);
+      ref.current.addEventListener('greet', on);
+      return () => ref.current.removeEventListener('greet', on);
+    }, []);
+
+    return <user-card ref={ref} name="Ada" age="36" />;
+    ```
+  </TabItem>
+
+  <TabItem label="Vue">
+    ```vue
+    <user-card :age="36" :tags="tags" @greet="onGreet" />
+    ```
+
+    Tell Vue the tag is a custom element so it does not warn:
+
+    ```js
+    // vite.config.js
+    vue({ template: { compilerOptions: { isCustomElement: (t) => t.includes('-') } } })
+    ```
+  </TabItem>
+
+  <TabItem label="Svelte">
+    ```svelte
+    <user-card name="Ada" age={36} tags={tags} on:greet={onGreet} />
+    ```
+
+    Svelte sets properties when it can and attributes otherwise, and both paths
+    work.
+  </TabItem>
+
+  <TabItem label="Angular">
+    Add `CUSTOM_ELEMENTS_SCHEMA` to the module or component, then:
+
+    ```html
+    <user-card [age]="36" [tags]="tags" (greet)="onGreet($event)"></user-card>
+    ```
+  </TabItem>
+
+  <TabItem label="Rails / Django">
+    Server-rendered markup is the easy case — the element upgrades when the
+    script loads, and attributes present at upgrade are read:
+
+    ```erb
+    <user-card name="<%= user.name %>" age="<%= user.age %>"></user-card>
+    ```
+
+    ```html
+    <script type="module" src="https://unpkg.com/alacris@0.2.1/dist/alacris.js"></script>
+    ```
+
+    Properties assigned before the definition loads are replayed, so script
+    order does not matter.
+  </TabItem>
+</Tabs>
+
+## Why both attributes and properties matter
+
+Frameworks disagree about how to pass data to an unknown tag. React 18 sets
+attributes; Vue, Angular, Svelte and Solid set properties. A component that only
+handles one of them works in half the ecosystem.
+
+Every Alacris prop is both:
+
+```js
+el.setAttribute('age', '36');  // attribute path — parsed to a number
+el.age = 36;                   // property path — used as-is
+```
+
+The default's type drives the coercion, so `props: { age: 0 }` turns `"36"` into
+`36`, and `props: { tags: [] }` parses `'["a"]'` as JSON.
+
+<Aside type="tip" title="Complex values">
+Attributes are strings. For objects, arrays and functions, prefer the property:
+
+```js
+el.rows = bigArray;          // no serialisation
+el.onSelect = handleSelect;  // a real function
+```
+</Aside>
+
+## Server rendering and hydration
+
+Alacris does not do server-side rendering — it renders in the browser when the
+element upgrades. In practice that means:
+
+- Server-rendered markup can include the tag and its attributes; the component
+  reads them at upgrade.
+- Anything inside the tag is slotted content, so it is visible before the script
+  loads and stays visible after.
+- Properties set by a framework before the definition arrives are replayed.
+
+For content that must be visible before JavaScript runs, put it in a slot rather
+than rendering it inside the component.
+
+## Loading it once
+
+If several component packages depend on Alacris, make sure they share one copy —
+two copies means two reactive graphs. With a bundler this is automatic. Without
+one, use an import map:
+
+```html
+<script type="importmap">
+  { "imports": { "alacris": "https://unpkg.com/alacris@0.2.1/dist/alacris.js" } }
+</script>
+```
+
+## Next
+
+- [API reference](../../reference/api/)
+- [Limitations](../../reference/limitations/)

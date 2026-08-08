@@ -1,0 +1,192 @@
+---
+title: Templates
+description: The html tag, the binding syntax, and the one rule that makes it fast.
+sidebar:
+  order: 2
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Templates are tagged template literals. There is no JSX, no compiler and no
+runtime parser of your own — the browser's HTML parser does the work, once.
+
+```js
+import { html, render } from 'alacris';
+
+render(html`<p>hello</p>`, document.body);
+```
+
+Each unique template literal is parsed **once per call site** into a native
+`<template>` element plus a list of the positions that are dynamic. Rendering it
+is `cloneNode`, and updating is a direct write to the node that changed.
+
+## The rule
+
+**A function in a `${}` is a live binding. A value is written once.**
+
+```js
+html`<p>${count}</p>`             // live — count is a signal, so a function
+html`<p>${count()}</p>`           // a snapshot: you read it, so it is a string
+html`<p>${() => a() + b()}</p>`   // live, derived, updates when either changes
+```
+
+That is the whole model. Everything below is where a `${}` can go.
+
+## Child positions
+
+```js
+html`<div>${value}</div>`
+```
+
+Accepts text, numbers, DOM nodes, other templates, arrays and
+[`each`](../lists/). `null`, `undefined`, `false` and `''` render nothing, which
+makes conditionals read naturally:
+
+```js
+html`<div>${() => error() && html`<p class="error">${error}</p>`}</div>`
+```
+
+Swapping between two templates reuses the DOM when the template is the same and
+replaces it when it is not:
+
+```js
+html`<div>${() => (loggedIn() ? html`<x-account />` : html`<x-signin />`)}</div>`
+```
+
+## Attributes
+
+```js
+html`<a href=${url} title=${tip}>link</a>`
+```
+
+An attribute is removed entirely when its value is `null`, `undefined` or
+`false`. Values can also be spliced into static text:
+
+```js
+html`<div class="card card--${variant}">`
+```
+
+## Properties
+
+Prefix with `.` to set a DOM property instead of an attribute. Casing is
+preserved, which attributes cannot do:
+
+```js
+html`<input .value=${text} />`
+html`<div .innerHTML=${trusted}></div>`
+html`<x-child .rows=${rows}></x-child>`
+```
+
+Use a property whenever the value is not a string — objects, arrays and booleans
+all survive intact, where an attribute would stringify them.
+
+## Boolean attributes
+
+Prefix with `?`. The attribute is present when truthy and absent otherwise:
+
+```js
+html`<button ?disabled=${() => !valid()}>Save</button>`
+```
+
+## Events
+
+Prefix with `@`:
+
+```js
+html`<button @click=${(e) => count(count() + 1)}>+</button>`
+```
+
+Handlers are values, never reactive expressions — the function you pass *is* the
+handler. Modifiers compose:
+
+```js
+html`<button @click.once=${init}>`
+html`<form @submit.prevent=${save}>`
+html`<div @click.stop=${select}>`
+html`<div @scroll.passive=${onScroll}>`
+```
+
+`.stop`, `.prevent`, `.once`, `.capture` and `.passive` are supported.
+
+<Aside type="note" title="Events are delegated">
+Bindings without modifiers attach **one listener per render root** rather than
+one per element, so a thousand rows cost one listener. A modifier opts out and
+attaches a real listener with real options.
+
+One consequence in tests: a delegated handler only sees events that **bubble**.
+Real user events always do; `new Event('click')` does not unless you pass
+`{ bubbles: true }`.
+</Aside>
+
+## class and style
+
+Both accept objects and arrays, so you rarely build these strings by hand:
+
+```js
+html`<div class=${{ card: true, 'card--wide': wide(), [size()]: true }}>`
+html`<div class=${['card', isActive() && 'is-active']}>`
+```
+
+```js
+html`<div style=${{ width: pct() + '%', '--tone': color() }}>`
+```
+
+Custom properties work in the object form, which is the cheapest way to drive
+CSS from a signal — one property write, no stylesheet re-parse. A key you stop
+passing is cleared.
+
+## ref
+
+Get the element itself:
+
+```js
+let input;
+html`<input ref=${(el) => (input = el)} />`
+```
+
+## Spreading is not supported
+
+There is no `${...props}` in a tag. Set properties explicitly, or use a `ref`
+and assign them.
+
+## SVG
+
+Use the `svg` tag for fragments that belong inside an `<svg>`, so children get
+the right namespace:
+
+```js
+import { svg } from 'alacris';
+
+svg`<circle cx="10" cy="10" r=${radius} />`
+```
+
+## render
+
+For anything outside a component. Returns a disposer that removes the DOM and
+stops every binding:
+
+```js
+import { html, render } from 'alacris';
+
+const dispose = render(html`<p>${count}</p>`, document.querySelector('#app'));
+dispose();
+```
+
+## What you cannot do
+
+Bindings go in attribute or child positions. These are not supported, and the
+compiler throws rather than guessing:
+
+```js
+html`<${tag}>`                 // dynamic tag names
+html`<div ${attrName}="x">`    // dynamic attribute names
+html`<textarea>${value}</textarea>`  // use .value instead
+```
+
+An attribute with a binding must be quoted or whole — `class="a ${b}"` or
+`class=${b}`, not `class=a${b}`.
+
+## Next
+
+- [Lists](../lists/) — the part that decides whether a list scales
+- [Template syntax reference](../../reference/template-syntax/) — every form on one page

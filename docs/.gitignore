@@ -1,0 +1,14 @@
+# build output
+dist/
+.astro/
+
+# generated: synced from ../dist by scripts/sync-lib.mjs
+public/lib/
+
+# dependencies
+node_modules/
+
+# environment / editor
+.env
+.env.production
+.DS_Store
