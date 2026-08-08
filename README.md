@@ -14,7 +14,7 @@ ESM-only · zero dependencies · no build step required · works inside any fram
 
 ***alacris*** *(Latin)* — brisk, lively, quick.
 
-**[Documentation →](https://bmartel.github.io/alacris/)**
+**[Documentation →](https://bmartel.github.io/alacris/)** · **[Try it in your browser →](https://bmartel.github.io/alacris/playground/)**
 
 </div>
 
