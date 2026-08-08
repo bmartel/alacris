@@ -1,12 +1,10 @@
 # Changelog
 
-All notable changes to this project are documented here. The format follows
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
-[semantic versioning](https://semver.org/spec/v2.0.0.html).
+All notable changes to this project are documented here. Releases are cut
+automatically by [semantic-release](https://semantic-release.gitbook.io/) from
+[Conventional Commits](https://www.conventionalcommits.org/).
 
-## [Unreleased]
-
-## [0.1.0] — 2026-08-08
+## 0.1.0 (2026-08-08)
 
 First public release.
 
@@ -56,6 +54,3 @@ First public release.
 - ESM only. No CommonJS build, and none planned.
 - Dynamic tag names are not supported, and neither are bindings inside
   `<textarea>` or `<title>` text.
-
-[Unreleased]: https://github.com/bmartel/alacris/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/bmartel/alacris/releases/tag/v0.1.0

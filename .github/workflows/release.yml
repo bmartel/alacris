@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One release at a time. A second push while a release is mid-flight would race
+# on the version bump and the git tag.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write # commit the changelog, push the tag, create the release
+  issues: write
+  pull-requests: write
+  # Required for npm trusted publishing. @semantic-release/npm exchanges this
+  # workflow's OIDC identity for a short-lived registry token, so there is no
+  # long-lived NPM_TOKEN anywhere. It also makes provenance automatic.
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # semantic-release reads the whole tag history
+          persist-credentials: false
+
+      # No registry-url here on purpose: setup-node would write an .npmrc
+      # expecting NODE_AUTH_TOKEN, and an empty one breaks the OIDC path.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Nothing ships unless the whole suite passes on the exact commit.
+      - run: npm run build
+      - run: npm test
+      - run: npm run typecheck
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release

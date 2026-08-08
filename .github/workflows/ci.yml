@@ -7,6 +7,31 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Pull requests are squash-merged, so the PR title becomes the commit message
+  # that semantic-release reads to decide the next version. A title it cannot
+  # parse means a release that silently does not happen.
+  pr-title:
+    name: PR title is a conventional commit
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          pattern='^(feat|fix|perf|refactor|revert|docs|test|build|ci|chore)(\([a-z0-9._-]+\))?!?: .+'
+          if printf '%s' "$TITLE" | grep -qE "$pattern"; then
+            echo "OK: $TITLE"
+          else
+            echo "::error::PR title is not a conventional commit: '$TITLE'"
+            echo "Expected '<type>(<scope>): <summary>', for example:"
+            echo "  fix(html): keep focus when a keyed row moves"
+            echo "  feat(store)!: selector() takes a comparator"
+            echo "Types: feat fix perf refactor revert docs test build ci chore"
+            echo "See CONTRIBUTING.md for which types trigger a release."
+            exit 1
+          fi
+
   test:
     name: test (node ${{ matrix.node }})
     runs-on: ubuntu-latest
