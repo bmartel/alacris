@@ -2,13 +2,13 @@
 
 # ⚡ Alacris
 
-**Web components with signals and fine-grained DOM updates — in 5.2 KB.**
+**Web components with signals and fine-grained DOM updates — in 5.9 KB.**
 
 ESM-only · zero dependencies · no build step required · works inside any framework
 
 [![CI](https://github.com/bmartel/alacris/actions/workflows/ci.yml/badge.svg)](https://github.com/bmartel/alacris/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/alacris.svg)](https://www.npmjs.com/package/alacris)
-[![core size](https://img.shields.io/badge/core-5.15%20kB%20gzip-blue)](#size)
+[![core size](https://img.shields.io/badge/core-5.90%20kB%20gzip-blue)](#size)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ***alacris*** *(Latin)* — brisk, lively, quick.
@@ -57,7 +57,7 @@ hand-written, keyed, delegated DOM — the floor no library can beat. See
 
 | file | raw | gzip | brotli |
 | --- | ---: | ---: | ---: |
-| `dist/alacris.js` — signals + templates + elements | 12.94 KB | **5.15 KB** | 4.70 KB |
+| `dist/alacris.js` — signals + templates + styles + elements | 15.29 KB | **5.90 KB** | 5.37 KB |
 | `dist/store.js` — deep reactive state | 1.98 KB | **0.98 KB** | 0.91 KB |
 | `dist/context.js` — cross-component context | 0.91 KB | **0.54 KB** | 0.46 KB |
 | `dist/signal.js` — reactivity alone, no DOM | 2.25 KB | **0.97 KB** | 0.92 KB |
@@ -258,6 +258,147 @@ Each element gives you:
 Effects created in `setup` are disposed when the element leaves the document.
 Merely *moving* an element does not tear it down.
 
+## Styling
+
+Styles are plain CSS in a `css` template. Identical CSS is **parsed once for the
+whole page**, however many components use it and however many elements exist —
+`css` returns a constructed stylesheet, and adopting one into a shadow root is a
+pointer copy, not a parse.
+
+```js
+import { define, html, css } from 'alacris';
+
+const reset = css`*, ::before, ::after { box-sizing: border-box }`;
+
+define('x-card', {
+  styles: [reset, css`
+    :host { display: block; border: 1px solid #ddd; border-radius: 8px }
+    h3    { margin: 0 }
+  `],
+  setup: () => html`<h3><slot name="title"></slot></h3><slot></slot>`,
+});
+```
+
+`styles` takes a sheet, a raw CSS string, or an array of them, applied in order.
+Interpolating one sheet into another inlines its text, so stylesheets compose
+without anything being parsed twice.
+
+### Dynamic values belong in custom properties
+
+Do not rebuild a stylesheet to change a colour. Bind a custom property instead —
+one property write, no CSS re-parse, and the browser handles the rest:
+
+```js
+html`<div style=${() => ({ '--bar-fill': pct() + '%', opacity: fade() })}>`
+```
+
+`style` accepts an object (custom properties included) and clears any key you
+stop passing. `class` accepts objects and arrays:
+
+```js
+html`<button class=${() => ({ btn: true, 'btn-on': active(), [size()]: true })}>`
+```
+
+## Letting other people style your components
+
+This is the part most web components get wrong. A shadow root is opaque, which
+protects the author and blocks everyone else. The platform provides three ways
+through, and Alacris leans on all three rather than inventing a fourth.
+
+### 1. Custom properties — the theming contract
+
+`vars` declares the properties your component is themed by, with defaults baked
+into each declaration:
+
+```js
+import { vars, css } from 'alacris';
+
+const t = vars('btn', { bg: '#111', fg: '#fff', radius: '8px' });
+// t.bg === 'var(--btn-bg, #111)'
+
+define('x-btn', {
+  styles: css`
+    :host { background: ${t.bg}; color: ${t.fg}; border-radius: ${t.radius} }
+  `,
+  setup: () => html`<button part="control"><slot></slot></button>`,
+});
+```
+
+A consumer overrides it from anywhere above the element — custom properties
+inherit straight through the shadow boundary:
+
+```css
+x-btn            { --btn-bg: rebeccapurple }
+.dark x-btn      { --btn-bg: #eee; --btn-fg: #111 }
+```
+
+`t.names` is the generated list (`['--btn-bg', …]`), so the contract is
+introspectable and easy to document.
+
+### 2. `::part` — reach specific internals
+
+Mark the elements you are willing to expose, and consumers style them directly:
+
+```js
+html`<button part="control">…</button>`
+```
+
+```css
+x-btn::part(control) { padding: 1rem; letter-spacing: 0.02em }
+```
+
+Outer `::part` rules beat the component's own rules, so a consumer always wins.
+(Verified in `demo/test.html` against a real CSS engine, not assumed.) Expose
+parts deliberately — a `part` is a public API, and renaming one is a breaking
+change.
+
+For a part inside a nested component, forward it with the platform's
+`exportparts`:
+
+```js
+html`<x-icon exportparts="glyph: btn-glyph"></x-icon>`
+```
+
+### 3. `adoptGlobal` — restyle a library you do not control
+
+Push a stylesheet into **every** Alacris component, including ones that do not
+exist yet:
+
+```js
+import { adoptGlobal, css } from 'alacris';
+
+const remove = adoptGlobal(css`
+  :host { font-family: Inter, system-ui }
+  button { border-radius: 999px }
+`);
+
+remove(); // undo it
+```
+
+Global styles are applied *after* each component's own, so they win ties without
+`!important`. This is the escape hatch for theming a third-party component set
+whose source you cannot edit.
+
+To reskin without re-adopting anything, rewrite a sheet in place. Every element
+that adopted it updates on one write:
+
+```js
+const skin = css`:host { --tone: #111 }`;
+skin.replace(':host { --tone: #eee }');   // every instance, immediately
+```
+
+### One rule
+
+**Never use `!important` in a component.** It is the only inner declaration a
+consumer cannot override — it defeats `::part`, custom properties and
+`adoptGlobal` alike. Alacris never emits it, and neither should your components.
+
+### Light DOM
+
+`shadow: false` renders into the light DOM, where your page's CSS applies
+normally and there is nothing to expose. Component `styles` then go to the
+containing document once, not per element.
+
 ## State that scales
 
 A signal holds one value. When that value is a big object, handing it a fresh
@@ -442,7 +583,9 @@ for strings, numbers and booleans; properties (`el.tags = [...]`) work for every
 | `onCleanup(fn)` | register a cleanup with the enclosing effect or root |
 | `flush()` | run queued effects now |
 | `html` / `svg` | template tags |
-| `css` | identity tag, for editor highlighting |
+| `css` | cached, composable stylesheet |
+| `vars(prefix, defaults)` | declare the custom properties a component is themed by |
+| `adoptGlobal(...styles)` | push styles into every component; returns a remover |
 | `keyed(key, template)` | give a list item a stable identity |
 | `each(source, row, key?)` | list with a reactive scope per row |
 | `render(value, container)` | render outside a component; returns a disposer |

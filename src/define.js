@@ -4,6 +4,7 @@
 
 import { signal, root } from './signal.js';
 import { render } from './html.js';
+import { applyStyles, trackRoot, untrackRoot } from './style.js';
 
 const kebab = s => s.replace(/[A-Z]/g, c => '-' + c.toLowerCase());
 
@@ -25,7 +26,6 @@ export function define(name, opts) {
   const { props = {}, setup, styles, shadow = 'open' } = opts;
   const keys = Object.keys(props);
   const attrs = keys.map(kebab);
-  let sheet;
 
   class AlacrisElement extends HTMLElement {
     static observedAttributes = attrs;
@@ -58,17 +58,12 @@ export function define(name, opts) {
       let target = this._t;
       if (!target) {
         target = this._t = shadow ? this.attachShadow({ mode: shadow }) : this;
-        if (styles) {
-          const r = shadow ? target : this.getRootNode();
-          if (r.adoptedStyleSheets) {
-            if (!sheet) { sheet = new CSSStyleSheet(); sheet.replaceSync(styles); }
-            if (r.adoptedStyleSheets.indexOf(sheet) < 0) r.adoptedStyleSheets = [...r.adoptedStyleSheets, sheet];
-          } else {
-            const s = document.createElement('style');
-            s.textContent = styles;
-            (r.head || r).append(s);
-          }
-        }
+        // Light-DOM elements have nowhere private to put styles, so they go to
+        // the containing document (or the enclosing shadow root) instead.
+        const styleRoot = (this._sr = shadow ? target : this.getRootNode());
+        if (styles) applyStyles(styleRoot, styles);
+        // Track it after its own styles, so a global theme wins ties.
+        trackRoot(styleRoot);
       }
       this._d = root(() => { this._r = render(setup(this.props, this), target); });
     }
@@ -79,6 +74,7 @@ export function define(name, opts) {
       queueMicrotask(() => {
         if (this._on || !this._up) return;
         this._r(); this._d();
+        if (this._sr && shadow) untrackRoot(this._sr);
         this._up = 0;
       });
     }

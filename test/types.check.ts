@@ -89,3 +89,35 @@ const theme = consume(document.body, ThemeCtx, 'light');
 const t: 'light' | 'dark' = theme();
 stopProviding();
 console.log(rawRows.length, picked, t);
+
+// --- styling ---------------------------------------------------------------
+import { vars, adoptGlobal, type Styles } from '../types/index.js';
+
+const reset = css`*, ::before, ::after { box-sizing: border-box }`;
+const tokens = vars('btn', { bg: '#111', fg: '#fff', borderRadius: '8px' });
+const bg: string = tokens.bg;
+const contract: readonly string[] = tokens.names;
+
+const buttonCss = css`
+  ${reset}
+  :host { background: ${tokens.bg}; color: ${tokens.fg}; border-radius: ${tokens.borderRadius} }
+`;
+const sheetText: string = buttonCss.text;
+buttonCss.replace(':host { background: black }');
+
+const many: Styles = [reset, buttonCss, 'p { margin: 0 }', null, false];
+
+define('x-styled-typed', {
+  props: { tone: 'red' },
+  styles: many,
+  setup: (p) =>
+    html`<button
+      part="control"
+      class=${() => ({ tone: true, active: p.tone() === 'red' })}
+      style=${() => ({ '--btn-bg': p.tone(), opacity: 1 })}
+    >ok</button>`,
+});
+
+const untheme = adoptGlobal(css`:host { font-family: system-ui }`);
+untheme();
+console.log(bg, contract.length, sheetText.length);

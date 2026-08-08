@@ -74,8 +74,7 @@ export const html = (s, ...v) => new Tpl(s, v, 0);
 export const svg = (s, ...v) => new Tpl(s, v, 1);
 /** Tag a template with a stable key so lists reorder instead of re-render. */
 export const keyed = (k, t) => (t.k = k, t);
-/** Identity helper so editors highlight CSS. */
-export const css = (s, ...v) => String.raw({ raw: s }, ...v);
+export { css } from './style.js';
 
 function compile(strings, ns) {
   let out = '', tag = '', inTag = 0, q = 0, sup = 0, acc = '', cur = null, off = 0, com = 0;
@@ -213,6 +212,44 @@ function tplOf(t) {
 // thousand rows allocate a thousand DOM nodes and nothing else. Anything that
 // genuinely needs per-instance state (a child range, a modified listener) still
 // gets an object; plain attributes, properties and delegated events do not.
+// `class=${...}` and `style=${...}` accept objects and arrays, because building
+// those strings by hand is the single most common thing a template makes ugly.
+function classText(v) {
+  if (typeof v === 'string') return v;
+  if (!v) return '';
+  let out = '';
+  if (Array.isArray(v)) {
+    for (let i = 0; i < v.length; i++) {
+      const s = classText(v[i]);
+      if (s) out += (out && ' ') + s;
+    }
+    return out;
+  }
+  for (const k in v) if (v[k]) out += (out && ' ') + k;
+  return out;
+}
+
+const setStyleProp = (style, k, x) =>
+  k.charCodeAt(0) === 45            // a custom property, --like-this
+    ? style.setProperty(k, x == null || x === false ? '' : x)
+    : (style[k] = x == null || x === false ? '' : x);
+
+function setStyle(el, v) {
+  if (v && typeof v === 'object') {
+    const style = el.style;
+    // Clear anything the previous object set that this one no longer mentions,
+    // otherwise a removed key would silently stick.
+    const prev = el.$$y;
+    if (prev) for (let i = 0; i < prev.length; i++) if (!(prev[i] in v)) setStyleProp(style, prev[i], '');
+    const keys = [];
+    for (const k in v) { keys.push(k); setStyleProp(style, k, v[k]); }
+    el.$$y = keys;
+    return;
+  }
+  el.$$y = null;
+  v == null || v === false ? el.removeAttribute('style') : el.setAttribute('style', v);
+}
+
 function prepare(p) {
   const n = p.n, c = n.charCodeAt(0);
 
@@ -244,6 +281,15 @@ function prepare(p) {
     p.set = (w, v) => { w.h = v; };
     return p;
   }
+
+  if (n === 'class') {
+    p.set = (el, v) => {
+      const t = classText(v);
+      t ? el.setAttribute('class', t) : el.removeAttribute('class');
+    };
+    return p;
+  }
+  if (n === 'style') { p.set = setStyle; return p; }
 
   if (c === 46) { const k = n.slice(1); p.set = (el, v) => { el[k] = v; }; return p; }        // .prop
   if (c === 63) { const k = n.slice(1); p.set = (el, v) => el.toggleAttribute(k, !!v); return p; } // ?attr

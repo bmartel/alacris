@@ -23,7 +23,7 @@
 <div id="fixture" style="position:absolute;left:-9999px"></div>
 
 <script type="module">
-import { define, html, svg, signal, computed, effect, keyed, render, batch } from '../dist/alacris.js';
+import { define, html, svg, signal, computed, effect, keyed, render, batch, css, vars, adoptGlobal } from '../dist/alacris.js';
 
 const out = document.getElementById('out');
 const fixture = document.getElementById('fixture');
@@ -142,6 +142,104 @@ test('batch coalesces DOM writes', () => {
   batch(() => { a(2); b(2); });
   eq(paints, 1);
   eq(el.querySelector('p').textContent, '4');
+});
+
+/* ---- styling: the parts a simulated DOM cannot check ---- */
+
+test('an adopted stylesheet actually applies', () => {
+  define('x-styled2', {
+    styles: css`p { color: rgb(10, 20, 30) }`,
+    setup: () => html`<p>x</p>`,
+  });
+  const el = document.createElement('x-styled2');
+  fixture.append(el);
+  eq(getComputedStyle(el.shadowRoot.querySelector('p')).color, 'rgb(10, 20, 30)');
+});
+
+test('two components sharing css share one parsed sheet', () => {
+  const shared = css`p { letter-spacing: 2px }`;
+  define('x-share-a', { styles: shared, setup: () => html`<p>a</p>` });
+  define('x-share-b', { styles: shared, setup: () => html`<p>b</p>` });
+  const a = document.createElement('x-share-a'), b = document.createElement('x-share-b');
+  fixture.append(a, b);
+  eq(a.shadowRoot.adoptedStyleSheets[0], b.shadowRoot.adoptedStyleSheets[0], 'same CSSStyleSheet');
+  eq(getComputedStyle(a.shadowRoot.querySelector('p')).letterSpacing, '2px');
+  eq(getComputedStyle(b.shadowRoot.querySelector('p')).letterSpacing, '2px');
+});
+
+test('a consumer themes a component through custom properties', () => {
+  const t = vars('probe', { fg: 'rgb(1, 2, 3)' });
+  define('x-themed', { styles: css`p { color: ${t.fg} }`, setup: () => html`<p>x</p>` });
+  const host = document.createElement('div');
+  fixture.append(host);
+  const el = document.createElement('x-themed');
+  host.append(el);
+  eq(getComputedStyle(el.shadowRoot.querySelector('p')).color, 'rgb(1, 2, 3)', 'default applies');
+
+  // The consumer sets it from outside, on an ancestor — it inherits through.
+  host.style.setProperty('--probe-fg', 'rgb(4, 5, 6)');
+  eq(getComputedStyle(el.shadowRoot.querySelector('p')).color, 'rgb(4, 5, 6)', 'override applies');
+});
+
+test('a consumer restyles internals through ::part', () => {
+  define('x-parted', { styles: css`span { color: rgb(200, 0, 0) }`, setup: () => html`<span part="label">x</span>` });
+  const el = document.createElement('x-parted');
+  el.id = 'parted-probe';
+  fixture.append(el);
+  eq(getComputedStyle(el.shadowRoot.querySelector('span')).color, 'rgb(200, 0, 0)', 'component default');
+
+  const outer = document.createElement('style');
+  outer.textContent = '#parted-probe::part(label) { color: rgb(0, 200, 0) }';
+  document.head.append(outer);
+  eq(getComputedStyle(el.shadowRoot.querySelector('span')).color, 'rgb(0, 200, 0)', 'outer ::part wins');
+  outer.remove();
+});
+
+test('adoptGlobal restyles every component, live', () => {
+  define('x-global', { styles: css`p { color: rgb(9, 9, 9) }`, setup: () => html`<p>x</p>` });
+  const el = document.createElement('x-global');
+  fixture.append(el);
+  const p = () => getComputedStyle(el.shadowRoot.querySelector('p')).color;
+  eq(p(), 'rgb(9, 9, 9)');
+
+  const remove = adoptGlobal(css`p { color: rgb(7, 7, 7) }`);
+  eq(p(), 'rgb(7, 7, 7)', 'the theme wins over component styles');
+
+  // And it reaches a component created after the theme was applied.
+  const late = document.createElement('x-global');
+  fixture.append(late);
+  eq(getComputedStyle(late.shadowRoot.querySelector('p')).color, 'rgb(7, 7, 7)', 'applies to new elements too');
+
+  remove();
+  eq(p(), 'rgb(9, 9, 9)', 'removing the theme restores the component');
+});
+
+test('rewriting a sheet reskins every instance at once', () => {
+  const skin = css`p { color: rgb(11, 11, 11) }`;
+  define('x-reskin', { styles: skin, setup: () => html`<p>x</p>` });
+  const a = document.createElement('x-reskin'), b = document.createElement('x-reskin');
+  fixture.append(a, b);
+  const col = (el) => getComputedStyle(el.shadowRoot.querySelector('p')).color;
+  eq(col(a), 'rgb(11, 11, 11)');
+
+  skin.replace('p { color: rgb(22, 22, 22) }');
+  eq(col(a), 'rgb(22, 22, 22)', 'instance a');
+  eq(col(b), 'rgb(22, 22, 22)', 'instance b — one write, every element');
+  skin.replace('p { color: rgb(11, 11, 11) }');
+});
+
+test('style bindings set custom properties that cascade into children', () => {
+  const el = host();
+  const tone = signal('rgb(3, 3, 3)');
+  render(html`<div style=${() => ({ '--x-tone': tone() })}><b>y</b></div>`, el);
+  const style = document.createElement('style');
+  style.textContent = '#tone-probe b { color: var(--x-tone) }';
+  document.head.append(style);
+  el.querySelector('div').id = 'tone-probe';
+  eq(getComputedStyle(el.querySelector('b')).color, 'rgb(3, 3, 3)');
+  tone('rgb(6, 6, 6)');
+  eq(getComputedStyle(el.querySelector('b')).color, 'rgb(6, 6, 6)');
+  style.remove();
 });
 
 /* ---- async: teardown on real disconnect ---- */

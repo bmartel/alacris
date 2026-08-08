@@ -56,6 +56,21 @@
     <ala-bench></ala-bench>
   </section>
 
+  <section>
+    <h2>Styling &mdash; theming from outside the component</h2>
+    <ala-chip>default</ala-chip>
+    <ala-chip tone="warn">warn</ala-chip>
+    <ala-chip tone="ok">ok</ala-chip>
+    <p style="margin:1rem 0 0">
+      <button id="thm">apply a global theme</button>
+      <button id="prt">restyle internals via ::part</button>
+      <button id="rst">reset</button>
+    </p>
+    <pre><code>/* the consumer writes plain CSS, no library involved */
+ala-chip            { --chip-bg: #2b2b33 }
+ala-chip::part(dot) { width: 14px }</code></pre>
+  </section>
+
   <footer>
     <a href="https://unpkg.com/alacris">unpkg.com/alacris</a> &middot;
     <a href="./test.html">browser test suite</a>
@@ -65,7 +80,7 @@
 <script type="module">
 // In your own page this line is:
 //   import { define, html, css, signal, computed, keyed } from 'https://unpkg.com/alacris';
-import { define, html, css, signal, computed, effect, keyed, batch } from '../dist/alacris.js';
+import { define, html, css, vars, adoptGlobal, signal, computed, effect, keyed, batch } from '../dist/alacris.js';
 
 const base = css`
   :host { display:block; font:inherit; color:inherit; }
@@ -158,6 +173,57 @@ define('ala-todos', {
       </div>`;
   },
 });
+
+/* --------------------------------------------------------------- styling */
+// The component declares what it can be themed by. Each token compiles to
+// var(--chip-bg, <default>), so a consumer overrides it with plain CSS.
+const chip = vars('chip', {
+  bg: '#eceef3',
+  fg: '#16161a',
+  dot: '#8a8a99',
+  radius: '999px',
+});
+
+define('ala-chip', {
+  props: { tone: '' },
+  styles: css`
+    :host {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .3rem .75rem; margin: 0 .35rem .35rem 0;
+      background: ${chip.bg}; color: ${chip.fg};
+      border-radius: ${chip.radius};
+      font: inherit; font-size: .85rem;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: ${chip.dot}; }
+  `,
+  setup: (p) => html`
+    <span class="dot" part="dot" style=${() => ({
+      '--chip-dot': p.tone() === 'warn' ? '#e8a33d' : p.tone() === 'ok' ? '#3da35d' : '',
+    })}></span>
+    <slot></slot>`,
+});
+
+// A consumer theming a component library it does not own: one call, every
+// instance, including any created later.
+const THEME = css`
+  :host { --chip-bg: #22222a; --chip-fg: #f2f2f5; --chip-radius: 6px }
+`;
+let dropTheme = null;
+let partSheet = null;
+
+document.getElementById('thm').onclick = () => {
+  dropTheme ? (dropTheme(), (dropTheme = null)) : (dropTheme = adoptGlobal(THEME));
+};
+document.getElementById('prt').onclick = () => {
+  if (partSheet) { partSheet.remove(); partSheet = null; return; }
+  partSheet = document.createElement('style');
+  partSheet.textContent = 'ala-chip::part(dot) { width: 16px; height: 16px }';
+  document.head.append(partSheet);
+};
+document.getElementById('rst').onclick = () => {
+  if (dropTheme) { dropTheme(); dropTheme = null; }
+  if (partSheet) { partSheet.remove(); partSheet = null; }
+};
 
 /* --------------------------------------------------------------- benchmark */
 const words = ['bright', 'quiet', 'amber', 'brisk', 'hollow', 'iron', 'lucid', 'nimble', 'raw', 'swift'];
