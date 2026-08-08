@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.2.1](https://github.com/bmartel/alacris/compare/v0.2.0...v0.2.1) (2026-08-08)
+
+### Bug Fixes
+
+* **release:** pin a changelog preset that actually emits notes ([9420dc3](https://github.com/bmartel/alacris/commit/9420dc3283084923206c6a8330e2c7ec5ad8d7e0))
+
 ## [0.2.0](https://github.com/bmartel/alacris/compare/v0.1.0...v0.2.0) (2026-08-08)
 
 <!-- Written by hand: this release shipped with empty notes because the
