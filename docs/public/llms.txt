@@ -1,0 +1,41 @@
+# Alacris
+
+> Web components with signals and fine-grained DOM updates in ~6 kB gzip.
+> ESM-only, zero dependencies, no build step required. A template is parsed
+> once per call site; updating is a direct write to the one DOM node that
+> changed — no virtual DOM, no diffing. Works inside any framework, or none.
+
+Key rules: a function in `${}` is a live binding while a plain value is written
+once; a component's `setup` runs exactly once; use `each` for lists, `store`
+for deep state, `selector` for O(1) selection.
+
+## Start here
+
+- [What is Alacris?](https://bmartel.github.io/alacris/start/what-is-alacris/): the idea, the trade-offs, and what it is not good at
+- [Installation](https://bmartel.github.io/alacris/start/installation/): npm, or a CDN import with no install at all
+- [Your first component](https://bmartel.github.io/alacris/start/first-component/): define, props, events, in one page
+
+## Guides
+
+- [Signals](https://bmartel.github.io/alacris/guides/signals/): signal, computed, effect, batch, untrack
+- [Templates](https://bmartel.github.io/alacris/guides/templates/): the html tag and every place a binding can go
+- [Lists](https://bmartel.github.io/alacris/guides/lists/): each, keyed, and why keyed lists move nodes instead of rebuilding
+- [Components](https://bmartel.github.io/alacris/guides/components/): define(), props as signals, lifecycle, emit
+- [Styling](https://bmartel.github.io/alacris/guides/styling/): css tag, constructed stylesheets, dynamic values via custom properties
+- [Theming for consumers](https://bmartel.github.io/alacris/guides/theming/): vars(), ::part, adoptGlobal — letting others restyle your components
+- [State that scales](https://bmartel.github.io/alacris/guides/state/): store, selector, update, unwrap
+- [Context](https://bmartel.github.io/alacris/guides/context/): the W3C context-request protocol, interoperable with Lit
+- [Using it from a framework](https://bmartel.github.io/alacris/guides/frameworks/): React, Vue, Svelte, Angular, server-rendered pages
+
+## Reference
+
+- [API](https://bmartel.github.io/alacris/reference/api/): every export, with signatures
+- [Template syntax](https://bmartel.github.io/alacris/reference/template-syntax/): the complete binding grammar
+- [Performance](https://bmartel.github.io/alacris/reference/performance/): benchmark method, numbers, and where the costs are
+- [Security](https://bmartel.github.io/alacris/reference/security/): the XSS model, CSP and Trusted Types, prototype-pollution hardening
+- [Limitations](https://bmartel.github.io/alacris/reference/limitations/): what it deliberately does not do
+- [AI agents](https://bmartel.github.io/alacris/reference/agents/): a drop-in AGENTS.md for coding agents
+
+## Optional
+
+- [AGENTS.md](https://bmartel.github.io/alacris/AGENTS.md): the full agent instructions file, ready to place in a project root

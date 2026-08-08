@@ -2,10 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "alacris-demo",
-      "runtimeExecutable": "node",
-      "runtimeArgs": ["scripts/serve.js", "5173"],
-      "port": 5173
+      "name": "docs-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "docs", "run", "preview"],
+      "port": 4321
     }
   ]
 }

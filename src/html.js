@@ -17,6 +17,20 @@ function bind(c, v) {
   else { c.d = kill(c.d); c.set(v); }
 }
 
+// The only HTML ever parsed is the static strings of a tagged template — author
+// code, not data. Under a `require-trusted-types-for 'script'` CSP that parse
+// still needs a policy, so create one lazily; passing the strings through
+// unchanged is sound because values never travel this path.
+let tt;
+const trust = (s) => {
+  if (tt === undefined) {
+    try {
+      tt = globalThis.trustedTypes ? trustedTypes.createPolicy('alacris', { createHTML: (x) => x }) : null;
+    } catch { tt = null; }
+  }
+  return tt ? tt.createHTML(s) : s;
+};
+
 const cache = new WeakMap();
 const NAME = /([^\s"'=<>/]+)=$/;
 const QNAME = /([^\s"'=<>/]+)=["']([^"'<>]*)$/;
@@ -142,7 +156,7 @@ function compile(strings, ns) {
   }
 
   const el = doc.createElement('template');
-  el.innerHTML = ns ? '<svg>' + out + '</svg>' : out;
+  el.innerHTML = trust(ns ? '<svg>' + out + '</svg>' : out);
   if (ns) {
     const root = el.content.firstChild;
     el.content.replaceChildren(...root.childNodes);

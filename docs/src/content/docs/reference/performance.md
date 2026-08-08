@@ -103,8 +103,8 @@ durable part.**
 <table class="sizes">
   <thead><tr><th>file</th><th>raw</th><th>gzip</th><th>brotli</th></tr></thead>
   <tbody>
-    <tr><td>`alacris.js` — everything</td><td>15.29 kB</td><td>**5.90 kB**</td><td>5.37 kB</td></tr>
-    <tr><td>`store.js`</td><td>1.99 kB</td><td>**0.98 kB**</td><td>0.91 kB</td></tr>
+    <tr><td>`alacris.js` — everything</td><td>15.44 kB</td><td>**5.97 kB**</td><td>5.44 kB</td></tr>
+    <tr><td>`store.js`</td><td>2.04 kB</td><td>**0.99 kB**</td><td>0.92 kB</td></tr>
     <tr><td>`context.js`</td><td>0.91 kB</td><td>**0.54 kB**</td><td>0.46 kB</td></tr>
     <tr><td>`signal.js` — no DOM</td><td>2.25 kB</td><td>**0.97 kB**</td><td>0.92 kB</td></tr>
   </tbody>

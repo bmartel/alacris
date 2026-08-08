@@ -47,6 +47,12 @@ const handler = {
   get(t, k, r) {
     if (k === RAW) return t;
     if (typeof k === 'symbol') return Reflect.get(t, k, r);
+    // `__proto__` is the one string key where reading walks the prototype chain
+    // and writing *mutates* it. Handing the prototype out here would turn
+    // `state[a][b] = v` with attacker-controlled keys into prototype pollution,
+    // so it reads as `undefined`. `Object.getPrototypeOf` is unaffected — it
+    // never hits this trap.
+    if (k === '__proto__') return undefined;
     const v = Reflect.get(t, k, r);
     // Array mutators read `length` and the indices themselves; tracking inside
     // them would subscribe the caller to the whole array.
@@ -68,6 +74,11 @@ const handler = {
   },
 
   set(t, k, value) {
+    // Refuse silently rather than throw: merging parsed JSON is the common
+    // path here (`Object.assign(state, await res.json())`), and JSON can carry
+    // an own `__proto__` key. Dropping it keeps the merge working — and keeps
+    // `t[k] = raw` below from rewriting the prototype chain.
+    if (k === '__proto__') return true;
     const raw = isObj(value) && value[RAW] ? value[RAW] : value;
     const e = entry(t);
     const had = Object.prototype.hasOwnProperty.call(t, k);

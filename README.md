@@ -2,14 +2,14 @@
 
 # ⚡ Alacris
 
-**Web components with signals and fine-grained DOM updates — in 5.9 KB.**
+**Web components with signals and fine-grained DOM updates — in 6 kB.**
 
 ESM-only · zero dependencies · no build step required · works inside any framework
 
 [![CI](https://github.com/bmartel/alacris/actions/workflows/ci.yml/badge.svg)](https://github.com/bmartel/alacris/actions/workflows/ci.yml)
 [![Docs](https://github.com/bmartel/alacris/actions/workflows/docs.yml/badge.svg)](https://bmartel.github.io/alacris/)
 [![npm](https://img.shields.io/npm/v/alacris.svg)](https://www.npmjs.com/package/alacris)
-[![core size](https://img.shields.io/badge/core-5.90%20kB%20gzip-blue)](#size)
+[![core size](https://img.shields.io/badge/core-5.97%20kB%20gzip-blue)](#size)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ***alacris*** *(Latin)* — brisk, lively, quick.
@@ -60,8 +60,8 @@ hand-written, keyed, delegated DOM — the floor no library can beat. See
 
 | file | raw | gzip | brotli |
 | --- | ---: | ---: | ---: |
-| `dist/alacris.js` — signals + templates + styles + elements | 15.29 KB | **5.90 KB** | 5.37 KB |
-| `dist/store.js` — deep reactive state | 1.98 KB | **0.98 KB** | 0.91 KB |
+| `dist/alacris.js` — signals + templates + styles + elements | 15.44 KB | **5.97 KB** | 5.44 KB |
+| `dist/store.js` — deep reactive state | 2.04 KB | **0.99 KB** | 0.92 KB |
 | `dist/context.js` — cross-component context | 0.91 KB | **0.54 KB** | 0.46 KB |
 | `dist/signal.js` — reactivity alone, no DOM | 2.25 KB | **0.97 KB** | 0.92 KB |
 
@@ -632,11 +632,44 @@ TypeScript declarations ship with the package.
   **bubble**. Real user events always do; `new Event('click')` does not unless
   you pass `{ bubbles: true }`.
 
+## Security
+
+Interpolated values are **never parsed as HTML** — child bindings become text
+nodes and attribute bindings go through `setAttribute`, so there is nothing to
+escape and no way to forget it. The runtime contains no `eval` or
+`new Function`, works under a strict CSP, and template parsing goes through a
+[Trusted Types](https://developer.mozilla.org/en-US/docs/Web/API/Trusted_Types_API)
+policy named `alacris` where enforced. The store's proxy blocks `__proto__`
+reads and writes, so merging untrusted JSON cannot pollute prototypes through
+it.
+
+The escape hatches you opt into (`.innerHTML`, URL attributes, `css`
+interpolation) and the full model are documented in
+[Security](https://bmartel.github.io/alacris/reference/security/). Report
+vulnerabilities privately — see [SECURITY.md](SECURITY.md).
+
+## Building with AI agents
+
+The docs ship a drop-in
+[`AGENTS.md`](https://bmartel.github.io/alacris/AGENTS.md) that teaches coding
+agents (Claude Code, Cursor, Copilot, …) the conventions in this README — the
+live-binding rule, project organization with or without a build step, `each`
+and `selector`, the styling contract, and the security rules. Put it in your
+project root:
+
+```bash
+curl -o AGENTS.md https://bmartel.github.io/alacris/AGENTS.md
+```
+
+There is also an [`llms.txt`](https://bmartel.github.io/alacris/llms.txt) map
+of the documentation for agents that fetch docs on demand. Details:
+[AI agents](https://bmartel.github.io/alacris/reference/agents/).
+
 ## Development
 
 ```bash
 npm install
-npm test          # 97 tests: signals, rendering, lists, store, context, built bundle
+npm test          # 137 tests: signals, rendering, lists, store, context, security, built bundle
 npm run build     # dist/ + SIZE.md
 npm run typecheck # type-level tests against the .d.ts files
 npm run demo      # http://localhost:5173 — demo, browser tests, and /bench/
@@ -660,6 +693,8 @@ Full documentation, with every example running live on the page, is at
 - [State that scales](https://bmartel.github.io/alacris/guides/state/) — the store and `selector`
 - [API reference](https://bmartel.github.io/alacris/reference/api/)
 - [Performance](https://bmartel.github.io/alacris/reference/performance/) — the benchmark, and the create-path tax
+- [Security](https://bmartel.github.io/alacris/reference/security/) — the XSS model, CSP and Trusted Types, store hardening
+- [AI agents](https://bmartel.github.io/alacris/reference/agents/) — a downloadable AGENTS.md for coding agents
 
 The site is built from `docs/` and deploys on every push to `main`.
 

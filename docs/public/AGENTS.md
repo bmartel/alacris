@@ -1,0 +1,290 @@
+# AGENTS.md — building applications with Alacris
+
+You are working in a project that uses **Alacris** (npm: `alacris`) — web components
+with signals and fine-grained DOM updates. ~6 kB gzip, ESM-only, zero dependencies,
+no build step required. Docs: https://bmartel.github.io/alacris/
+
+This file tells you how to organize, write, and verify Alacris code. Follow it
+exactly unless the project's own conventions visibly differ.
+
+## The mental model (read this first)
+
+1. **A signal is a function.** `s()` reads, `s(v)` or `s.set(v)` writes,
+   `s.peek()` reads without subscribing.
+2. **In a template, a function is a live binding; a plain value is written once.**
+   `html`<p>${count}</p>`` updates forever. `html`<p>${count()}</p>`` is a
+   one-time snapshot. This is the single most important rule in the library.
+3. **`setup` runs exactly once per element.** There is no re-render. Never write
+   code that assumes a component function re-executes — derive with `computed`
+   or inline thunks instead.
+4. **No virtual DOM.** A changed signal writes to exactly the DOM node bound to
+   it. You never need `shouldComponentUpdate`, memoization of templates, or keys
+   on static content.
+
+## Setup
+
+### Without a build system (prefer this for small apps, demos, prototypes)
+
+Use an import map so source files import by bare specifier, identical to the
+npm path — code stays portable between the two setups:
+
+```html
+<script type="importmap">
+{
+  "imports": {
+    "alacris": "https://cdn.jsdelivr.net/npm/alacris@0.2/dist/alacris.js",
+    "alacris/store": "https://cdn.jsdelivr.net/npm/alacris@0.2/dist/store.js",
+    "alacris/context": "https://cdn.jsdelivr.net/npm/alacris@0.2/dist/context.js"
+  }
+}
+</script>
+<script type="module" src="./src/main.js"></script>
+```
+
+Pin the version in production. Never mix pinned and unpinned URLs in one page —
+two copies of the module means two reactive graphs that cannot see each other.
+
+### With a build system
+
+```bash
+npm install alacris
+```
+
+```js
+import { define, html, css, signal, computed, effect, batch, each } from 'alacris';
+import { store, selector, unwrap, update } from 'alacris/store';
+import { createContext, provide, consume } from 'alacris/context';
+```
+
+ESM only — no CommonJS. `sideEffects: false` is set, so tree-shaking works.
+The add-on entry points (`/store`, `/context`, `/signal`) share one reactive
+graph with the core; import them freely.
+
+## Project organization
+
+```
+src/
+  main.js             # entry: imports every component module once
+  components/         # one custom element per file, filename = tag name
+    app-shell.js
+    todo-list.js
+    todo-item.js
+  state/
+    app-store.js      # store() + actions exported as plain functions
+  context/
+    theme.js          # createContext keys, exported for provider + consumers
+  styles/
+    tokens.js         # shared css`` sheets and vars() contracts
+```
+
+- **One component per file**, filename matching the tag: `todo-list.js` defines
+  `<todo-list>`. The file calls `define(...)` at module top level as a side
+  effect and exports nothing (or exports the tag name as a string constant).
+- **Tag names**: pick one project prefix (`app-`, or the product's name) and use
+  it everywhere. Custom elements require a dash; two-part lowercase names only.
+- **`main.js` imports every component module** so registration happens
+  predictably. With a bundler this is your entry; without one it is the single
+  `<script type="module">` the page loads.
+- **Stores are modules, not globals on window.** Export the store and the
+  functions that mutate it; components import both. Keep mutation logic in the
+  store module, not spread through event handlers.
+- **Shared styling tokens** (a `vars()` contract, reset sheets) live in one
+  module every component imports. `css` interns by text, so shared sheets parse
+  once for the whole page.
+
+## Components
+
+```js
+import { define, html, css, computed } from 'alacris';
+
+define('user-card', {
+  // Prop names + defaults. The default's TYPE drives attribute coercion:
+  // number, boolean, string — and objects/arrays parse attribute JSON.
+  props: { name: 'anon', age: 0, tags: [] },
+
+  // Optional. 'open' (default) | 'closed' | false for light DOM.
+  shadow: 'open',
+
+  // Shared across every instance via adoptedStyleSheets — parsed once.
+  styles: css`:host { display: block } h3 { margin: 0 }`,
+
+  // Runs ONCE per element. Props arrive as signals. Return a template.
+  setup({ name, age, tags }, host) {
+    const grown = computed(() => age() >= 18);
+    return html`
+      <h3>${name}</h3>
+      <p>${() => (grown() ? 'adult' : 'minor')} · ${() => tags().join(', ')}</p>
+      <button @click=${() => host.emit('greet', { name: name() })}>hi</button>`;
+  },
+});
+```
+
+Shorthand without props/styles: `define('x-hello', () => html`<p>hello</p>`)`.
+
+- Props are readable three ways: attribute `age="3"`, DOM property `el.age = 3`,
+  and inside `setup` as signals (`age()`, `age.set(4)`). camelCase prop ↔
+  kebab-case attribute.
+- Communicate **upward with events** (`host.emit(type, detail)` — bubbling and
+  composed), **downward with props**, **across with context or a store**.
+- Effects created inside `setup` are disposed automatically when the element
+  leaves the document. Do not hand-manage teardown unless you attach listeners
+  to `window`/`document` — then return-a-cleanup from an `effect`, or use
+  `onCleanup`.
+- Use `<slot>` (named and default) for composition instead of passing template
+  children through props.
+
+## Templates — where `${}` can go
+
+| Syntax | Meaning |
+| --- | --- |
+| `<p>${v}</p>` | child: text, node, template, array, `each(...)` |
+| `title=${v}` | attribute; removed when `null`/`undefined`/`false` |
+| `class="card ${v}"` | attribute spliced with static text (must be quoted) |
+| `.value=${v}` | DOM **property**, casing preserved |
+| `?disabled=${v}` | boolean attribute, present while truthy |
+| `@click=${fn}` | event listener; modifiers: `.stop.prevent.once.capture.passive` |
+| `ref=${el => ...}` | called with the element after creation |
+
+- `class=${...}` and `style=${...}` also accept objects/arrays:
+  `class=${() => ({ btn: true, on: active() })}`,
+  `style=${() => ({ '--fill': pct() + '%' })}`.
+- Conditionals: `${() => cond() && html`...`}` — `null`/`undefined`/`false`/`''`
+  render nothing.
+- SVG needs the `svg` tag: `` svg`<circle r=${r}/>` ``.
+- Not supported: dynamic tag names, bindings inside `<textarea>`/`<title>` text
+  (use `.value`/`.textContent`), unquoted partial attributes (`class=a${b}`).
+
+## Lists — always `each` past a few dozen rows
+
+```js
+import { each } from 'alacris';
+
+html`<ul>
+  ${each(
+    () => todos(),                                   // source (thunk)
+    (todo) => html`<li>${() => todo().text}</li>`,   // row — todo is a SIGNAL
+    (t) => t.id                                      // stable identity
+  )}
+</ul>`
+```
+
+- The row argument is a **signal**: read it inside a thunk (`${() => todo().text}`)
+  or the row goes stale.
+- Always supply a key function returning a stable id. Never use array index as
+  the key for data that reorders.
+- Reordering moves DOM nodes (`insertBefore`) — focus, scroll and typed text
+  survive. A changed row wakes only itself.
+- Small static list: `${() => items().map(i => keyed(i.id, html`<li>${i.text}</li>`))}`
+  is fine; it rebuilds row templates on every change, so don't use it for big or
+  hot lists.
+
+## State
+
+- **Local component state**: `signal` / `computed` inside `setup`.
+- **Shared or deep state**: `store` from `alacris/store`. Mutate it like a plain
+  object — `state.rows[0].label = 'x'` updates only the binding reading that
+  path. Array mutators (`push`, `splice`, `sort`, ...) are atomic.
+- Wrap multi-write mutations in `update(state, s => { ... })` (or `batch`) so
+  observers run once.
+- `unwrap(state)` for JSON.stringify / structural comparison / sending over the
+  wire.
+- **"Which row is selected?"** must be `selector`, never a per-row comparison:
+
+```js
+const isSelected = selector(() => state.selected);
+html`<tr class=${() => (isSelected(row().id) ? 'active' : '')}>`
+```
+
+- Cross-cutting values (theme, user, router) that components deep in the tree
+  need: use context, not prop-drilling:
+
+```js
+// context/theme.js
+export const ThemeCtx = createContext('theme');
+// provider setup():   provide(host, ThemeCtx, themeSignal);
+// consumer setup():   const theme = consume(host, ThemeCtx, 'light');
+```
+
+It speaks the W3C `context-request` protocol, so it interoperates with Lit.
+
+## Styling rules
+
+- Component CSS goes in `styles:` with the `css` tag. Compose sheets by
+  interpolation or arrays: `styles: [reset, css`...`]`.
+- **Theming contract**: declare themable values with `vars()` so consumers
+  override via custom properties; expose internals deliberately with
+  `part="name"`. A part is public API.
+- Dynamic values go in **custom properties bound from the template**
+  (`style=${() => ({ '--x': v() })}`), never by rebuilding a stylesheet.
+- **Never use `!important` inside a component.** It is the one thing a consumer
+  cannot override.
+- `shadow: false` (light DOM) when the page's global CSS should style the
+  component directly.
+
+## Security rules (non-negotiable)
+
+- Interpolated values are **always text or attribute values, never HTML**. You
+  do not need to escape anything in `${}`.
+- **Never bind `.innerHTML`/`.outerHTML` to data you did not author.** If you
+  must render rich text, sanitize it first (e.g. DOMPurify) and say so in a
+  comment.
+- Do not interpolate untrusted data into `href`/`src`-like attributes without
+  validating the scheme (`javascript:` URLs execute).
+- Do not interpolate untrusted data into `css` templates — CSS injection is
+  real. `css` is for author-written styles; runtime values belong in custom
+  properties.
+- The store silently drops `__proto__` keys (prototype-pollution guard) — do
+  not "fix" that behavior.
+- Alacris contains no `eval`/`new Function` and registers a Trusted Types
+  policy named `alacris`; under a `trusted-types` CSP directive, allow it:
+  `Content-Security-Policy: trusted-types alacris;`
+
+## Performance checklist
+
+- Hot list? → `each` + key function. Deep row data? → `store`. Selection? →
+  `selector`.
+- Burst of writes (loops, websocket batches) → wrap in `batch(() => ...)`.
+- Reading a signal inside an effect only to pass it along → `peek()`/`untrack`
+  to avoid a false dependency.
+- Templates are cached **per call site** — do not build template strings
+  dynamically or wrap `html` calls in ways that defeat the tag-function cache.
+- Do not memoize, clone, or diff templates yourself. The library already does
+  the minimal work; extra machinery makes it slower.
+
+## Testing
+
+- Node's built-in runner + happy-dom works:
+  `node --import ./test/setup.js --test test/*.test.js` (see the Alacris repo's
+  `test/setup.js` for the DOM bootstrap).
+- Delegated event handlers only see events that **bubble**. Real user events
+  bubble; synthetic ones need `new Event('click', { bubbles: true })`.
+- Writes are synchronous — assert immediately after a write, no `await tick()`.
+- For behavior a simulated DOM cannot express (custom-element upgrade timing,
+  `adoptedStyleSheets`, real layout), write a browser test page.
+
+## Common mistakes (wrong → right)
+
+| Wrong | Right | Why |
+| --- | --- | --- |
+| `html`<p>${count()}</p>`` for live text | `html`<p>${count}</p>`` | calling reads once — a snapshot |
+| `` `${todo().text}` `` in an `each` row | `${() => todo().text}` | row signal must be read in a thunk |
+| `state.list = [...state.list, item]` | `state.list.push(item)` | replacing the array re-syncs everything |
+| per-row `row.id === selected()` | `selector(() => selected())` | O(n) wakeups → O(1) |
+| `class=a${b}` | `class="a ${b}"` | partial attribute must be quoted |
+| `@click=${() => handler()}` re-created concerns | any function is fine | handlers are values; no memoizing needed |
+| effects for derived values | `computed` | effects are for side effects only |
+| `setTimeout` to "wait for render" | assert/read immediately | updates are synchronous |
+| `.innerHTML=${userContent}` | sanitize first, or render text | XSS |
+| rebuilding a stylesheet per state change | bind a custom property | one property write vs a CSS re-parse |
+
+## Verifying your work
+
+Before declaring a task done:
+
+1. Components render and update from a plain static page (no bundler) — if the
+   project has no build step, do not introduce one for a feature.
+2. No console errors on load, interaction, and element disconnect/reconnect.
+3. Lists keep focus and input state across a reorder (the `each` + key test).
+4. No `!important` in any component stylesheet; themable values documented via
+   `vars()`.
+5. Nothing untrusted flows into `.innerHTML`, `href`, or `css` templates.

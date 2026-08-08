@@ -7,7 +7,7 @@ sidebar:
 
 Alacris is a library for building **web components** — real custom elements —
 with **signals** for state and **fine-grained DOM updates** for rendering. The
-whole runtime is 5.9 kB gzipped, it is ESM-only, it has no dependencies, and it
+whole runtime is 6 kB gzipped, it is ESM-only, it has no dependencies, and it
 needs no build step.
 
 The name is Latin: *alacer / alacris*, brisk and quick.
@@ -50,8 +50,8 @@ hence [`each`](../../guides/lists/), [context](../../guides/context/),
 - **Updates.** Changing one row in a thousand-row list touches that row.
   Removing a row costs 0.075 ms against hand-written DOM's 0.010 ms; selecting
   one sits at the floor.
-- **Size.** 5.9 kB for the entire runtime. The store and context add-ons are
-  0.98 kB and 0.54 kB, imported separately.
+- **Size.** Under 6 kB for the entire runtime. The store and context add-ons
+  are 0.99 kB and 0.54 kB, imported separately.
 - **Adoption.** One `<script type="module">` and you have a working component.
   No toolchain, and nothing to configure.
 - **Being styled by other people.** Custom properties, `::part` and adoptable
