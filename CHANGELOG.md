@@ -4,6 +4,8 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.2.0](https://github.com/bmartel/alacris/compare/v0.1.0...v0.2.0) (2026-08-08)
+
 ## 0.1.0 (2026-08-08)
 
 First public release.
