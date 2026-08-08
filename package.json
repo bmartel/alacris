@@ -1,0 +1,79 @@
+{
+  "name": "alacris",
+  "version": "0.1.0",
+  "description": "Fast web components with signals and fine-grained DOM updates. 5 kB, ESM-only, zero dependencies, no build step.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./dist/alacris.js"
+    },
+    "./signal": {
+      "types": "./types/signal.d.ts",
+      "default": "./dist/signal.js"
+    },
+    "./store": {
+      "types": "./types/store.d.ts",
+      "default": "./dist/store.js"
+    },
+    "./context": {
+      "types": "./types/context.d.ts",
+      "default": "./dist/context.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "module": "./dist/alacris.js",
+  "types": "./types/index.d.ts",
+  "unpkg": "./dist/alacris.js",
+  "jsdelivr": "./dist/alacris.js",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "src",
+    "types",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "node scripts/build.js",
+    "test": "node --import ./test/setup.js --test \"test/*.test.js\"",
+    "typecheck": "tsc -p tsconfig.json",
+    "size": "node scripts/size.js",
+    "demo": "npm run build && node scripts/serve.js",
+    "prepublishOnly": "npm run build && npm test && npm run typecheck"
+  },
+  "keywords": [
+    "web-components",
+    "custom-elements",
+    "signals",
+    "reactive",
+    "fine-grained",
+    "no-virtual-dom",
+    "template",
+    "esm",
+    "tiny",
+    "store",
+    "context",
+    "alacris"
+  ],
+  "license": "MIT",
+  "author": "Brandon Martel <brandonmartel@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bmartel/alacris.git"
+  },
+  "homepage": "https://github.com/bmartel/alacris#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "happy-dom": "^17.4.4",
+    "terser": "^5.39.0",
+    "typescript": "^5.9.3"
+  },
+  "bugs": {
+    "url": "https://github.com/bmartel/alacris/issues"
+  }
+}

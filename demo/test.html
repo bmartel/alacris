@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Alacris — browser tests</title>
+<style>
+  body { font:15px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace; margin:2rem auto; max-width:44rem; padding:0 1rem;
+         color-scheme: light dark; }
+  h1 { font-size:1.1rem; }
+  li { list-style:none; }
+  .p::before { content:'PASS  '; color:#1a8f4a; }
+  .f::before { content:'FAIL  '; color:#d23f3f; }
+  .f { color:#d23f3f; }
+  #sum { font-weight:700; margin:1rem 0; padding:.6rem .8rem; border-radius:8px; }
+  .ok { background:#e6f7ec; color:#0d5c30; } .bad { background:#fdeaea; color:#8a1f1f; }
+  @media (prefers-color-scheme: dark) { .ok{background:#0f2e1c;color:#7fe0a6} .bad{background:#3a1414;color:#ff9a9a} }
+</style>
+</head>
+<body>
+<h1>Alacris — browser tests <small>(real custom-element semantics)</small></h1>
+<div id="sum">running…</div>
+<ul id="out"></ul>
+<div id="fixture" style="position:absolute;left:-9999px"></div>
+
+<script type="module">
+import { define, html, svg, signal, computed, effect, keyed, render, batch } from '../dist/alacris.js';
+
+const out = document.getElementById('out');
+const fixture = document.getElementById('fixture');
+let pass = 0, fail = 0;
+
+const test = (name, fn) => {
+  const li = document.createElement('li');
+  try { fn(); li.className = 'p'; li.textContent = name; pass++; }
+  catch (e) { li.className = 'f'; li.textContent = `${name} — ${e.message}`; fail++; console.error(name, e); }
+  out.append(li);
+};
+const eq = (a, b, m = '') => { if (a !== b) throw new Error(`${m} expected ${JSON.stringify(b)}, got ${JSON.stringify(a)}`); };
+const host = () => { const d = document.createElement('div'); fixture.append(d); return d; };
+// A macrotask, not rAF: teardown is deferred by one microtask, and rAF never
+// fires in a background or non-compositing tab.
+const frame = () => new Promise(r => setTimeout(r, 0));
+
+/* ---- the case happy-dom cannot express: upgrade of an element already in the DOM ---- */
+test('properties set before upgrade are replayed', () => {
+  fixture.insertAdjacentHTML('beforeend', '<x-late></x-late>');
+  const el = fixture.querySelector('x-late');
+  el.label = 'set-before-define';           // plain own property, no accessor yet
+  define('x-late', { props: { label: 'default' }, setup: p => html`<p>${p.label}</p>` });
+  eq(el.shadowRoot.querySelector('p').textContent, 'set-before-define');
+  eq(el.label, 'set-before-define');
+});
+
+test('attributes present at upgrade are read', () => {
+  fixture.insertAdjacentHTML('beforeend', '<x-attr n="12" flag></x-attr>');
+  const el = fixture.querySelector('x-attr');
+  define('x-attr', { props: { n: 0, flag: false }, setup: p => html`<p>${() => `${p.n()}/${p.flag()}`}</p>` });
+  eq(el.shadowRoot.querySelector('p').textContent, '12/true');
+  eq(el.n, 12);
+});
+
+test('adopted stylesheets are shared between instances', () => {
+  define('x-styled', { styles: 'p { color: rgb(0, 128, 0) }', setup: () => html`<p>x</p>` });
+  const a = document.createElement('x-styled'), b = document.createElement('x-styled');
+  fixture.append(a, b);
+  eq(a.shadowRoot.adoptedStyleSheets[0], b.shadowRoot.adoptedStyleSheets[0], 'same sheet');
+  eq(getComputedStyle(a.shadowRoot.querySelector('p')).color, 'rgb(0, 128, 0)');
+});
+
+test('real event listener options (once)', () => {
+  const el = host();
+  let n = 0;
+  render(html`<button @click.once=${() => n++}>x</button>`, el);
+  const b = el.querySelector('button');
+  b.click(); b.click(); b.click();
+  eq(n, 1);
+});
+
+test('event modifiers stop/prevent', () => {
+  const el = host();
+  let outer = 0, defaulted = null;
+  el.addEventListener('click', () => outer++);
+  render(html`<a href="#nope" @click.stop.prevent=${e => { defaulted = e.defaultPrevented; }}>x</a>`, el);
+  el.querySelector('a').click();
+  eq(outer, 0, 'propagation stopped');
+  eq(defaulted, true, 'default prevented');
+});
+
+test('svg renders in the right namespace and paints', () => {
+  const el = host();
+  const r = signal(10);
+  render(svg`<svg width="40" height="40"><circle cx="20" cy="20" r=${r} fill="tomato"></circle></svg>`, el);
+  const c = el.querySelector('circle');
+  eq(c.namespaceURI, 'http://www.w3.org/2000/svg');
+  eq(c.getBBox().width, 20);
+  r(15);
+  eq(c.getBBox().width, 30);
+});
+
+test('form controls: .value and .checked stay in sync', () => {
+  const el = host();
+  const text = signal('a'), on = signal(false);
+  render(html`<input id="t" .value=${text}><input id="c" type="checkbox" .checked=${on}>`, el);
+  eq(el.querySelector('#t').value, 'a');
+  eq(el.querySelector('#c').checked, false);
+  text('b'); on(true);
+  eq(el.querySelector('#t').value, 'b');
+  eq(el.querySelector('#c').checked, true);
+});
+
+test('keyed reorder moves nodes and keeps DOM state', () => {
+  const el = host();
+  const ids = signal([1, 2, 3]);
+  render(html`<ul>${() => ids().map(i => keyed(i, html`<li><input value=${i}></li>`))}</ul>`, el);
+  const inputs = [...el.querySelectorAll('input')];
+  inputs[0].value = 'typed';                      // live DOM state, not in the template
+  ids([3, 1, 2]);
+  const after = [...el.querySelectorAll('input')];
+  eq(after[1], inputs[0], 'same node moved');
+  eq(after[1].value, 'typed', 'state survived the move');
+});
+
+test('1,000 keyed rows update in under 50ms', () => {
+  const el = host();
+  const rows = signal(Array.from({ length: 1000 }, (_, i) => ({ id: i, label: 'row ' + i })));
+  render(html`<div>${() => rows().map(r => keyed(r.id, html`<span>${r.label}</span>`))}</div>`, el);
+  eq(el.querySelectorAll('span').length, 1000);
+  const t0 = performance.now();
+  rows(rows().map((r, i) => (i % 10 ? r : { ...r, label: 'hit ' + i })));
+  const dt = performance.now() - t0;
+  eq(el.querySelector('span').textContent, 'hit 0');
+  if (dt > 50) throw new Error(`took ${dt.toFixed(1)}ms`);
+  document.getElementById('sum').dataset.bench = dt.toFixed(1);
+});
+
+test('batch coalesces DOM writes', () => {
+  const el = host();
+  const a = signal(1), b = signal(1);
+  let paints = 0;
+  render(html`<p>${() => { paints++; return a() + b(); }}</p>`, el);
+  paints = 0;
+  batch(() => { a(2); b(2); });
+  eq(paints, 1);
+  eq(el.querySelector('p').textContent, '4');
+});
+
+/* ---- async: teardown on real disconnect ---- */
+(async () => {
+  await new Promise(r => setTimeout(r, 0));
+
+  const el = document.createElement('x-life');
+  const outside = signal(0);
+  let reads = 0;
+  define('x-life', () => html`<p>${() => { reads++; return outside(); }}</p>`);
+  fixture.append(el);
+  outside(1);
+  const before = reads;
+  el.remove();
+  await frame();
+  outside(2);
+  test('removal disposes effects', () => eq(reads, before));
+
+  const moved = document.createElement('x-life');
+  fixture.append(moved);
+  const box = host();
+  box.append(moved);                     // detach + reattach in one task
+  await frame();
+  test('moving an element keeps it alive', () => {
+    eq(moved.shadowRoot.querySelector('p').textContent, '2');
+  });
+
+  const sum = document.getElementById('sum');
+  sum.className = fail ? 'bad' : 'ok';
+  sum.textContent = `${pass} passed, ${fail} failed`
+    + (sum.dataset.bench ? ` · 1k keyed update: ${sum.dataset.bench}ms` : '');
+  document.title = fail ? `FAIL (${fail})` : `PASS (${pass})`;
+  window.__alacrisResult = { pass, fail };
+})();
+</script>
+</body>
+</html>

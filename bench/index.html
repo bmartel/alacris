@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Alacris — benchmark</title>
+<style>
+  body { font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; margin:1.5rem auto; max-width:60rem;
+         padding:0 1rem; color-scheme: light dark; }
+  h1 { font-size:1.15rem; }
+  #ctl { display:flex; gap:.5rem; flex-wrap:wrap; margin:1rem 0; }
+  button { font:inherit; padding:.4rem .8rem; border-radius:7px; cursor:pointer;
+           border:1px solid #8884; background:transparent; color:inherit; }
+  table.results { border-collapse:collapse; width:100%; margin-top:1rem; }
+  table.results th, table.results td { padding:.35rem .6rem; text-align:right; border-bottom:1px solid #8883; }
+  table.results th:first-child, table.results td:first-child { text-align:left; }
+  .win { color:#1a8f4a; font-weight:700; }
+  .bad { color:#d23f3f; }
+  #status { color:#888; }
+  /* The rows are the workload, not the point. `display:none` keeps layout out of
+     the measurement so what is left is the framework's own JS + DOM cost —
+     which is the part Alacris controls and the part worth optimising. Toggle
+     "include layout" to measure the full, layout-inclusive cost instead. */
+  #stage { position:absolute; left:-99999px; top:0; width:900px; }
+  #stage.hidden { display:none; }
+</style>
+</head>
+<body>
+<h1>Alacris — benchmark <span id="status">idle</span></h1>
+<p>
+  Standard js-framework-benchmark operations. Each is run after an unmeasured setup,
+  once to warm up and then 5 times; the table shows the <b>median</b>, in milliseconds,
+  including forced style and layout. Lower is better.
+</p>
+<div id="ctl"></div>
+<table class="results"><thead><tr id="head"></tr></thead><tbody id="body"></tbody></table>
+<div id="stage"></div>
+
+<script type="module">
+import vanilla from './impl/vanilla.js';
+import alacris from './impl/alacris.js';
+import alacrisEach from './impl/alacris-each.js';
+import alacrisStore from './impl/alacris-store.js';
+import { resetIds } from './data.js';
+
+// Hand-written DOM is the only reference that matters. Solid and Svelte land
+// within roughly 1.1x of it, so that is the line "as fast as Solid" means.
+const IMPLS = [
+  { key: 'vanilla', name: 'vanilla (floor)', make: vanilla },
+  { key: 'alacris',    name: 'Alacris (.map)',     make: alacris },
+  { key: 'each',    name: 'Alacris (each)',     make: alacrisEach },
+  { key: 'store',   name: 'Alacris (each+store)', make: alacrisStore },
+];
+
+// `reps` repeats the operation inside one timed window and divides, because the
+// hand-written versions of the small ops finish below performance.now()'s
+// resolution and would otherwise read as a meaningless 0.00.
+const OPS = [
+  { key:'create1k',  name:'create 1,000',      setup: a => a.clear(),       run: a => a.create(1000) },
+  { key:'create10k', name:'create 10,000',     setup: a => a.clear(),       run: a => a.create(10000) },
+  { key:'append1k',  name:'append 1,000',      setup: a => a.create(10000), run: a => a.append(1000) },
+  { key:'update10',  name:'update every 10th', setup: a => a.create(1000),  run: a => a.update(), reps: 20 },
+  { key:'select',    name:'select row',        setup: a => a.create(1000),  run: (a,i) => a.select(100 + (i % 50)), reps: 20 },
+  { key:'swap',      name:'swap 2 rows',       setup: a => a.create(1000),  run: a => a.swap(), reps: 20 },
+  { key:'remove',    name:'remove row',        setup: a => a.create(1000),  run: a => a.remove(100), reps: 20 },
+  { key:'clear1k',   name:'clear 1,000',       setup: a => a.create(1000),  run: a => a.clear() },
+];
+
+let RUNS = 5;
+let withLayout = false;
+const stage = document.getElementById('stage');
+stage.classList.add('hidden');
+const status = document.getElementById('status');
+// A MessageChannel hop yields to the event loop without the 1s clamp that
+// browsers apply to setTimeout in background tabs.
+const chan = new MessageChannel();
+const settle = () => new Promise(r => { chan.port1.onmessage = r; chan.port2.postMessage(0); });
+const median = xs => { const s = [...xs].sort((a,b)=>a-b); return s[s.length >> 1]; };
+
+// With layout off, this is the framework's own JS + DOM-mutation cost. With it
+// on, reading offsetHeight forces style and layout inside the measured window.
+function time(fn) {
+  const t0 = performance.now();
+  fn();
+  if (withLayout) void stage.offsetHeight;
+  return performance.now() - t0;
+}
+
+const results = {};   // results[opKey][implKey] = ms
+
+async function runOp(impl, op) {
+  const host = document.createElement('div');
+  stage.append(host);
+  resetIds();
+  const api = impl.make(host);
+
+  const reps = op.reps || 1;
+  const times = [];
+  for (let i = 0; i < RUNS + 1; i++) {
+    op.setup(api);
+    if (withLayout) void stage.offsetHeight;
+    await settle();
+    const ms = time(() => { for (let k = 0; k < reps; k++) op.run(api, i * reps + k); });
+    if (i > 0) times.push(ms / reps);   // drop the warm-up
+    await settle();
+  }
+
+  api.dispose?.();
+  host.remove();
+  return median(times);
+}
+
+function draw() {
+  const head = document.getElementById('head');
+  head.innerHTML = '<th>operation</th>' + IMPLS.map(i => `<th>${i.name}</th>`).join('')
+    + '<th>Alacris vs vanilla</th>';
+  const body = document.getElementById('body');
+  body.innerHTML = OPS.map(op => {
+    const r = results[op.key] || {};
+    const base = r.vanilla;
+    const cells = IMPLS.map(i => {
+      const v = r[i.key];
+      if (v == null) return '<td>·</td>';
+      const best = Math.min(...IMPLS.map(x => r[x.key] ?? Infinity));
+      return `<td class="${v === best ? 'win' : ''}">${v < 1 ? v.toFixed(3) : v.toFixed(2)}</td>`;
+    }).join('');
+    const ratio = base && r.alacris ? (r.alacris / base) : null;
+    const rc = ratio == null ? '·'
+      : `<span class="${ratio > 2 ? 'bad' : ratio < 1.35 ? 'win' : ''}">${ratio.toFixed(2)}×</span>`;
+    return `<tr><td>${op.name}</td>${cells}<td>${rc}</td></tr>`;
+  }).join('');
+}
+
+async function runAll() {
+  status.textContent = 'running…';
+  for (const op of OPS) {
+    results[op.key] ||= {};
+    for (const impl of IMPLS) {
+      status.textContent = `${op.name} — ${impl.name}`;
+      results[op.key][impl.key] = await runOp(impl, op);
+      draw();
+    }
+  }
+  status.textContent = 'done';
+  window.__benchResults = results;
+  return results;
+}
+
+const ctl = document.getElementById('ctl');
+const mk = (label, fn) => { const b = document.createElement('button'); b.textContent = label; b.onclick = fn; ctl.append(b); };
+mk('Run all', runAll);
+mk('include layout: off', function () {
+  withLayout = !withLayout;
+  stage.classList.toggle('hidden', !withLayout);
+  this.textContent = `include layout: ${withLayout ? 'on' : 'off'}`;
+});
+for (const impl of IMPLS) mk(`Run ${impl.name}`, async () => {
+  status.textContent = 'running…';
+  for (const op of OPS) { results[op.key] ||= {}; results[op.key][impl.key] = await runOp(impl, op); draw(); }
+  status.textContent = 'done';
+});
+
+draw();
+window.__bench = { runAll, runOp, OPS, IMPLS, results };
+
+// Sanity check: every implementation must actually render the same thing.
+window.__verify = async () => {
+  const out = {};
+  for (const impl of IMPLS) {
+    const host = document.createElement('div');
+    stage.append(host);
+    resetIds();
+    const api = impl.make(host);
+    api.create(1000);
+    api.update();
+    api.swap();
+    api.select(3);
+    out[impl.key] = {
+      count: api.count(),
+      first: api.firstLabel(),
+      danger: host.querySelectorAll('tr.danger').length,
+      row2: host.querySelectorAll('tbody > tr')[1]?.querySelector('.lbl')?.textContent,
+    };
+    api.dispose?.();
+    host.remove();
+  }
+  return out;
+};
+</script>
+</body>
+</html>

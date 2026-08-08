@@ -1,0 +1,12 @@
+# Normalise line endings so the repo is identical on every platform.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.gif binary
+*.woff binary
+*.woff2 binary
+
+# Keep generated and vendored files out of language stats and diffs.
+dist/**            linguist-generated=true
+package-lock.json  linguist-generated=true -diff
