@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 260" role="img" aria-label="Alacris">
   <!--
     The mark over a field that brightens toward it: only what is near the change
-    lights up. Same two shards as src/assets/logo.svg, at hero scale.
+    lights up. Same fractured A as src/assets/logo.svg, at hero scale.
   -->
   <defs>
     <radialGradient id="hero-glow" cx="160" cy="126" r="140" gradientUnits="userSpaceOnUse">
@@ -187,7 +187,7 @@
   </g>
 
   <g transform="translate(72.0 38.0) scale(5.5000)">
-    <path d="M20.48 1.22 5.25 17.79l7.48-.82 5.38-3.8Z" fill="#f5b719"/>
-    <path d="M13.89 18.61 12.19 30.78 26.75 13.98l-7.48.82Z" fill="#c07f08"/>
+    <path d="M16 3 24.55 20.1 17.62 20.1 16 16.86 14.38 20.1 7.45 20.1Z" fill="#f5b719"/>
+    <path d="M6.55 21.9 13.48 21.9 9.93 29 3 29ZM18.52 21.9 25.45 21.9 29 29 22.07 29Z" fill="#c07f08"/>
   </g>
 </svg>

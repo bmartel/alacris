@@ -1,6 +1,8 @@
 <div align="center">
 
-# ⚡ Alacris
+<img src="https://raw.githubusercontent.com/bmartel/alacris/main/docs/public/logo.png" alt="" width="88" height="88">
+
+# Alacris
 
 **Web components with signals and fine-grained DOM updates — in 6 kB.**
 
