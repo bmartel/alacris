@@ -7,7 +7,6 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components';
 import Demo from '../../../components/Demo.astro';
-import contextDemo from '../../../demos/context.js?raw';
 
 Threading a value through five elements that do not care about it is the thing
 that actually stops people building large trees out of web components.
@@ -51,12 +50,7 @@ define('deep-button', {
 `consume` returns a signal, so it drops straight into a binding and updates on
 its own.
 
-<Demo
-  code={contextDemo}
-  preview={`<demo-provider></demo-provider>`}
-  title="Two levels down, no props, live"
-  open={false}
-/>
+<Demo demo="context" title="Two levels down, no props, live" />
 
 The middle component knows nothing about themes. It does not receive one, it
 does not forward one, and it never re-renders when the theme changes — only the

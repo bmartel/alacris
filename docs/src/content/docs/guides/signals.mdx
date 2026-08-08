@@ -7,7 +7,6 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components';
 import Demo from '../../../components/Demo.astro';
-import signals from '../../../demos/signals.js?raw';
 
 A signal is a function that holds a value and remembers who read it.
 
@@ -44,11 +43,7 @@ width(5);
 area(); // 15 — recomputed on read, not on write
 ```
 
-<Demo
-  code={signals}
-  preview={`<demo-signals></demo-signals>`}
-  title="computed, live"
-/>
+<Demo demo="signals" title="computed, live" />
 
 ## effect
 

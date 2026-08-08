@@ -7,7 +7,6 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components';
 import Demo from '../../../components/Demo.astro';
-import storeDemo from '../../../demos/store.js?raw';
 
 A signal holds one value. When that value is a large object, handing it a fresh
 copy tells the renderer only *something changed*, so everything reading it
@@ -27,12 +26,7 @@ Read a path and the reading binding subscribes to that path. Write it and only
 those readers run. `state.rows[3].label = 'x'` does not re-diff the list, does
 not rebuild the row, and does not consult any other row.
 
-<Demo
-  code={storeDemo}
-  preview={`<demo-store></demo-store>`}
-  title="Path-level updates, live"
-  open={false}
-/>
+<Demo demo="store" title="Path-level updates, live" />
 
 ## It is a normal object
 

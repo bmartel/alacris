@@ -3,49 +3,56 @@
  * A runnable example.
  *
  * The source is rendered as a highlighted code block *and* executed as a module
- * script — from the same string, so the two can never disagree. Demo sources
- * live in `src/demos/*.js` and are imported with `?raw`.
+ * script — from the same string, so the two can never disagree. Demos live in
+ * `src/demos/` and are registered in `src/demos/index.ts`.
  *
  * They import `alacris` under its real specifier, which the site's import map
  * points at the built bundle in `public/lib`. What you read is exactly what you
- * can paste into your own project.
+ * can paste into your own project — or open in the playground, where the same
+ * file runs against the published package.
  */
-import { Code } from 'astro:components';
+import { Code } from 'astro-expressive-code/components';
+import { getDemo } from '../demos/index.ts';
 
 interface Props {
-  /** The demo source, imported with `?raw`. */
-  code: string;
-  /** Markup the demo renders into. Usually the custom element tags. */
+  /** Id of the demo to run, from `src/demos/index.ts`. */
+  demo: string;
+  /** Override the markup the demo renders into. Defaults to the catalogue's. */
   preview?: string;
-  /** Show the source expanded rather than behind a disclosure. */
-  open?: boolean;
   /** Label above the live area. */
   title?: string;
+  /** Hide the "Edit in playground" action. */
+  playground?: boolean;
 }
 
-const { code, preview = '', open = true, title = 'Live' } = Astro.props;
+const { demo: id, preview, title = 'Live', playground = true } = Astro.props;
+
+const demo = getDemo(id);
+const code = demo.code.trim();
+const markup = preview ?? demo.markup;
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const playgroundHref = `${base}/playground/?demo=${demo.id}`;
 ---
 
 <figure class="demo not-content">
-  <figcaption class="demo-label">
-    {title}
+  <figcaption class="demo-head">
+    <span class="demo-title">{title}</span>
     <span class="demo-note">running the real bundle</span>
+    {
+      playground && (
+        <a class="demo-open" href={playgroundHref}>
+          Edit in playground <span aria-hidden="true">→</span>
+        </a>
+      )
+    }
   </figcaption>
 
-  <div class="demo-stage" set:html={preview} />
+  <div class="demo-stage" set:html={markup} />
 
-  {
-    open ? (
-      <div class="demo-source">
-        <Code code={code.trim()} lang="js" />
-      </div>
-    ) : (
-      <details class="demo-source">
-        <summary>Source</summary>
-        <Code code={code.trim()} lang="js" />
-      </details>
-    )
-  }
+  <div class="demo-source">
+    <Code code={code} lang="js" meta={`wrap title="${demo.id}.js"`} />
+  </div>
 </figure>
 
 {/* is:inline keeps Astro from bundling this, so the import map resolves it in the browser. */}

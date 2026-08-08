@@ -4,10 +4,17 @@
   --sl-font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --sl-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  /* An amber accent: warm, high contrast on both themes, and not another blue. */
+  /* Wider than Starlight's 45rem. Nearly every page here carries code, and
+     the extra 3rem is the difference between wrapping mid-expression and not. */
+  --sl-content-width: 48rem;
+
+  /* An amber accent: warm, high contrast on both themes, and not another blue.
+     Matched to the two tones in the logo. */
   --sl-color-accent-low: #3a2a05;
   --sl-color-accent: #b8860b;
   --sl-color-accent-high: #f0c674;
+
+  --demo-radius: 0.75rem;
 }
 
 :root[data-theme='light'] {
@@ -19,18 +26,18 @@
 /* ------------------------------------------------------------------ demos */
 
 .demo {
-  margin: 1.5rem 0;
+  margin: 1.75rem 0;
   border: 1px solid var(--sl-color-gray-5);
-  border-radius: 0.5rem;
+  border-radius: var(--demo-radius);
   overflow: hidden;
   background: var(--sl-color-bg-nav);
 }
 
-.demo-label {
+.demo-head {
   display: flex;
   align-items: baseline;
   gap: 0.6rem;
-  padding: 0.5rem 0.9rem;
+  padding: 0.55rem 0.9rem;
   font-size: var(--sl-text-xs);
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -46,29 +53,218 @@
   color: var(--sl-color-gray-3);
 }
 
+/* Pushed to the end of the bar, and out of the way on narrow screens. */
+.demo-open {
+  margin-inline-start: auto;
+  flex: none;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  text-decoration: none;
+  white-space: nowrap;
+  color: var(--sl-color-accent-high);
+}
+
+.demo-open:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 30rem) {
+  .demo-note {
+    display: none;
+  }
+}
+
+/* The live area is the point of the block, so give it room and a surface of
+   its own. The dot grid reads as "canvas" without competing with the demo. */
 .demo-stage {
-  padding: 1.25rem;
-  background: var(--sl-color-bg);
+  padding: 1.75rem 1.25rem;
+  background-color: var(--sl-color-bg);
+  background-image: radial-gradient(var(--sl-color-gray-5) 1px, transparent 1px);
+  background-size: 16px 16px;
+  background-position: -1px -1px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 6.5rem;
   /* Demos are arbitrary user markup; keep them from escaping the frame. */
   overflow-x: auto;
 }
 
-.demo-stage > * + * {
-  margin-top: 0.5rem;
+/* Demos that lay themselves out in a column want the full width. */
+.demo-stage > * {
+  max-width: 100%;
 }
 
-.demo-source > :where(pre) {
+/* Expressive Code brings its own frame; strip the outer chrome so the code
+   sits flush in the block rather than looking like a card inside a card. */
+.demo-source :where(.expressive-code) {
+  --ec-frm-frameBoxShdCssVal: none;
   margin: 0;
-  border: 0;
+}
+
+.demo-source :where(.expressive-code .frame) {
   border-radius: 0;
 }
 
-.demo-source > summary {
-  cursor: pointer;
-  padding: 0.5rem 0.9rem;
-  font-size: var(--sl-text-sm);
+.demo-source :where(.expressive-code pre) {
+  border-inline: 0;
+  border-bottom: 0;
+  border-radius: 0;
+}
+
+/* --------------------------------------------------------------- playground */
+
+.playground {
+  margin: 1.75rem 0;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: var(--demo-radius);
+  overflow: hidden;
+  background: var(--sl-color-bg-nav);
+}
+
+/* An editor beside a preview needs more than a prose column. Let the page a
+   playground lives on run full width, and keep the surrounding prose at the
+   reading width it had. */
+.content-panel:has(.playground) .sl-container {
+  max-width: none;
+}
+
+.content-panel:has(.playground) .sl-markdown-content > :not(.playground) {
+  max-width: var(--sl-content-width);
+  margin-inline: auto;
+}
+
+.pg-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--sl-color-gray-5);
+}
+
+.pg-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.pg-tab {
+  font: inherit;
+  font-size: var(--sl-text-xs);
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
   color: var(--sl-color-gray-2);
-  border-top: 1px solid var(--sl-color-gray-5);
+  cursor: pointer;
+}
+
+.pg-tab:hover {
+  color: var(--sl-color-white);
+  background: var(--sl-color-gray-6);
+}
+
+.pg-tab[aria-pressed='true'] {
+  color: var(--sl-color-accent-high);
+  border-color: var(--sl-color-accent);
+  background: var(--sl-color-accent-low);
+}
+
+.pg-action {
+  font: inherit;
+  font-size: var(--sl-text-xs);
+  font-weight: 600;
+  margin-inline-start: auto;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sl-color-gray-2);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pg-action:hover {
+  color: var(--sl-color-white);
+  border-color: var(--sl-color-gray-4);
+}
+
+.pg-blurb {
+  margin: 0;
+  padding: 0 0.9rem 0.6rem;
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-gray-3);
+}
+
+.pg-frame {
+  position: relative;
+  height: var(--pg-height, min(74vh, 46rem));
+  min-height: 24rem;
+  background: var(--sl-color-bg);
+}
+
+.pg-mount,
+.pg-mount > * {
+  height: 100%;
+}
+
+.pg-mount iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.pg-poster {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.9rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  background-color: var(--sl-color-bg);
+  background-image: radial-gradient(var(--sl-color-gray-5) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.pg-poster[hidden] {
+  display: none;
+}
+
+.pg-poster-mark svg {
+  display: block;
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.pg-poster p {
+  margin: 0;
+  max-width: 34rem;
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-gray-3);
+}
+
+.pg-run {
+  font: inherit;
+  font-weight: 600;
+  padding: 0.5rem 1.15rem;
+  border: 1px solid var(--sl-color-accent);
+  border-radius: 999px;
+  background: var(--sl-color-accent-low);
+  color: var(--sl-color-white);
+  cursor: pointer;
+}
+
+.pg-run:hover {
+  background: var(--sl-color-accent);
+  color: var(--sl-color-black);
 }
 
 /* --------------------------------------------------------------- niceties */
@@ -93,5 +289,5 @@
 }
 
 .site-title img {
-  height: 1.6rem;
+  height: 1.7rem;
 }

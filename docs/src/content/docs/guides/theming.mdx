@@ -7,7 +7,6 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components';
 import Demo from '../../../components/Demo.astro';
-import theming from '../../../demos/theming.js?raw';
 
 This is the part most web components get wrong, and the reason many teams reject
 them outright. A shadow root is opaque: it protects the author and blocks
@@ -17,12 +16,7 @@ they will not use your button.
 The platform provides three ways through the boundary. Alacris leans on all
 three rather than inventing a fourth.
 
-<Demo
-  code={theming}
-  preview={`<demo-chip>default</demo-chip><demo-chip tone="warn">warn</demo-chip><demo-chip tone="ok">ok</demo-chip><demo-theme-switch></demo-theme-switch>`}
-  title="All three, live"
-  open={false}
-/>
+<Demo demo="theming" title="All three, live" />
 
 ## 1. Custom properties — the theming contract
 
