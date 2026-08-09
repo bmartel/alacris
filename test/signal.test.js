@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { signal, computed, effect, batch, untrack, root, onCleanup } from '../src/signal.js';
+import { signal, computed, effect, batch, untrack, root, onCleanup, flush } from '../src/signal.js';
 
 test('signal reads and writes', () => {
   const a = signal(1);
@@ -39,6 +39,26 @@ test('effect runs immediately and on change', () => {
   stop();
   a(3);
   assert.deepEqual(seen, [0, 1, 2]);
+});
+
+test('flush drains the queue a batch is holding', () => {
+  const a = signal(0);
+  const seen = [];
+  const stop = effect(() => seen.push(a()));
+  assert.deepEqual(seen, [0]);
+
+  batch(() => {
+    a(1);
+    assert.deepEqual(seen, [0]);        // batching queues the effect instead of running it
+    flush();
+    assert.deepEqual(seen, [0, 1]);     // ...until something asks for it
+    a(2);
+  });
+  assert.deepEqual(seen, [0, 1, 2]);    // and the batch still flushes what is left
+
+  flush();                              // nothing queued: a no-op, not a re-run
+  assert.deepEqual(seen, [0, 1, 2]);
+  stop();
 });
 
 test('no re-run when the value is unchanged', () => {

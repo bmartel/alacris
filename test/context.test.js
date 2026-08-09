@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createContext, provide, consume } from '../src/context.js';
+import { createContext, provide, consume, provideTo } from '../src/context.js';
 import { define } from '../src/define.js';
 import { html } from '../src/html.js';
 import { signal, root, effect } from '../src/signal.js';
@@ -122,6 +122,30 @@ test('stopping a provider releases it', () => {
   stop();
   assert.equal(consume(child, Ctx, 'gone')(), 'gone');
   parent.remove();
+});
+
+test('provideTo stops providing when the element goes away', async () => {
+  const Ctx = createContext('scoped');
+  define('ctx-scoped', {
+    setup(_p, host) {
+      provideTo(host, Ctx, 'yes');
+      return html`<slot></slot>`;
+    },
+  });
+
+  const el = document.createElement('ctx-scoped');
+  const child = document.createElement('div');
+  el.append(child);
+  document.body.append(el);
+  await tick();
+
+  assert.equal(consume(child, Ctx, 'gone')(), 'yes');
+
+  // The listener is still on `el` and `child` is still inside it, so the
+  // fallback here is only reached if setup's cleanup really ran.
+  el.remove();
+  await tick();
+  assert.equal(consume(child, Ctx, 'gone')(), 'gone');
 });
 
 test('interoperates with a hand-written protocol provider', () => {

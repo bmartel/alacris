@@ -1,8 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { store, unwrap, update, selector } from '../src/store.js';
+import { store, unwrap, update, selector, peek } from '../src/store.js';
 import { effect, computed } from '../src/signal.js';
 import { html, each, render } from '../src/html.js';
+
+test('peek reads a path without subscribing to it', () => {
+  const s = store({ shown: 'a', hidden: 1 });
+  const seen = [];
+  const stop = effect(() => seen.push(s.shown + peek(() => s.hidden)));
+  assert.deepEqual(seen, ['a1']);
+
+  s.hidden = 2;                       // read through peek: no dependency, no re-run
+  assert.deepEqual(seen, ['a1']);
+
+  s.shown = 'b';                      // a tracked read re-runs, and sees the fresh value
+  assert.deepEqual(seen, ['a1', 'b2']);
+  stop();
+});
 
 test('reads and writes like a normal object', () => {
   const s = store({ a: 1, nested: { b: 2 } });
