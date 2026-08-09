@@ -133,6 +133,26 @@ Shorthand without props/styles: `define('x-hello', () => html`<p>hello</p>`)`.
 - Use `<slot>` (named and default) for composition instead of passing template
   children through props.
 
+### Rendering without a custom element
+
+`render(template, container)` mounts a template into any node and returns a
+disposer that removes the DOM and stops every binding. That is how Alacris drops
+into a page, a route handler, or another framework's ref — no element definition
+involved:
+
+```js
+import { render, root, html } from 'alacris';
+
+const stop = render(html`<p>${count}</p>`, document.querySelector('#app'));
+stop(); // removes the nodes and unsubscribes everything
+
+// Effects created outside a setup have no owner. root() gives them one.
+const dispose = root(() => { effect(() => console.log(count())); });
+```
+
+Inside a component you need neither: `setup` already runs in a scope that is torn
+down with the element.
+
 ## Templates — where `${}` can go
 
 | Syntax | Meaning |
@@ -201,11 +221,14 @@ html`<tr class=${() => (isSelected(row().id) ? 'active' : '')}>`
 ```js
 // context/theme.js
 export const ThemeCtx = createContext('theme');
-// provider setup():   provide(host, ThemeCtx, themeSignal);
+// provider setup():   provideTo(host, ThemeCtx, themeSignal);
 // consumer setup():   const theme = consume(host, ThemeCtx, 'light');
 ```
 
-It speaks the W3C `context-request` protocol, so it interoperates with Lit.
+Use `provideTo` inside a `setup` — it stops providing when the element goes away.
+`provide` is the same thing without that, and returns the stop function itself,
+for a provider that is not an element. It speaks the W3C `context-request`
+protocol, so it interoperates with Lit.
 
 ## Styling rules
 
@@ -218,6 +241,11 @@ It speaks the W3C `context-request` protocol, so it interoperates with Lit.
   (`style=${() => ({ '--x': v() })}`), never by rebuilding a stylesheet.
 - **Never use `!important` inside a component.** It is the one thing a consumer
   cannot override.
+- To restyle components you do not own, `adoptGlobal(sheet)` pushes styles into
+  every Alacris component on the page and every one created afterwards,
+  applied after each component's own styles so a theme wins ties. It returns a
+  function that removes them again. Use it at the app level, never from inside a
+  component.
 - `shadow: false` (light DOM) when the page's global CSS should style the
   component directly.
 

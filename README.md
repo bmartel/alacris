@@ -667,11 +667,16 @@ There is also an [`llms.txt`](https://bmartel.github.io/alacris/llms.txt) map
 of the documentation for agents that fetch docs on demand. Details:
 [AI agents](https://bmartel.github.io/alacris/reference/agents/).
 
+That file is for projects that *use* Alacris. This repository's own
+[`AGENTS.md`](AGENTS.md) is a different document — it covers working on the
+library itself, and its source lives at
+[`docs/public/AGENTS.md`](docs/public/AGENTS.md).
+
 ## Development
 
 ```bash
 npm install
-npm test          # 137 tests: signals, rendering, lists, store, context, security, built bundle
+npm test          # 147 tests: signals, rendering, lists, store, context, security, docs, built bundle
 npm run build     # dist/ + SIZE.md
 npm run typecheck # type-level tests against the .d.ts files
 npm run demo      # http://localhost:5173 — demo, browser tests, and /bench/

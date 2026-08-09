@@ -3,6 +3,11 @@
 Thanks for taking a look. Alacris is small on purpose, so the bar for adding code
 is high and the bar for adding *tests* is low — please add tests freely.
 
+If you are working with a coding agent, point it at [AGENTS.md](AGENTS.md) — it
+carries the same rules as this file plus the invariants inside `src/` that look
+like they want simplifying and do not. (The `AGENTS.md` the docs site *serves*
+is a different document, for projects that use Alacris rather than change it.)
+
 ## Getting set up
 
 ```bash
@@ -19,7 +24,7 @@ it directly.
 
 | command | what it does |
 | --- | --- |
-| `npm test` | 130 tests on happy-dom — signals, rendering, lists, styles, store, context, the release config, and the built bundle |
+| `npm test` | 147 tests on happy-dom — signals, rendering, lists, styles, store, context, the release config, the shipped docs, and the built bundle |
 | `npm run build` | writes `dist/` and regenerates `SIZE.md` |
 | `npm run typecheck` | compiles the type-level tests against the shipped `.d.ts` files |
 | `npm run size` | re-measures `dist/` without rebuilding |
@@ -84,6 +89,14 @@ built bundle, which `npm run build` syncs into `docs/public/lib`.
 
 `npm run build` in `docs/` also checks every internal link and fails on a broken
 one.
+
+Two files in `docs/` are documentation *products* rather than pages about the
+library: `reference/api.md`, and `public/AGENTS.md` — the instructions people
+download into their own projects for their coding agents. `test/docs.test.js`
+reads the real exports out of `src/` and fails if either one has stopped naming
+one of them, if the hand-written `types/` have, or if an import statement in the
+agent file no longer resolves. An export a consumer genuinely does not need goes
+in that test's `UNDOCUMENTED` list, with a reason.
 
 ## Commit messages decide the version
 
