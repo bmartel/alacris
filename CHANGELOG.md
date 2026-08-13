@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.2.3](https://github.com/bmartel/alacris/compare/v0.2.2...v0.2.3) (2026-08-13)
+
+### Bug Fixes
+
+* **html:** pass nested custom-element props as properties ([1bfc570](https://github.com/bmartel/alacris/commit/1bfc570c43b9b27d7cd5152a21cdfd25d3fda1a6))
+
 ## [0.2.2](https://github.com/bmartel/alacris/compare/v0.2.1...v0.2.2) (2026-08-08)
 
 ### Bug Fixes
