@@ -124,14 +124,33 @@ Shorthand without props/styles: `define('x-hello', () => html`<p>hello</p>`)`.
 - Props are readable three ways: attribute `age="3"`, DOM property `el.age = 3`,
   and inside `setup` as signals (`age()`, `age.set(4)`). camelCase prop ↔
   kebab-case attribute.
+- **Downward with props.** In a parent template, `name=${name}` (or
+  `.name=${name}`) on a custom element sets the child's property and stays live.
+  Pass the signal, not `name()` — calling is a snapshot and the child will not
+  see later writes. Objects and arrays go through as values; you do not need to
+  stringify them, and you do not need the `.prop` prefix on a custom element.
 - Communicate **upward with events** (`host.emit(type, detail)` — bubbling and
-  composed), **downward with props**, **across with context or a store**.
+  composed), **across with context or a store**.
 - Effects created inside `setup` are disposed automatically when the element
   leaves the document. Do not hand-manage teardown unless you attach listeners
   to `window`/`document` — then return-a-cleanup from an `effect`, or use
   `onCleanup`.
 - Use `<slot>` (named and default) for composition instead of passing template
   children through props.
+
+```js
+import { define, html, signal } from 'alacris';
+
+define('user-list', {
+  setup() {
+    const name = signal('Ada');
+    const tags = signal(['math']);
+    return html`
+      <input .value=${name} @input=${(e) => name(e.target.value)}>
+      <user-card name=${name} tags=${tags}></user-card>`;
+  },
+});
+```
 
 ### Rendering without a custom element
 
@@ -295,6 +314,7 @@ protocol, so it interoperates with Lit.
 | Wrong | Right | Why |
 | --- | --- | --- |
 | `html`<p>${count()}</p>`` for live text | `html`<p>${count}</p>`` | calling reads once — a snapshot |
+| `html`<x-child user=${user()}>`` | `html`<x-child user=${user}>`` | same snapshot rule; pass the signal so the child updates |
 | `` `${todo().text}` `` in an `each` row | `${() => todo().text}` | row signal must be read in a thunk |
 | `state.list = [...state.list, item]` | `state.list.push(item)` | replacing the array re-syncs everything |
 | per-row `row.id === selected()` | `selector(() => selected())` | O(n) wakeups → O(1) |

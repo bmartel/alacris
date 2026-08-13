@@ -23,12 +23,19 @@ literally — a handler is a handler.
 | Syntax | Binds |
 | --- | --- |
 | `<p>${value}</p>` | child: text, number, node, template, array, or `each` |
-| `title=${value}` | attribute; removed when `null`, `undefined` or `false` |
+| `title=${value}` | attribute on a native element (removed when `null`/`undefined`/`false`); **property** on a custom element |
 | `class="btn ${kind}"` | attribute built from static text plus values |
 | `.value=${value}` | DOM **property**, casing preserved |
 | `?disabled=${value}` | attribute present only while truthy |
 | `@click=${fn}` | event listener |
 | `ref=${fn}` | called with the element |
+
+On a **custom element**, `name=${name}` and `.name=${name}` do the same thing:
+they set the property, so objects, arrays and camelCase names round-trip when a
+parent passes props down. Use the dot when you want a native property
+(`.value` on an input, `.hidden`) or when the name would otherwise stay an
+attribute (`data-*`, `aria-*`). Pass the signal, not `name()` — calling is a
+snapshot and the child will not see later writes.
 
 ## Child values
 

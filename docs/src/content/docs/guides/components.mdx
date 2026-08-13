@@ -186,18 +186,22 @@ form association and global CSS matter more than isolation.
 
 ## Composition
 
-Components nest like any other tag. Pass data down with a property binding:
+Components nest like any other tag. Pass data down as props — on a custom
+element, `data=${row}` sets the property (objects, arrays and camelCase names
+included). Pass the signal, not `row()`; calling is a snapshot and the child
+will not see later writes.
 
 ```js
 define('x-list', {
   props: { rows: [] },
   setup: ({ rows }) => html`
-    ${each(rows, (row) => html`<x-row .data=${row}></x-row>`, (r) => r.id)}`,
+    ${each(rows, (row) => html`<x-row data=${row}></x-row>`, (r) => r.id)}`,
 });
 ```
 
-For a value that needs to reach far down a tree without every layer forwarding
-it, use [context](../context/).
+`.data=${row}` is the same binding, written explicitly. For a value that needs
+to reach far down a tree without every layer forwarding it, use
+[context](../context/).
 
 ## Next
 

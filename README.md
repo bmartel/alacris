@@ -134,7 +134,7 @@ its dependents, and a diamond-shaped graph runs each effect exactly once per cha
 | Where the `${}` goes | What it binds |
 | --- | --- |
 | `<p>${name}</p>` | child: text, a node, a nested template, or an array |
-| `title=${tooltip}` | attribute — removed when `null`, `undefined` or `false` |
+| `title=${tooltip}` | attribute on a native element (removed when `null`/`undefined`/`false`); **property** on a custom element |
 | `class="card ${kind}"` | attribute built from static text plus values |
 | `.value=${text}` | DOM **property**, casing preserved (`.innerHTML`, `.checked`) |
 | `?hidden=${isHidden}` | attribute present only while truthy |

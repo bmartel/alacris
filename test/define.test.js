@@ -155,3 +155,88 @@ test('nested components compose and pass props down', () => {
   bump();
   assert.equal(child.shadowRoot.querySelector('span').textContent, '4');
 });
+
+test('nested components update from unprefixed bindings (no .prop)', () => {
+  let bump;
+  define('x-inner-bare', { props: { n: 0 }, setup: p => html`<span>${p.n}</span>` });
+  define('x-outer-bare', () => {
+    const c = signal(3);
+    bump = () => c(c() + 1);
+    return html`<x-inner-bare n=${c}></x-inner-bare>`;
+  });
+  const el = mount(document.createElement('x-outer-bare'));
+  const child = el.shadowRoot.querySelector('x-inner-bare');
+  assert.equal(child.shadowRoot.querySelector('span').textContent, '3');
+  bump();
+  assert.equal(child.n, 4);
+  assert.equal(child.shadowRoot.querySelector('span').textContent, '4');
+});
+
+test('nested object props survive without a leading dot', () => {
+  let rename;
+  define('x-inner-obj', {
+    props: { user: null },
+    setup: p => html`<span>${() => p.user()?.name}</span>`,
+  });
+  define('x-outer-obj', () => {
+    const user = signal({ name: 'Ada' });
+    rename = () => user({ name: 'Grace' });
+    return html`<x-inner-obj user=${user}></x-inner-obj>`;
+  });
+  const el = mount(document.createElement('x-outer-obj'));
+  const child = el.shadowRoot.querySelector('x-inner-obj');
+  assert.equal(child.shadowRoot.querySelector('span').textContent, 'Ada');
+  rename();
+  assert.equal(child.user.name, 'Grace');
+  assert.equal(child.shadowRoot.querySelector('span').textContent, 'Grace');
+});
+
+test('nested camelCase props match accessors, not lowercased attributes', () => {
+  let rename;
+  define('x-inner-camel', {
+    props: { displayName: '' },
+    setup: p => html`<span>${p.displayName}</span>`,
+  });
+  define('x-outer-camel', () => {
+    const name = signal('Ada');
+    rename = () => name('Grace');
+    return html`<x-inner-camel displayName=${name}></x-inner-camel>`;
+  });
+  const el = mount(document.createElement('x-outer-camel'));
+  const child = el.shadowRoot.querySelector('x-inner-camel');
+  assert.equal(child.displayName, 'Ada');
+  assert.equal(child.shadowRoot.querySelector('span').textContent, 'Ada');
+  rename();
+  assert.equal(child.displayName, 'Grace');
+  assert.equal(child.shadowRoot.querySelector('span').textContent, 'Grace');
+});
+
+test('parent prop signals forward into nested children', () => {
+  define('x-inner-fwd', { props: { label: '' }, setup: p => html`<span>${p.label}</span>` });
+  define('x-outer-fwd', {
+    props: { label: '' },
+    setup: p => html`<x-inner-fwd label=${p.label}></x-inner-fwd>`,
+  });
+  const el = mount(document.createElement('x-outer-fwd'));
+  el.label = 'Ada';
+  assert.equal(el.shadowRoot.querySelector('x-inner-fwd').shadowRoot.querySelector('span').textContent, 'Ada');
+  el.label = 'Grace';
+  assert.equal(el.shadowRoot.querySelector('x-inner-fwd').shadowRoot.querySelector('span').textContent, 'Grace');
+});
+
+test('kebab-case names on a child map to camelCase props', () => {
+  let bump;
+  define('x-inner-kebab', { props: { maxCount: 0 }, setup: p => html`<span>${p.maxCount}</span>` });
+  define('x-outer-kebab', () => {
+    const n = signal(9);
+    bump = () => n(12);
+    return html`<x-inner-kebab max-count=${n}></x-inner-kebab>`;
+  });
+  const el = mount(document.createElement('x-outer-kebab'));
+  const child = el.shadowRoot.querySelector('x-inner-kebab');
+  assert.equal(child.maxCount, 9);
+  assert.equal(child.shadowRoot.querySelector('span').textContent, '9');
+  bump();
+  assert.equal(child.maxCount, 12);
+  assert.equal(child.shadowRoot.querySelector('span').textContent, '12');
+});

@@ -274,3 +274,33 @@ test('a modifier opts out of delegation and attaches a real listener', () => {
   b.dispatchEvent(new Event('click'));
   assert.equal(hits, 1);
 });
+
+test('unprefixed bindings set properties on custom elements', () => {
+  customElements.define('x-prop-target', class extends HTMLElement {
+    constructor() { super(); this.user = null; this.displayName = ''; }
+  });
+  const el = host();
+  const user = signal({ name: 'Ada' });
+  const displayName = signal('Ada');
+  render(html`<x-prop-target user=${user} displayName=${displayName}></x-prop-target>`, el);
+  const t = el.querySelector('x-prop-target');
+  assert.equal(t.user.name, 'Ada');
+  assert.equal(t.displayName, 'Ada');
+  user({ name: 'Grace' });
+  displayName('Grace');
+  assert.equal(t.user.name, 'Grace');
+  assert.equal(t.displayName, 'Grace');
+});
+
+test('data-* and aria-* stay attributes on custom elements', () => {
+  customElements.define('x-attr-keep', class extends HTMLElement {});
+  const el = host();
+  const id = signal('a');
+  render(html`<x-attr-keep data-id=${id} aria-label=${id}></x-attr-keep>`, el);
+  const t = el.querySelector('x-attr-keep');
+  assert.equal(t.getAttribute('data-id'), 'a');
+  assert.equal(t.getAttribute('aria-label'), 'a');
+  id('b');
+  assert.equal(t.getAttribute('data-id'), 'b');
+  assert.equal(t.getAttribute('aria-label'), 'b');
+});

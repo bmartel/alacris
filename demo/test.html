@@ -228,6 +228,24 @@ test('rewriting a sheet reskins every instance at once', () => {
   skin.replace('p { color: rgb(11, 11, 11) }');
 });
 
+test('nested object and camelCase props update after template-clone upgrade', () => {
+  define('x-inner-live', {
+    props: { user: null, displayName: '' },
+    setup: p => html`<span>${() => `${p.displayName()}:${p.user()?.role}`}</span>`,
+  });
+  const user = signal({ role: 'math' });
+  const displayName = signal('Ada');
+  const wrap = host();
+  render(html`<x-inner-live user=${user} displayName=${displayName}></x-inner-live>`, wrap);
+  const child = wrap.querySelector('x-inner-live');
+  eq(child.shadowRoot.querySelector('span').textContent, 'Ada:math');
+  user({ role: 'navy' });
+  displayName('Grace');
+  eq(child.displayName, 'Grace');
+  eq(child.user.role, 'navy');
+  eq(child.shadowRoot.querySelector('span').textContent, 'Grace:navy');
+});
+
 test('style bindings set custom properties that cascade into children', () => {
   const el = host();
   const tone = signal('rgb(3, 3, 3)');

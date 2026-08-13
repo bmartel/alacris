@@ -170,6 +170,8 @@ Returns the element constructor.
 
 - `el.x` — the same prop as a DOM property
 - `x="…"` — the matching attribute (`camelCase` → `kebab-case`)
+- from a parent template, `x=${signal}` (or `.x=${signal}`) sets that
+  property and stays live — objects and camelCase names included
 - `el.emit(type, detail?, init?)` — dispatch a bubbling, composed
   `CustomEvent`; returns `false` if cancelled
 

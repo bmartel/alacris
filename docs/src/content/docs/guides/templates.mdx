@@ -77,8 +77,10 @@ html`<div .innerHTML=${trusted}></div>`
 html`<x-child .rows=${rows}></x-child>`
 ```
 
-Use a property whenever the value is not a string — objects, arrays and booleans
-all survive intact, where an attribute would stringify them.
+On a **custom element**, an unprefixed binding already sets the property, so
+`rows=${rows}` and `.rows=${rows}` are the same — objects, arrays and camelCase
+names round-trip. Use the dot on native elements (`.value`, `.checked`) and
+when the name should stay an attribute (`data-*`, `aria-*`).
 
 ## Boolean attributes
 

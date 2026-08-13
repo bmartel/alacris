@@ -313,9 +313,21 @@ function prepare(p) {
     return p;
   }
 
-  p.set = (el, v) => v == null || v === false
-    ? el.removeAttribute(n)
-    : el.setAttribute(n, v === true ? '' : v);
+  // Custom elements take the camelCase property, not an attribute. Attributes
+  // stringify (so a passed object becomes "[object Object]") and HTML lowercases
+  // the name (so displayName= never matches the observed display-name). Both
+  // make nested prop passing look dead. data-* / aria-* stay attributes — they
+  // have to exist in the DOM for CSS and the platform. Native tags are unchanged.
+  const k = n.replace(/-([a-z])/g, (_, ch) => ch.toUpperCase());
+  p.set = (el, v) => {
+    if (el.tagName.includes('-') && !n.startsWith('data-') && !n.startsWith('aria-')) {
+      el[k] = v;
+      return;
+    }
+    v == null || v === false
+      ? el.removeAttribute(n)
+      : el.setAttribute(n, v === true ? '' : v);
+  };
   return p;
 }
 
