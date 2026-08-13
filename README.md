@@ -11,7 +11,7 @@ ESM-only · zero dependencies · no build step required · works inside any fram
 [![CI](https://github.com/bmartel/alacris/actions/workflows/ci.yml/badge.svg)](https://github.com/bmartel/alacris/actions/workflows/ci.yml)
 [![Docs](https://github.com/bmartel/alacris/actions/workflows/docs.yml/badge.svg)](https://bmartel.github.io/alacris/)
 [![npm](https://img.shields.io/npm/v/alacris.svg)](https://www.npmjs.com/package/alacris)
-[![core size](https://img.shields.io/badge/core-5.97%20kB%20gzip-blue)](#size)
+[![core size](https://img.shields.io/badge/core-6.02%20kB%20gzip-blue)](#size)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ***alacris*** *(Latin)* — brisk, lively, quick.
@@ -62,7 +62,7 @@ hand-written, keyed, delegated DOM — the floor no library can beat. See
 
 | file | raw | gzip | brotli |
 | --- | ---: | ---: | ---: |
-| `dist/alacris.js` — signals + templates + styles + elements | 15.44 KB | **5.97 KB** | 5.44 KB |
+| `dist/alacris.js` — signals + templates + styles + elements | 15.58 KB | **6.02 KB** | 5.49 KB |
 | `dist/store.js` — deep reactive state | 2.04 KB | **0.99 KB** | 0.92 KB |
 | `dist/context.js` — cross-component context | 0.91 KB | **0.54 KB** | 0.46 KB |
 | `dist/signal.js` — reactivity alone, no DOM | 2.25 KB | **0.97 KB** | 0.92 KB |
@@ -134,7 +134,7 @@ its dependents, and a diamond-shaped graph runs each effect exactly once per cha
 | Where the `${}` goes | What it binds |
 | --- | --- |
 | `<p>${name}</p>` | child: text, a node, a nested template, or an array |
-| `title=${tooltip}` | attribute — removed when `null`, `undefined` or `false` |
+| `title=${tooltip}` | attribute on a native element (removed when `null`/`undefined`/`false`); **property** on a custom element |
 | `class="card ${kind}"` | attribute built from static text plus values |
 | `.value=${text}` | DOM **property**, casing preserved (`.innerHTML`, `.checked`) |
 | `?hidden=${isHidden}` | attribute present only while truthy |
