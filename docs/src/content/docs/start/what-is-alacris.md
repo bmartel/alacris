@@ -48,8 +48,7 @@ hence [`each`](../../guides/lists/), [context](../../guides/context/),
 ## What it is good at
 
 - **Updates.** Changing one row in a thousand-row list touches that row.
-  Removing a row costs 0.075 ms against hand-written DOM's 0.010 ms; selecting
-  one sits at the floor.
+  Removing a row costs 0.055 ms; selecting one sits at the vanilla floor.
 - **Size.** Under 6 kB for the entire runtime. The store and context add-ons
   are 0.99 kB and 0.54 kB, imported separately.
 - **Adoption.** One `<script type="module">` and you have a working component.
@@ -61,16 +60,16 @@ hence [`each`](../../guides/lists/), [context](../../guides/context/),
 
 It is worth being direct about this.
 
-**Creating elements costs roughly 3–4× hand-written DOM.** Templates are parsed
-at runtime rather than compiled ahead of time, and that is the price. Svelte and
-Solid close this gap with a compiler; Alacris deliberately does not have one,
-because "no build step" is the property that makes it droppable anywhere. If you
-need vanilla-speed construction of ten thousand rows, no runtime library will
-give it to you.
+**Creating elements costs roughly 1.7× hand-written DOM, 1.7× compiled Solid**
+on 1,000 rows. Templates are parsed at runtime rather than compiled ahead of
+time, and that is the price. Svelte and Solid close the rest of this gap with a
+compiler; Alacris deliberately does not have one, because "no build step" is the
+property that makes it droppable anywhere. If you need vanilla-speed construction
+of ten thousand rows, no runtime library will give it to you.
 
-The update path is competitive. The create path is not. Both numbers, and the
-harness that produced them, are on the
-[performance page](../../reference/performance/).
+The update path sits next to Solid — faster than React, Lit and Stencil on every
+operation in the suite. Both numbers, and the harness that produced them, are on
+the [performance page](../../reference/performance/).
 
 **It is `0.x`.** The API is settling. It is small enough to read end to end,
 which is the mitigation.
@@ -79,16 +78,18 @@ which is the mitigation.
 
 ## How it compares
 
-| | Alacris | Lit | Solid | Svelte |
-| --- | --- | --- | --- | --- |
-| Output | custom elements | custom elements | components | components |
-| Build step | none | none | required | required |
-| Reactivity | signals | reactive properties | signals | compiler |
-| Rendering | fine-grained | fine-grained | fine-grained | compiled |
-| Create speed | ~3–4× vanilla | ~3–4× vanilla | ~1.1× vanilla | ~1.1× vanilla |
+| | Alacris | Lit | Stencil | Solid | Svelte |
+| --- | --- | --- | --- | --- | --- |
+| Output | custom elements | custom elements | custom elements | components | components |
+| Build step | none | none | required | required | required |
+| Reactivity | signals | reactive properties | VDOM + props | signals | compiler |
+| Rendering | fine-grained | fine-grained | virtual DOM | fine-grained | compiled |
+| Create speed | ~1.7× vanilla | ~1.8× vanilla | ~5× vanilla | ~1.1× vanilla | compiled |
 
-The two runtime template libraries sit together, and the two compilers sit
-together. That is not a coincidence — it is the compiler.
+The compilers still win on create when they emit direct DOM writes (Solid).
+Alacris is the faster of the two runtime-only libraries. Stencil compiles, but
+to a virtual DOM, so it does not get those create numbers. The remaining gap to
+Solid is a compiler — which is the one thing this library refuses.
 
 ## Next
 

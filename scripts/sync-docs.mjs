@@ -19,7 +19,7 @@
 // the release commit carries the update, and with `--check` in CI so a pull
 // request cannot introduce a stale figure.
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -221,6 +221,7 @@ const strays = [];
 
 for (const file of files) {
   const path = join(root, file);
+  if (!existsSync(path)) continue;
   const before = readFileSync(path, 'utf8');
   if (before.includes(IGNORE)) continue;
 

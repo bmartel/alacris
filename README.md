@@ -11,7 +11,7 @@ ESM-only · zero dependencies · no build step required · works inside any fram
 [![CI](https://github.com/bmartel/alacris/actions/workflows/ci.yml/badge.svg)](https://github.com/bmartel/alacris/actions/workflows/ci.yml)
 [![Docs](https://github.com/bmartel/alacris/actions/workflows/docs.yml/badge.svg)](https://bmartel.github.io/alacris/)
 [![npm](https://img.shields.io/npm/v/alacris.svg)](https://www.npmjs.com/package/alacris)
-[![core size](https://img.shields.io/badge/core-6.02%20kB%20gzip-blue)](#size)
+[![core size](https://img.shields.io/badge/core-6.30%20kB%20gzip-blue)](#size)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ***alacris*** *(Latin)* — brisk, lively, quick.
@@ -55,14 +55,15 @@ because it does less work at runtime:
   what the user typed) survives a reorder.
 
 `bench/` measures the standard js-framework-benchmark operations against
-hand-written, keyed, delegated DOM — the floor no library can beat. See
-[Performance](#performance) for the numbers and for where Alacris still pays a tax.
+hand-written keyed DOM, and against production React, Vue, Solid, Svelte, Lit
+and Stencil.
+See [Performance](#performance) for the numbers and for where Alacris still pays a tax.
 
 ## Size
 
 | file | raw | gzip | brotli |
 | --- | ---: | ---: | ---: |
-| `dist/alacris.js` — signals + templates + styles + elements | 15.58 KB | **6.02 KB** | 5.49 KB |
+| `dist/alacris.js` — signals + templates + styles + elements | 16.14 KB | **6.30 KB** | 5.74 KB |
 | `dist/store.js` — deep reactive state | 2.04 KB | **0.99 KB** | 0.92 KB |
 | `dist/context.js` — cross-component context | 0.91 KB | **0.54 KB** | 0.46 KB |
 | `dist/signal.js` — reactivity alone, no DOM | 2.25 KB | **0.97 KB** | 0.92 KB |
@@ -496,39 +497,37 @@ define('info-card', {
 ## Performance
 
 `bench/` runs the standard js-framework-benchmark operations against
-hand-written, keyed, delegated DOM — the floor no library can beat, and the line
-Solid and Svelte sit within roughly 1.1× of. Every implementation is checked to
-render byte-identical output before it is timed.
+hand-written keyed DOM and against production React 19, Vue 3, Solid, Svelte 5,
+Lit 3, and Stencil 4. Every implementation is checked to render byte-identical output
+before it is timed. Solid, Svelte and Stencil are compiled; Alacris and Lit are
+runtime-only.
 
-Milliseconds, median of 5, JS and DOM mutation only (layout excluded so the
-framework's own cost is visible). Lower is better; run `npm run demo` and open
-`/bench/` to reproduce.
+Milliseconds, median of 5, JS and DOM mutation only. Lower is better. Run
+`npm run bench:bundle && npm run demo` and open `/bench/` to reproduce.
 
-| operation | vanilla | Alacris `.map` | Alacris `each` | `each` + store |
-| --- | ---: | ---: | ---: | ---: |
-| create 1,000 | 2.90 | 8.60 | 11.90 | 19.60 |
-| create 10,000 | 52.50 | 105.10 | 187.50 | 285.30 |
-| append 1,000 to 10,000 | 4.60 | 27.90 | **17.00** | 45.10 |
-| update every 10th row | 0.060 | 1.29 | 0.325 | **0.230** |
-| select a row | <0.01 | 1.18 | 0.610 | **0.010** |
-| swap 2 rows | <0.01 | 2.22 | **1.18** | 1.99 |
-| remove a row | 0.010 | 1.38 | **0.075** | 1.61 |
-| clear 1,000 | 0.300 | 1.60 | **1.30** | 1.60 |
+| operation | vanilla | Alacris `each` | Solid | Svelte | Lit | Stencil | Vue | React |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| create 1,000 | 2.70 | 4.50 | **2.60** | 5.70 | 4.90 | 13.7 | 4.30 | 6.70 |
+| create 10,000 | **24.6** | 58.5 | 26.4 | 195 | 76.8 | 156 | 43.6 | 206 |
+| append 1,000 to 10,000 | **2.50** | 6.20 | 3.70 | 45.2 | 6.70 | 136 | 14.2 | 9.10 |
+| update every 10th row | **0.030** | 0.090 | 0.045 | 0.090 | 0.150 | 11.0 | 2.97 | 0.375 |
+| select a row | **<0.01** | **<0.01** | 0.020 | 0.235 | 0.125 | 11.5 | 1.10 | 0.165 |
+| swap 2 rows | **<0.01** | 0.110 | 0.085 | 0.485 | 0.525 | 11.5 | 2.94 | 2.06 |
+| remove a row | **<0.01** | 0.055 | 0.065 | 0.750 | 0.290 | 13.0 | 2.73 | 0.175 |
+| clear 1,000 | **0.300** | 0.700 | 0.400 | 0.700 | 164 | 4.90 | 0.600 | 2.10 |
 
 What this says, honestly:
 
-- **The update path is competitive.** Removing a row is 0.075 ms against
-  vanilla's 0.010; selecting one is at the floor. These were 1.46 ms and 1.40 ms
-  before `each`, `selector` and event delegation.
-- **Creation still costs 3–4× hand-written DOM.** That is the price of parsing
-  templates at runtime instead of compiling them. Svelte and Solid close this
-  gap with a build step; Alacris deliberately does not have one. If you need
-  vanilla-speed creation of ten thousand rows, no runtime library will give it
-  to you.
-- **Pick the right tool per shape.** `each` is best for structural churn;
-  the store is best for deep, targeted updates; the store's proxy costs more on
-  bulk array rewrites. They compose — use `each` for the list and a store for
-  the row data.
+- **`each` is faster than React, Lit and Stencil on every operation in this suite.**
+  Lit is the fair runtime custom-element comparison; Stencil is compiled but
+  emits a virtual DOM, so a keyed update still walks the tree.
+- **The update path sits next to Solid.** Select, with `selector`, is at the
+  vanilla floor. Remove is 0.055 ms against Solid's 0.065. Swap is two
+  `insertBefore` calls (0.110 ms vs Solid's 0.085).
+- **Creation still costs ~1.7× vanilla / ~1.7× compiled Solid** on 1,000 rows.
+  That is the price of wiring bindings at runtime rather than compiling them.
+  Alacris deliberately has no build step. If you need vanilla-speed creation of
+  ten thousand rows, no runtime library will give it to you.
 
 Numbers come from one machine and one browser, and the absolute values move a
 lot with hardware. The ratios are the durable part.

@@ -60,7 +60,8 @@ must never bundle it.
 ## Performance claims need numbers
 
 `bench/` runs the standard js-framework-benchmark operations against
-hand-written, keyed, delegated DOM. It verifies that every implementation
+hand-written, keyed, delegated DOM and against production React, Vue, Solid,
+Svelte, Lit and Stencil (`npm run bench:bundle`). It verifies that every implementation
 renders byte-identical output before timing any of them; please keep that check
 working if you add an implementation.
 

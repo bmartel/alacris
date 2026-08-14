@@ -239,3 +239,37 @@ test('a plain function source works', () => {
   n(4);
   assert.deepEqual(texts(el), ['0', '1', '2', '3']);
 });
+
+test('swapping two distant rows does not move the ones in between', () => {
+  const el = host();
+  const items = signal(Array.from({ length: 20 }, (_, i) => i));
+  render(html`<ul>${each(items, (it) => html`<li>${it}</li>`)}</ul>`, el);
+  const ul = el.querySelector('ul');
+  const before = [...ul.children];
+  let moves = 0;
+  const orig = ul.insertBefore.bind(ul);
+  ul.insertBefore = (n, ref) => { moves++; return orig(n, ref); };
+
+  const next = items.peek().slice();
+  [next[1], next[18]] = [next[18], next[1]];
+  items(next);
+
+  const after = [...ul.children];
+  assert.deepEqual(texts(el), [0, 18, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 1, 19].map(String));
+  assert.equal(after[2], before[2], 'untouched rows stay put');
+  assert.equal(after[1], before[18]);
+  assert.equal(after[18], before[1]);
+  assert.equal(moves, 2, 'only the two swapped rows are moved');
+});
+
+test('a sole hole can promote from text to a nested template', () => {
+  const el = host();
+  const v = signal('x');
+  render(html`<p>${() => (v() === 'x' ? 'x' : html`<b>y</b>`)}</p>`, el);
+  assert.equal(el.querySelector('p').textContent, 'x');
+  assert.equal(el.querySelector('b'), null);
+  v('y');
+  assert.equal(el.querySelector('b').textContent, 'y');
+  v('x');
+  assert.equal(el.querySelector('p').textContent, 'x');
+});

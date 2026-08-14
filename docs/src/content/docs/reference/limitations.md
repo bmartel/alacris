@@ -8,15 +8,17 @@ sidebar:
 An honest list. Everything here is a deliberate trade or a known gap, not an
 oversight.
 
-## Creation is 3–4× hand-written DOM
+## Creation is ~1.7× hand-written DOM
 
-Templates are parsed at runtime. Svelte and Solid close this gap with a
-compiler; Alacris does not have one, because no build step is what makes it
-droppable into any page.
+Templates are parsed at runtime. Compiled Solid sits around 1.1× vanilla;
+Alacris sits around 1.7× on 1,000 rows. The remaining gap is a compiler, and
+Alacris does not have one, because no build step is what makes it droppable
+into any page.
 
-The update path is competitive — see [performance](../performance/). If you
-need vanilla-speed construction of ten thousand rows, no runtime library will
-give it to you.
+The update path sits next to Solid and is faster than React, Lit and Stencil on
+every operation in the suite — see [performance](../performance/). If you need
+vanilla-speed construction of ten thousand rows, no runtime library will give
+it to you.
 
 ## No server-side rendering
 

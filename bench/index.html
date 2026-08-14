@@ -10,7 +10,7 @@
   #ctl { display:flex; gap:.5rem; flex-wrap:wrap; margin:1rem 0; }
   button { font:inherit; padding:.4rem .8rem; border-radius:7px; cursor:pointer;
            border:1px solid #8884; background:transparent; color:inherit; }
-  table.results { border-collapse:collapse; width:100%; margin-top:1rem; }
+  table.results { border-collapse:collapse; width:100%; margin-top:1rem; font-size:12px; }
   table.results th, table.results td { padding:.35rem .6rem; text-align:right; border-bottom:1px solid #8883; }
   table.results th:first-child, table.results td:first-child { text-align:left; }
   .win { color:#1a8f4a; font-weight:700; }
@@ -27,9 +27,13 @@
 <body>
 <h1>Alacris — benchmark <span id="status">idle</span></h1>
 <p>
-  Standard js-framework-benchmark operations. Each is run after an unmeasured setup,
-  once to warm up and then 5 times; the table shows the <b>median</b>, in milliseconds,
-  including forced style and layout. Lower is better.
+  Standard js-framework-benchmark operations against vanilla, Alacris, and
+  production React / Vue / Solid / Svelte / Lit / Stencil. Each is run after an unmeasured setup,
+  once to warm up and then 5 times; the table shows the <b>median</b> in milliseconds.
+  Lower is better. Solid, Svelte and Stencil are <i>compiled</i>; Alacris and Lit are runtime-only.
+</p>
+<p id="vendor-note" style="display:none;color:#d23f3f">
+  Competitor bundles missing — run <code>npm run bench:bundle</code> then reload.
 </p>
 <div id="ctl"></div>
 <table class="results"><thead><tr id="head"></tr></thead><tbody id="body"></tbody></table>
@@ -42,14 +46,34 @@ import alacrisEach from './impl/alacris-each.js';
 import alacrisStore from './impl/alacris-store.js';
 import { resetIds } from './data.js';
 
-// Hand-written DOM is the only reference that matters. Solid and Svelte land
-// within roughly 1.1x of it, so that is the line "as fast as Solid" means.
 const IMPLS = [
-  { key: 'vanilla', name: 'vanilla (floor)', make: vanilla },
-  { key: 'alacris',    name: 'Alacris (.map)',     make: alacris },
-  { key: 'each',    name: 'Alacris (each)',     make: alacrisEach },
-  { key: 'store',   name: 'Alacris (each+store)', make: alacrisStore },
+  { key: 'vanilla', name: 'vanilla', make: vanilla },
+  { key: 'alacris', name: 'Alacris .map', make: alacris },
+  { key: 'each', name: 'Alacris each', make: alacrisEach },
+  { key: 'store', name: 'Alacris store', make: alacrisStore },
 ];
+
+const competitors = [
+  { key: 'react', name: 'React', path: './vendor/react.js' },
+  { key: 'vue', name: 'Vue', path: './vendor/vue.js' },
+  { key: 'solid', name: 'Solid', path: './vendor/solid.js' },
+  { key: 'svelte', name: 'Svelte', path: './vendor/svelte.js' },
+  { key: 'lit', name: 'Lit', path: './vendor/lit.js' },
+  { key: 'stencil', name: 'Stencil', path: './vendor/stencil.js' },
+];
+let vendorReady = false;
+try {
+  const loaded = await Promise.all(competitors.map((c) => import(c.path)));
+  for (let i = 0; i < competitors.length; i++) {
+    IMPLS.push({ key: competitors[i].key, name: competitors[i].name, make: loaded[i].default });
+  }
+  vendorReady = true;
+  const ver = (await import('./vendor/versions.js')).default;
+  document.querySelector('h1').insertAdjacentHTML('afterend',
+    `<p style="color:#888">React ${ver.react} · Vue ${ver.vue} · Solid ${ver['solid-js']} · Svelte ${ver.svelte} · Lit ${ver.lit} · Stencil ${ver['@stencil/core']}</p>`);
+} catch {
+  document.getElementById('vendor-note').style.display = 'block';
+}
 
 // `reps` repeats the operation inside one timed window and divides, because the
 // hand-written versions of the small ops finish below performance.now()'s
@@ -111,22 +135,28 @@ async function runOp(impl, op) {
 
 function draw() {
   const head = document.getElementById('head');
-  head.innerHTML = '<th>operation</th>' + IMPLS.map(i => `<th>${i.name}</th>`).join('')
-    + '<th>Alacris vs vanilla</th>';
+  const ratioCols = vendorReady
+    ? '<th>each vs Solid</th><th>store vs Solid</th><th>each vs React</th>'
+    : '<th>each vs vanilla</th>';
+  head.innerHTML = '<th>operation</th>' + IMPLS.map(i => `<th>${i.name}</th>`).join('') + ratioCols;
   const body = document.getElementById('body');
+  const fmtRatio = (a, b) => {
+    if (a == null || b == null || !b) return '·';
+    const x = a / b;
+    return `<span class="${x > 2 ? 'bad' : x <= 1.15 ? 'win' : ''}">${x.toFixed(2)}×</span>`;
+  };
   body.innerHTML = OPS.map(op => {
     const r = results[op.key] || {};
-    const base = r.vanilla;
     const cells = IMPLS.map(i => {
       const v = r[i.key];
       if (v == null) return '<td>·</td>';
       const best = Math.min(...IMPLS.map(x => r[x.key] ?? Infinity));
       return `<td class="${v === best ? 'win' : ''}">${v < 1 ? v.toFixed(3) : v.toFixed(2)}</td>`;
     }).join('');
-    const ratio = base && r.alacris ? (r.alacris / base) : null;
-    const rc = ratio == null ? '·'
-      : `<span class="${ratio > 2 ? 'bad' : ratio < 1.35 ? 'win' : ''}">${ratio.toFixed(2)}×</span>`;
-    return `<tr><td>${op.name}</td>${cells}<td>${rc}</td></tr>`;
+    const extra = vendorReady
+      ? `<td>${fmtRatio(r.each, r.solid)}</td><td>${fmtRatio(r.store, r.solid)}</td><td>${fmtRatio(r.each, r.react)}</td>`
+      : `<td>${fmtRatio(r.each, r.vanilla)}</td>`;
+    return `<tr><td>${op.name}</td>${cells}${extra}</tr>`;
   }).join('');
 }
 

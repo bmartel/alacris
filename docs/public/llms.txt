@@ -32,7 +32,7 @@ for deep state, `selector` for O(1) selection.
 
 - [API](https://bmartel.github.io/alacris/reference/api/): every export, with signatures
 - [Template syntax](https://bmartel.github.io/alacris/reference/template-syntax/): the complete binding grammar
-- [Performance](https://bmartel.github.io/alacris/reference/performance/): benchmark method, numbers, and where the costs are
+- [Performance](https://bmartel.github.io/alacris/reference/performance/): benchmark method, live `each` demo, and numbers vs React, Vue, Solid, Svelte, Lit and Stencil
 - [Security](https://bmartel.github.io/alacris/reference/security/): the XSS model, CSP and Trusted Types, prototype-pollution hardening
 - [Limitations](https://bmartel.github.io/alacris/reference/limitations/): what it deliberately does not do
 - [AI agents](https://bmartel.github.io/alacris/reference/agents/): a drop-in AGENTS.md for coding agents

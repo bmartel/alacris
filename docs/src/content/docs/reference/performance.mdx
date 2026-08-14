@@ -1,0 +1,158 @@
+---
+title: Performance
+description: What the benchmark measures, what the numbers are, and where Alacris still pays a tax.
+sidebar:
+  order: 3
+---
+
+import Demo from '../../../components/Demo.astro';
+
+## What is measured
+
+`bench/` in the repository runs the standard js-framework-benchmark operations
+against **hand-written, keyed, delegated DOM** — the floor no library can beat —
+and against production **React 19**, **Vue 3**, **Solid**, **Svelte 5**, **Lit 3**,
+and **Stencil 4**.
+
+Solid, Svelte and Stencil are compiled. Alacris and Lit are not: templates are
+parsed once per call site at runtime. That is the comparison that matters for
+this library. Stencil compiles down to a virtual DOM, so a compiler here does
+not mean Solid's create path.
+
+Two things make the numbers trustworthy:
+
+- Every implementation is checked to render **byte-identical output** before any
+  of it is timed.
+- Layout is excluded, so what remains is the framework's own JS and DOM-mutation
+  cost — the part a library actually controls. A toggle measures the
+  layout-inclusive cost instead.
+
+Milliseconds, median of five. Lower is better.
+
+## Try it here
+
+The table below is from the in-repo harness. This is the same `each` +
+`selector` path, timed in *this* browser — layout included, so the milliseconds
+will not match the table.
+
+<Demo demo="bench" title="Alacris each, live" />
+
+<div class="bench-wrap">
+<table class="bench">
+  <thead>
+    <tr>
+      <th>operation</th>
+      <th>vanilla</th>
+      <th>Alacris `each`</th>
+      <th>`each` + store</th>
+      <th>Solid</th>
+      <th>Svelte</th>
+      <th>Lit</th>
+      <th>Stencil</th>
+      <th>Vue</th>
+      <th>React</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>create 1,000</td><td>2.70</td><td>4.50</td><td>5.60</td><td>**2.60**</td><td>5.70</td><td>4.90</td><td>13.7</td><td>4.30</td><td>6.70</td></tr>
+    <tr><td>create 10,000</td><td>**24.6**</td><td>58.5</td><td>67.4</td><td>26.4</td><td>195</td><td>76.8</td><td>156</td><td>43.6</td><td>206</td></tr>
+    <tr><td>append 1,000 to 10,000</td><td>**2.50**</td><td>6.20</td><td>14.4</td><td>3.70</td><td>45.2</td><td>6.70</td><td>136</td><td>14.2</td><td>9.10</td></tr>
+    <tr><td>update every 10th row</td><td>**0.030**</td><td>0.090</td><td>0.090</td><td>0.045</td><td>0.090</td><td>0.150</td><td>11.0</td><td>2.97</td><td>0.375</td></tr>
+    <tr><td>select a row</td><td>**&lt;0.01**</td><td>**&lt;0.01**</td><td>0.005</td><td>0.020</td><td>0.235</td><td>0.125</td><td>11.5</td><td>1.10</td><td>0.165</td></tr>
+    <tr><td>swap 2 rows</td><td>**&lt;0.01**</td><td>0.110</td><td>0.335</td><td>0.085</td><td>0.485</td><td>0.525</td><td>11.5</td><td>2.94</td><td>2.06</td></tr>
+    <tr><td>remove a row</td><td>**&lt;0.01**</td><td>0.055</td><td>0.630</td><td>0.065</td><td>0.750</td><td>0.290</td><td>13.0</td><td>2.73</td><td>0.175</td></tr>
+    <tr><td>clear 1,000</td><td>**0.300**</td><td>0.700</td><td>0.800</td><td>0.400</td><td>0.700</td><td>164</td><td>4.90</td><td>0.600</td><td>2.10</td></tr>
+  </tbody>
+</table>
+</div>
+
+`.map` is omitted from the table: it is the naive pattern and loses on every
+structural operation. Use `each`.
+
+## What this says
+
+**Alacris `each` is faster than React, Lit and Stencil on every operation in
+this suite.** Create, append, update, select, swap, remove, and clear. Lit is
+the fair comparison — another runtime-only custom-element library, keyed with
+`repeat`. Create and append sit next to Alacris; tearing the list down is the
+outlier (164 ms to clear 1,000 rows). Stencil is compiled, but it emits a
+virtual DOM, so a keyed update still walks the tree (~11 ms to select or swap
+a row).
+
+**The same is true against Svelte 5** on all but a tie on update-every-10th and
+on clear. Svelte's bulk create looks like React in this harness because the
+impl holds the row array in `$state`; the update/select/swap numbers are the
+fair comparison.
+
+**The update path sits next to Solid.** Select, with `selector`, is at the
+vanilla floor. Remove is 0.055 ms against Solid's 0.065. Swap is 0.110 ms
+against Solid's 0.085 — two `insertBefore` calls, not a cascade through the
+middle. That used to cost 1.18 ms.
+
+**Creation still costs ~1.7× vanilla and ~1.7× compiled Solid** on 1,000 rows
+(~2.2× Solid on 10,000). That is the price of wiring bindings at runtime rather
+than compiling them into `firstChild` / `nextSibling` instructions. A
+runtime-only library cannot close the last stretch of that gap without growing
+a compiler, and a compiler is the one thing Alacris refuses. If you need
+vanilla-speed construction of ten thousand rows, no runtime library will give
+it to you.
+
+**Pick the tool per shape.** `each` is best for structural churn. The store is
+best for deep, targeted updates and costs more on bulk array rewrites, because
+its proxy is paid per access. They compose — `each` for the list, a store for
+the row data. Stable fields (`row.id`) should be written once, not wrapped in a
+thunk; live fields (`row.label`) stay in a function.
+
+## Reproducing it
+
+```sh
+git clone https://github.com/bmartel/alacris.git
+cd alacris
+npm install
+npm run bench:bundle   # production React / Vue / Solid / Svelte / Lit / Stencil
+npm run demo           # then open /bench/
+```
+
+The absolute values move a lot with hardware and browser. **The ratios are the
+durable part.** Competitor bundles stay in the repo harness; the docs site runs
+Alacris only.
+
+## Where the speed comes from
+
+- **No virtual DOM.** Templates are cloned from a native `<template>` — the
+  fastest DOM construction path a browser offers — and structure is never
+  diffed.
+- **Fine-grained bindings.** Each binding is its own subscription, so a change
+  writes to one attribute or one text node rather than walking a tree.
+- **Lazy, glitch-free propagation.** Writes push invalidation; reads pull
+  values. A diamond runs its effect once, and a computed that lands on the same
+  value stops propagation there.
+- **Per-row scopes.** `each` builds a row once; reordering is `insertBefore` on
+  the rows that moved. A longest-increasing-subsequence pass keeps untouched
+  rows still, so a swap of two rows is two moves, not a shuffle of the middle.
+- **Direct paths, not a TreeWalker.** Each clone follows a compile-time
+  `firstChild` / `nextSibling` recipe to its bindings.
+- **Event delegation.** One listener per render root instead of one per
+  binding — 2 instead of 2,000 on a thousand-row table.
+- **Shared setters and interned stylesheets.** Attribute setters are built once
+  per template rather than per instance, and identical CSS is parsed once per
+  page.
+
+## Size
+
+<table class="sizes">
+  <thead><tr><th>file</th><th>raw</th><th>gzip</th><th>brotli</th></tr></thead>
+  <tbody>
+    <tr><td>`alacris.js` — everything</td><td>16.14 kB</td><td>**6.30 kB**</td><td>5.74 kB</td></tr>
+    <tr><td>`store.js`</td><td>2.04 kB</td><td>**0.99 kB**</td><td>0.92 kB</td></tr>
+    <tr><td>`context.js`</td><td>0.91 kB</td><td>**0.54 kB**</td><td>0.46 kB</td></tr>
+    <tr><td>`signal.js` — no DOM</td><td>2.25 kB</td><td>**0.97 kB**</td><td>0.92 kB</td></tr>
+  </tbody>
+</table>
+
+Add-ons import the core rather than bundling it, so there is exactly one
+reactive graph at runtime. With a bundler, anything you do not import is
+tree-shaken away.
+
+Size is treated as part of the public contract: CI fails if a change moves it
+without the regenerated figures being committed.

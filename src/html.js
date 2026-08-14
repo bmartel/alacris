@@ -200,18 +200,33 @@ function compile(strings, ns) {
   }
   for (let i = 0; i < drop.length; i++) drop[i].remove();
 
-  // Pass 2 — number the nodes that actually survive, so instances can find
-  // them with one walk.
-  const at = new Map();
-  const w2 = doc.createTreeWalker(el.content, 129);
-  let idx = -1;
-  while ((node = w2.nextNode())) at.set(node, ++idx);
-  for (let i = 0; i < targets.length; i += 2) parts[targets[i]].i = at.get(targets[i + 1]);
+  // Record a firstChild/nextSibling path to each target so instances can
+  // find them without a TreeWalker. Walking every node of every clone was
+  // the bulk of per-row setup.
+  for (let i = 0; i < targets.length; i += 2) {
+    const pth = [];
+    for (let n = targets[i + 1]; n !== el.content; n = n.parentNode) {
+      let k = 0, c = n.parentNode.firstChild;
+      while (c !== n) { k++; c = c.nextSibling; }
+      pth.push(k);
+    }
+    pth.reverse();
+    parts[targets[i]].pth = pth;
+  }
 
-  parts.sort((a, b) => a.i - b.i);
   // Build each attribute part's setter once, here, so instances share them.
   for (let i = 0; i < parts.length; i++) if (parts[i].t === ATTR) prepare(parts[i]);
   return { e: el, p: parts };
+}
+
+// Follow a compile-time child-index path from a cloned fragment.
+function at(n, pth) {
+  for (let i = 0; i < pth.length; i++) {
+    let k = pth[i];
+    n = n.firstChild;
+    while (k--) n = n.nextSibling;
+  }
+  return n;
 }
 
 function tplOf(t) {
@@ -299,7 +314,7 @@ function prepare(p) {
   if (n === 'class') {
     p.set = (el, v) => {
       const t = classText(v);
-      t ? el.setAttribute('class', t) : el.removeAttribute('class');
+      t ? (el.className = t) : el.removeAttribute('class');
     };
     return p;
   }
@@ -337,17 +352,19 @@ class Inst {
   constructor(tr, c, rt) {
     this.c = c; this.rt = rt;
     const f = this.f = c.e.content.cloneNode(true);
-    const w = doc.createTreeWalker(f, 129);
     const ps = c.p, ts = this.t = [], ds = this.d = [];
-    let idx = -1, node = null;
     for (let i = 0; i < ps.length; i++) {
       const p = ps[i];
-      while (idx < p.i) { node = w.nextNode(); idx++; }
+      const node = at(f, p.pth);
       if (p.t === ATTR) {
         if (p.dl) delegate(rt, p.dl);
         ts.push(p.wrap ? p.mk(node) : node);
+      } else if (p.t === SOLE) {
+        // Primitive-only holes write textContent directly. Sole is allocated
+        // only if the value later becomes a template, list, or node.
+        ts.push(node);
       } else {
-        ts.push(p.t === SOLE ? new Sole(node, rt) : new Child(node, node.nextSibling, rt));
+        ts.push(new Child(node, node.nextSibling, rt));
       }
       ds.push(null);
     }
@@ -383,6 +400,22 @@ class Inst {
       const v = vals[p.o];
       if (p.raw) { p.set(target, v); continue; }
 
+      if (p.t === SOLE) {
+        if (typeof v === 'function') {
+          ds[i] = live(ds[i], () => {
+            const x = v(), cur = ts[i];
+            if (cur.set) { cur.set(x); return; }
+            if (writeText(cur, x)) return;
+            (ts[i] = new Sole(cur, this.rt)).set(x);
+          });
+        } else {
+          ds[i] = kill(ds[i]);
+          if (target.set) target.set(v);
+          else if (!writeText(target, v)) (ts[i] = new Sole(target, this.rt)).set(v);
+        }
+        continue;
+      }
+
       if (typeof v === 'function') {
         ds[i] = live(ds[i], attr ? () => p.set(target, v()) : () => target.set(v()));
       } else {
@@ -402,21 +435,29 @@ class Inst {
   }
 }
 
+// Write a primitive into an element's text. Returns 1 if it handled `v`, so
+// the caller knows when to grow a real child range instead.
+const writeText = (el, v) => {
+  if (v == null || v === false || v === true) { el.textContent = ''; return 1; }
+  const t = typeof v;
+  // Coerce explicitly: `textContent = 0` is spec'd to write "0", but not every
+  // DOM implementation agrees, and a silently blank cell is a nasty bug.
+  if (t === 'string') { el.textContent = v; return 1; }
+  if (t === 'number') { el.textContent = '' + v; return 1; }
+  return 0;
+};
+
 // A hole that owns everything inside one element. While the value stays
 // primitive this is a single `textContent` write with no anchors and no Text
 // bookkeeping. The moment it is handed a template, an array or a list it grows
 // the anchors and hands off to a real Child.
+
 class Sole {
   constructor(el, rt) { this.el = el; this.rt = rt; this.c = null; this.d = null; }
 
   set(v) {
     if (this.c) return this.c.set(v);
-    if (v == null || v === false || v === true) { this.el.textContent = ''; return; }
-    const t = typeof v;
-    // Coerce explicitly: `textContent = 0` is spec'd to write "0", but not every
-    // DOM implementation agrees, and a silently blank cell is a nasty bug.
-    if (t === 'string') { this.el.textContent = v; return; }
-    if (t === 'number') { this.el.textContent = '' + v; return; }
+    if (writeText(this.el, v)) return;
     this.el.textContent = '';
     const s = comment(), e = comment();
     this.el.append(s, e);
@@ -555,6 +596,28 @@ export function each(source, render, key) {
   return { __e: 1, s: source, r: render, k: key };
 }
 
+// Longest increasing subsequence of indices. `arr[i] === 0` means "new" and
+// is skipped. Returns the indices into `arr` that can stay put during a
+// keyed reorder — the same algorithm Vue and Solid use for this.
+function lis(arr) {
+  const len = arr.length, pred = new Array(len), seq = [];
+  for (let i = 0; i < len; i++) {
+    const v = arr[i];
+    if (!v) continue;
+    let lo = 0, hi = seq.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (arr[seq[mid]] < v) lo = mid + 1;
+      else hi = mid;
+    }
+    if (lo > 0) pred[i] = seq[lo - 1];
+    seq[lo] = i;
+  }
+  let u = seq.length, v = seq[u - 1];
+  while (u-- > 0) { seq[u] = v; v = pred[v]; }
+  return seq;
+}
+
 class Each {
   constructor(child, spec) {
     this.c = child;
@@ -641,16 +704,22 @@ class Each {
 
     const rows = new Array(n);
     const used = p ? new Uint8Array(p) : null;
+    // oldIdx[i] = old index + 1, or 0 if this slot is new. The +1 leaves 0
+    // free as the "create" sentinel for the LIS pass.
+    const oldIdx = new Array(n);
+    let moved = 0;
 
     // Matching runs at the head and tail cover append, prepend, push and pop
     // without ever building a Map.
     let s = 0;
     while (s < p && s < n && this.keyOf(prev[s], s) === this.keyOf(next[s], s)) {
-      rows[s] = old[s]; used[s] = 1; s++;
+      rows[s] = old[s]; used[s] = 1; oldIdx[s] = s + 1; s++;
     }
     let pe = p - 1, ne = n - 1;
     while (pe >= s && ne >= s && this.keyOf(prev[pe], pe) === this.keyOf(next[ne], ne)) {
-      rows[ne] = old[pe]; used[pe] = 1; pe--; ne--;
+      rows[ne] = old[pe]; used[pe] = 1; oldIdx[ne] = pe + 1;
+      if (ne !== pe) moved = 1;
+      pe--; ne--;
     }
 
     // Whatever is left in the middle gets matched by key.
@@ -660,7 +729,11 @@ class Each {
       for (let i = s; i <= ne; i++) {
         const k = this.keyOf(next[i], i);
         const j = seen.get(k);
-        if (j !== undefined) { rows[i] = old[j]; used[j] = 1; seen.delete(k); }
+        if (j !== undefined) {
+          rows[i] = old[j]; used[j] = 1; seen.delete(k);
+          oldIdx[i] = j + 1;
+          if (i !== j) moved = 1;
+        }
       }
     }
 
@@ -675,11 +748,14 @@ class Each {
       }
     }
 
-    // Place back to front. Untouched runs cost one nextSibling compare each,
-    // and consecutive new rows go in as a single fragment.
+    // Place back to front. New rows go in as a fragment. When anything moved,
+    // a longest-increasing-subsequence of old indices stays put — a swap of
+    // two rows is two insertBefore calls, not a cascade through the middle.
     const parent = this.c.e.parentNode;
     let ref = this.c.e;
     let batch = null;
+    const seq = moved ? lis(oldIdx) : null;
+    let si = seq ? seq.length - 1 : -1;
     for (let i = n - 1; i >= 0; i--) {
       const row = rows[i];
       if (row.g) {
@@ -688,7 +764,10 @@ class Each {
         continue;
       }
       if (batch) { const f = batch.firstChild; parent.insertBefore(batch, ref); batch = null; ref = f; }
-      if (row.l.nextSibling !== ref) this.move(row, parent, ref);
+      if (seq) {
+        if (si < 0 || i !== seq[si]) this.move(row, parent, ref);
+        else si--;
+      }
       ref = row.f;
     }
     if (batch) parent.insertBefore(batch, ref);

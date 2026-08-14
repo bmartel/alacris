@@ -5,3 +5,9 @@ dist/
 .vscode/
 .idea/
 *.tgz
+bench/node_modules/
+bench/vendor/
+bench/impl/.solid.tmp.js
+bench/impl/svelte-app.js
+bench/impl/stencil-app.js
+bench/package-lock.json

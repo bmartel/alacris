@@ -92,8 +92,8 @@ html`<ul>${() => items().map((i) => keyed(i.id, html`<li>${i.text}</li>`))}</ul>
 
 <Aside type="caution" title="It does not scale">
 A `.map` rebuilds every row's template result on every change, so the renderer
-has to walk all N rows to discover that one moved. On a thousand rows that is
-the difference between **1 ms and 28 ms**.
+has to walk all N rows to discover that one moved. On a thousand rows a swap
+is **1.37 ms** with `.map` and **0.110 ms** with `each`.
 
 Reach for `each` past a few dozen items.
 </Aside>
@@ -135,16 +135,17 @@ DOM, JS and DOM mutation only:
     <tr><th>operation</th><th>vanilla</th><th>`.map`</th><th>`each`</th></tr>
   </thead>
   <tbody>
-    <tr><td>append 1,000 to 10,000</td><td>4.60</td><td>27.90</td><td>**17.00**</td></tr>
-    <tr><td>update every 10th row</td><td>0.060</td><td>1.29</td><td>**0.325**</td></tr>
-    <tr><td>swap 2 rows</td><td>&lt;0.01</td><td>2.22</td><td>**1.18**</td></tr>
-    <tr><td>remove a row</td><td>0.010</td><td>1.38</td><td>**0.075**</td></tr>
+    <tr><td>append 1,000 to 10,000</td><td>2.50</td><td>10.0</td><td>**6.20**</td></tr>
+    <tr><td>update every 10th row</td><td>0.030</td><td>0.385</td><td>**0.090**</td></tr>
+    <tr><td>swap 2 rows</td><td>&lt;0.01</td><td>1.37</td><td>**0.110**</td></tr>
+    <tr><td>remove a row</td><td>&lt;0.01</td><td>0.365</td><td>**0.055**</td></tr>
   </tbody>
 </table>
 
-Pair `each` with [the store](../state/) and `update every 10th` drops again, to
-0.230 ms, because a row's data is mutated in place and the list is never
-re-diffed at all.
+Pair `each` with [the store](../state/) and `update every 10th` stays around
+0.090 ms in this harness (row objects are replaced). The store's win is
+in-place mutation of deep fields, where the list is never re-diffed at all.
+The same page has Lit, Stencil, Solid, Svelte, Vue and React on the same ops.
 
 ## Next
 

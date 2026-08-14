@@ -13,16 +13,19 @@ export default function alacrisStore(container) {
       <tbody>
         ${each(
           () => state.rows,
-          (row) => html`<tr class=${() => (isSelected(row().id) ? 'danger' : '')}>
-            <td class="col-md-1">${() => row().id}</td>
-            <td class="col-md-4">
-              <a class="lbl" @click=${() => (state.selected = row().id)}>${() => row().label}</a>
-            </td>
-            <td class="col-md-1">
-              <a class="remove" @click=${() => api.removeId(row().id)}>✕</a>
-            </td>
-            <td class="col-md-6"></td>
-          </tr>`,
+          (row) => {
+            const id = row().id;
+            return html`<tr class=${() => (isSelected(id) ? 'danger' : '')}>
+              <td class="col-md-1">${id}</td>
+              <td class="col-md-4">
+                <a class="lbl" @click=${() => (state.selected = id)}>${() => row().label}</a>
+              </td>
+              <td class="col-md-1">
+                <a class="remove" @click=${() => api.removeId(id)}>✕</a>
+              </td>
+              <td class="col-md-6"></td>
+            </tr>`;
+          },
           (r) => r.id
         )}
       </tbody>

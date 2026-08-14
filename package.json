@@ -42,6 +42,7 @@
     "size": "node scripts/size.js",
     "sync-docs": "node scripts/sync-docs.mjs",
     "demo": "npm run build && node scripts/serve.js",
+    "bench:bundle": "node scripts/bench-bundle.mjs",
     "prepublishOnly": "npm run build && npm test && npm run typecheck"
   },
   "keywords": [

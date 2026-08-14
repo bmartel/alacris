@@ -12,6 +12,7 @@ import todos from './todos.js?raw';
 import store from './store.js?raw';
 import context from './context.js?raw';
 import theming from './theming.js?raw';
+import bench from './bench.js?raw';
 
 export interface DemoSpec {
   /** Stable id. Used as the `?demo=` value on the playground page. */
@@ -69,6 +70,13 @@ export const demos: DemoSpec[] = [
     code: theming,
     markup:
       '<demo-chip>default</demo-chip><demo-chip tone="warn">warn</demo-chip><demo-chip tone="ok">ok</demo-chip><demo-theme-switch></demo-theme-switch>',
+  },
+  {
+    id: 'bench',
+    title: 'Benchmark',
+    blurb: 'The keyed-list operations from the js-framework-benchmark, timed in this browser.',
+    code: bench,
+    markup: '<demo-bench></demo-bench>',
   },
 ];
 

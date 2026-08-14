@@ -277,7 +277,11 @@
   font-family: var(--sl-font-mono);
 }
 
-/* Benchmark tables are dense; tighten them. */
+/* Benchmark tables are dense; tighten them. Lit/Stencil added enough
+   columns that small viewports need to scroll sideways. */
+.bench-wrap {
+  overflow-x: auto;
+}
 .bench td,
 .bench th {
   padding-block: 0.35rem;

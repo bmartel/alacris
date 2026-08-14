@@ -1,27 +1,33 @@
 // Alacris using each() — every row gets its own reactive scope, created once.
 // Reordering is pure insertBefore; changing one row wakes one binding.
+// selector() keeps "which row is selected?" at O(1), matching Solid's createSelector.
 import { html, each, render, signal, batch } from '../../dist/alacris.js';
+import { selector } from '../../dist/store.js';
 import { buildData } from '../data.js';
 
 export default function alacrisEach(container) {
   const rows = signal([]);
   const selected = signal(-1);
+  const isSelected = selector(selected);
 
   const dispose = render(
     html`<table>
       <tbody>
         ${each(
           rows,
-          (row) => html`<tr class=${() => (row().id === selected() ? 'danger' : '')}>
-            <td class="col-md-1">${() => row().id}</td>
-            <td class="col-md-4">
-              <a class="lbl" @click=${() => selected(row().id)}>${() => row().label}</a>
-            </td>
-            <td class="col-md-1">
-              <a class="remove" @click=${() => api.removeId(row().id)}>✕</a>
-            </td>
-            <td class="col-md-6"></td>
-          </tr>`,
+          (row) => {
+            const id = row().id;
+            return html`<tr class=${() => (isSelected(id) ? 'danger' : '')}>
+              <td class="col-md-1">${id}</td>
+              <td class="col-md-4">
+                <a class="lbl" @click=${() => selected(id)}>${() => row().label}</a>
+              </td>
+              <td class="col-md-1">
+                <a class="remove" @click=${() => api.removeId(id)}>✕</a>
+              </td>
+              <td class="col-md-6"></td>
+            </tr>`;
+          },
           (r) => r.id
         )}
       </tbody>
