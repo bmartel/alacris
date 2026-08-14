@@ -481,7 +481,9 @@ class Child {
   }
 
   set(v) {
-    if (v == null || v === false || v === '') return this.clear();
+    // Booleans render nothing (both of them — `cond && tpl` and `cond || tpl`
+    // both leak a bare boolean), matching the sole-hole writeText path.
+    if (v == null || typeof v === 'boolean' || v === '') return this.clear();
     if (v instanceof Tpl) return this.tpl(v);
     if (Array.isArray(v)) return this.list(v);
     if (v.__e) return this.each(v);

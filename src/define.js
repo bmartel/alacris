@@ -62,9 +62,11 @@ export function define(name, opts) {
         // the containing document (or the enclosing shadow root) instead.
         const styleRoot = (this._sr = shadow ? target : this.getRootNode());
         if (styles) applyStyles(styleRoot, styles);
-        // Track it after its own styles, so a global theme wins ties.
-        trackRoot(styleRoot);
       }
+      // Track after the element's own styles, so a global theme wins ties —
+      // and on every connect, because teardown untracks and a reconnected
+      // element must keep receiving adoptGlobal styles.
+      trackRoot(this._sr);
       this._d = root(() => { this._r = render(setup(this.props, this), target); });
     }
 

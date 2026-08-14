@@ -11,7 +11,7 @@ ESM-only · zero dependencies · no build step required · works inside any fram
 [![CI](https://github.com/bmartel/alacris/actions/workflows/ci.yml/badge.svg)](https://github.com/bmartel/alacris/actions/workflows/ci.yml)
 [![Docs](https://github.com/bmartel/alacris/actions/workflows/docs.yml/badge.svg)](https://bmartel.github.io/alacris/)
 [![npm](https://img.shields.io/npm/v/alacris.svg)](https://www.npmjs.com/package/alacris)
-[![core size](https://img.shields.io/badge/core-6.30%20kB%20gzip-blue)](#size)
+[![core size](https://img.shields.io/badge/core-6.31%20kB%20gzip-blue)](#size)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ***alacris*** *(Latin)* — brisk, lively, quick.
@@ -63,8 +63,8 @@ See [Performance](#performance) for the numbers and for where Alacris still pays
 
 | file | raw | gzip | brotli |
 | --- | ---: | ---: | ---: |
-| `dist/alacris.js` — signals + templates + styles + elements | 16.14 KB | **6.30 KB** | 5.74 KB |
-| `dist/store.js` — deep reactive state | 2.04 KB | **0.99 KB** | 0.92 KB |
+| `dist/alacris.js` — signals + templates + styles + elements | 16.15 KB | **6.31 KB** | 5.74 KB |
+| `dist/store.js` — deep reactive state | 2.11 KB | **1.01 KB** | 0.94 KB |
 | `dist/context.js` — cross-component context | 0.91 KB | **0.54 KB** | 0.46 KB |
 | `dist/signal.js` — reactivity alone, no DOM | 2.25 KB | **0.97 KB** | 0.92 KB |
 
@@ -100,6 +100,10 @@ Just the reactive core, without the renderer (0.97 KB):
 ```js
 import { signal, computed, effect } from 'https://unpkg.com/alacris/dist/signal.js';
 ```
+
+That build is for non-DOM use (a worker, a server): it carries its own copy of
+the reactive core, so don't mix it with the full bundle — signals from one
+graph do not drive the other.
 
 ## Signals
 
@@ -161,7 +165,8 @@ html`<p>${() => a() + b()}</p>`    // derived, updates on either
 ```
 
 Child positions accept templates, arrays, DOM nodes, strings and numbers.
-`null`, `undefined`, `false` and `''` render nothing.
+`null`, `undefined`, booleans and `''` render nothing — so `${() => cond() &&
+html`...`}` never leaks a stray `true`/`false` into the page.
 
 Event modifiers: `@click.once`, `@click.capture`, `@scroll.passive`,
 `@click.stop`, `@submit.prevent` — and they compose (`@click.stop.prevent`).
@@ -263,6 +268,10 @@ Each element gives you:
 
 Effects created in `setup` are disposed when the element leaves the document.
 Merely *moving* an element does not tear it down.
+
+One footgun to know: an object or array prop default (`tags: []`) is a single
+value shared by every instance that has not been given its own — treat defaults
+as immutable, or set a fresh value per element.
 
 ## Styling
 
@@ -619,10 +628,11 @@ TypeScript declarations ship with the package.
 
 - **ESM only.** No CommonJS build, and none planned.
 - **Modern browsers**: needs `<template>`, `TreeWalker`, and (for `styles`)
-  `adoptedStyleSheets` — Chrome/Edge 73+, Safari 16.4+, Firefox 101+. There is a
+  `adoptedStyleSheets` — Chrome/Edge 86+, Safari 16.4+, Firefox 101+. There is a
   `<style>` fallback where constructable stylesheets are missing.
-- **Dynamic tag names are not supported** (`` html`<${tag}>` ``). Neither are bindings
-  inside `<textarea>`/`<title>` text — use `.value` / `.textContent` instead.
+- **Dynamic tag names are not supported** (`` html`<${tag}>` ``). Neither are child
+  bindings inside raw-text elements (`<textarea>`, `<title>`, `<style>`,
+  `<script>`) — use `.value` / `.textContent` instead.
 - **Attribute values with a binding must be quoted or whole**: `class="a ${b}"` or
   `class=${b}`, not `class=a${b}`.
 - Writes are applied **synchronously**; wrap a burst in `batch()` when you care.
@@ -641,8 +651,8 @@ escape and no way to forget it. The runtime contains no `eval` or
 `new Function`, works under a strict CSP, and template parsing goes through a
 [Trusted Types](https://developer.mozilla.org/en-US/docs/Web/API/Trusted_Types_API)
 policy named `alacris` where enforced. The store's proxy blocks `__proto__`
-reads and writes, so merging untrusted JSON cannot pollute prototypes through
-it.
+reads and writes and inherited `constructor` reads, so merging untrusted JSON
+cannot pollute prototypes through it.
 
 The escape hatches you opt into (`.innerHTML`, URL attributes, `css`
 interpolation) and the full model are documented in
@@ -675,7 +685,7 @@ library itself, and its source lives at
 
 ```bash
 npm install
-npm test          # 147 tests: signals, rendering, lists, store, context, security, docs, built bundle
+npm test          # 160 tests: signals, rendering, lists, store, context, security, docs, built bundle
 npm run build     # dist/ + SIZE.md
 npm run typecheck # type-level tests against the .d.ts files
 npm run demo      # http://localhost:5173 — demo, browser tests, and /bench/

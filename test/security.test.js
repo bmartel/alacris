@@ -83,3 +83,20 @@ test('store: an own __proto__ key from parsed JSON is dropped on merge', () => {
   assert.equal({}.polluted, undefined);
   assert.equal(Object.getPrototypeOf(unwrap(s)), Object.prototype);
 });
+
+test('store: the constructor.prototype gadget cannot pollute Object.prototype', () => {
+  const s = store({ profile: {} });
+  // Three attacker-controlled keys: constructor -> prototype -> anything.
+  const k1 = 'constructor', k2 = 'prototype', k3 = 'polluted';
+  try {
+    s[k1][k2][k3] = 'yes';
+  } catch {
+    // throwing is also an acceptable outcome
+  }
+  const hit = {}.polluted;
+  delete Object.prototype.polluted;
+  assert.equal(hit, undefined);
+  // An own key named "constructor" is data, and still reads back.
+  const own = store(JSON.parse('{"constructor":"c3po"}'));
+  assert.equal(own.constructor, 'c3po');
+});

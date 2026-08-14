@@ -42,8 +42,7 @@ snapshot and the child will not see later writes.
 | Value | Renders |
 | --- | --- |
 | `'text'`, `42` | a text node |
-| `null`, `undefined`, `false`, `''` | nothing |
-| `true` | `"true"` |
+| `null`, `undefined`, `true`, `false`, `''` | nothing |
 | a `Node` | the node itself |
 | ``html`…` `` | a nested template |
 | an array | each item in order |

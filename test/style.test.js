@@ -233,3 +233,17 @@ test('a component sets its own theme properties from a signal', () => {
   el.tone = 'blue';
   assert.equal(i.style.getPropertyValue('--tone-color'), 'blue');
 });
+
+test('a reconnected element keeps receiving global styles', async () => {
+  const t = tag();
+  define(t, { setup: () => html`<p>x</p>` });
+  const el = mount(document.createElement(t));
+  el.remove();
+  await Promise.resolve(); // let the deferred teardown untrack the root
+  document.body.append(el); // reconnect: must re-track it
+  const theme = css`:host { color: olive }`;
+  const remove = adoptGlobal(theme);
+  assert.ok([...el.shadowRoot.adoptedStyleSheets].includes(theme.sheet), 'reconnected root still themed');
+  remove();
+  assert.ok(![...el.shadowRoot.adoptedStyleSheets].includes(theme.sheet));
+});

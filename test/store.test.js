@@ -247,3 +247,19 @@ test('selector entries are released with their rows', () => {
   s.selected = 2;
   assert.deepEqual([...el.querySelectorAll('li')].map((n) => n.textContent), ['y']);
 });
+
+test('array mutators do not subscribe the calling effect', () => {
+  const s = store({ list: [3, 1], other: 0 });
+  let runs = 0;
+  const stop = effect(() => {
+    runs++;
+    if (runs > 3) throw new Error('mutator subscribed its own effect');
+    s.other;           // the only intended dependency
+    s.list.push(runs); // reads length internally — must stay untracked
+    s.list.sort();     // reads every index internally — must stay untracked
+  });
+  assert.equal(runs, 1);
+  s.other = 1;         // the intended dependency still works
+  assert.equal(runs, 2);
+  stop();
+});

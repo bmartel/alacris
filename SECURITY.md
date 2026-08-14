@@ -32,8 +32,9 @@ The short version:
   never parsed as HTML.
 - The only HTML ever parsed is the static template strings (author code); that
   parse goes through a Trusted Types policy named `alacris` where enforced.
-- The store's proxy blocks `__proto__` reads and writes, so merging untrusted
-  JSON cannot pollute prototypes through it.
+- The store's proxy blocks `__proto__` reads and writes and inherited
+  `constructor` reads, so merging untrusted JSON cannot pollute prototypes
+  through it.
 - No `eval`, no `new Function`, no runtime dependencies, no install scripts.
 
 The explicit escape hatches — binding `.innerHTML`, URL attributes, and

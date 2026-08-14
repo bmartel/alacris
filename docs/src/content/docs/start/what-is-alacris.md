@@ -50,7 +50,7 @@ hence [`each`](../../guides/lists/), [context](../../guides/context/),
 - **Updates.** Changing one row in a thousand-row list touches that row.
   Removing a row costs 0.055 ms; selecting one sits at the vanilla floor.
 - **Size.** Under 6 kB for the entire runtime. The store and context add-ons
-  are 0.99 kB and 0.54 kB, imported separately.
+  are 1.01 kB and 0.54 kB, imported separately.
 - **Adoption.** One `<script type="module">` and you have a working component.
   No toolchain, and nothing to configure.
 - **Being styled by other people.** Custom properties, `::part` and adoptable

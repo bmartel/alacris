@@ -24,7 +24,7 @@ it directly.
 
 | command | what it does |
 | --- | --- |
-| `npm test` | 147 tests on happy-dom — signals, rendering, lists, styles, store, context, the release config, the shipped docs, and the built bundle |
+| `npm test` | 160 tests on happy-dom — signals, rendering, lists, styles, store, context, the release config, the shipped docs, and the built bundle |
 | `npm run build` | writes `dist/` and regenerates `SIZE.md` |
 | `npm run typecheck` | compiles the type-level tests against the shipped `.d.ts` files |
 | `npm run size` | re-measures `dist/` without rebuilding |

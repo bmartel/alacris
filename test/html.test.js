@@ -304,3 +304,18 @@ test('data-* and aria-* stay attributes on custom elements', () => {
   assert.equal(t.getAttribute('data-id'), 'b');
   assert.equal(t.getAttribute('aria-label'), 'b');
 });
+
+test('booleans render nothing in child positions, sole and not', () => {
+  const a = host();
+  render(html`<p>${true}</p><p>${false}</p>`, a); // sole holes
+  const b = host();
+  render(html`<p>x${true}</p><p>x${false}</p>`, b); // mixed-content holes
+  assert.deepEqual([...a.querySelectorAll('p')].map(p => p.textContent), ['', '']);
+  assert.deepEqual([...b.querySelectorAll('p')].map(p => p.textContent), ['x', 'x']);
+  const on = signal(true);
+  const c = host();
+  render(html`<p>${() => on()}</p>`, c);
+  assert.equal(c.querySelector('p').textContent, '');
+  on(false);
+  assert.equal(c.querySelector('p').textContent, '');
+});

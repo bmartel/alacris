@@ -71,10 +71,14 @@ enforcement you turned Trusted Types on for.
 A reactive store is exactly where applications merge parsed JSON, and
 `__proto__` is the one string key where a plain assignment mutates the
 prototype chain instead of the object. The store's proxy refuses to walk or
-write it:
+write it, and closes the `constructor` route to the same place:
 
 - `state['__proto__']` reads as `undefined` — the classic two-key gadget
   `state[a][b] = v` with attacker-controlled keys has nothing to land on.
+- The inherited `constructor` also reads as `undefined`, closing the
+  three-key variant `state[a][b][c] = v` that walks
+  `constructor.prototype`. An **own** key named `constructor` (data you
+  stored) still reads back normally.
 - Assigning `__proto__` through the store (including via `Object.assign(state,
   JSON.parse(input))`, where JSON can carry an own `__proto__` key) is
   silently dropped, so the merge keeps working and the prototype chain does

@@ -187,7 +187,7 @@ down with the element.
 - `class=${...}` and `style=${...}` also accept objects/arrays:
   `class=${() => ({ btn: true, on: active() })}`,
   `style=${() => ({ '--fill': pct() + '%' })}`.
-- Conditionals: `${() => cond() && html`...`}` — `null`/`undefined`/`false`/`''`
+- Conditionals: `${() => cond() && html`...`}` — `null`/`undefined`/booleans/`''`
   render nothing.
 - SVG needs the `svg` tag: `` svg`<circle r=${r}/>` ``.
 - Not supported: dynamic tag names, bindings inside `<textarea>`/`<title>` text

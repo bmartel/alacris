@@ -50,12 +50,18 @@ const handler = {
     // `__proto__` is the one string key where reading walks the prototype chain
     // and writing *mutates* it. Handing the prototype out here would turn
     // `state[a][b] = v` with attacker-controlled keys into prototype pollution,
-    // so it reads as `undefined`. `Object.getPrototypeOf` is unaffected — it
-    // never hits this trap.
-    if (k === '__proto__') return undefined;
+    // so it reads as `undefined`. The inherited `constructor` is the same
+    // gadget one hop longer (`state[a][b][c]` via `constructor.prototype`), so
+    // it is blocked too — but only when inherited, so a stored own key named
+    // "constructor" still reads back. `Object.getPrototypeOf` is unaffected —
+    // it never hits this trap.
+    if (k === '__proto__' || (k === 'constructor' && !Object.prototype.hasOwnProperty.call(t, k)))
+      return undefined;
     const v = Reflect.get(t, k, r);
     // Array mutators read `length` and the indices themselves; tracking inside
-    // them would subscribe the caller to the whole array.
+    // them would subscribe the caller to the whole array — an effect that
+    // pushes would wake itself and loop. Mutators are writes, so they run
+    // untracked; the set trap still fires for every slot they touch.
     if (typeof v === 'function') {
       // `splice` moves every element after the cut, one assignment at a time.
       // Left unbatched, observers would run against a half-shifted array — with
@@ -64,7 +70,7 @@ const handler = {
         const e = entry(t);
         const m = e.m || (e.m = new Map());
         let w = m.get(k);
-        if (!w) m.set(k, (w = function (...args) { return batch(() => v.apply(this, args)); }));
+        if (!w) m.set(k, (w = function (...args) { return batch(() => untrack(() => v.apply(this, args))); }));
         return w;
       }
       return v;
