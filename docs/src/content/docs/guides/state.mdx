@@ -87,7 +87,7 @@ html`<tr class=${() => (isSelected(row().id) ? 'danger' : '')}>`
 
 A selector keeps one small signal per key it is asked about and flips exactly
 two of them — the row losing the match and the row gaining it. In the benchmark
-this takes selecting a row from **0.61 ms to 0.010 ms**, which is the floor.
+this takes selecting a row from **0.56 ms to under 0.01 ms**, which is the floor.
 
 ## Pairing with each
 

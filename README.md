@@ -4,7 +4,7 @@
 
 # Alacris
 
-**Web components with signals and fine-grained DOM updates — in 6 kB.**
+**Web components with signals and fine-grained DOM updates — in 6.45 kB.**
 
 ESM-only · zero dependencies · no build step required · works inside any framework
 
@@ -213,8 +213,9 @@ html`<ul>${() => items().map(i => keyed(i.id, html`<li>${i.text}</li>`))}</ul>`
 ```
 
 But a `.map` rebuilds every row's template on every change, so the renderer has
-to walk all N rows to find the one that moved. On a thousand rows that is the
-difference between 1 ms and 28 ms. Reach for `each` past a few dozen items.
+to walk all N rows to find the one that moved. On a thousand rows a swap costs
+1.4 ms with `.map` and 0.1 ms with `each`. Reach for `each` past a few dozen
+items.
 
 ### SVG
 
@@ -459,7 +460,7 @@ html`<tr class=${() => (isSelected(row().id) ? 'danger' : '')}>`
 
 A selector keeps one small signal per key it is asked about and flips exactly
 two of them — the row losing selection and the row gaining it. In `bench/` this
-takes selecting a row from 0.61 ms to 0.01 ms.
+takes selecting a row from 0.56 ms to under 0.01 ms.
 
 ## Composition that scales
 
@@ -520,24 +521,25 @@ Milliseconds, median of 5, JS and DOM mutation only. Lower is better. Run
 
 | operation | vanilla | Alacris `each` | Solid | Svelte | Lit | Stencil | Vue | React |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| create 1,000 | 2.70 | 4.50 | **2.60** | 5.70 | 4.90 | 13.7 | 4.30 | 6.70 |
-| create 10,000 | **24.6** | 58.5 | 26.4 | 195 | 76.8 | 156 | 43.6 | 206 |
-| append 1,000 to 10,000 | **2.50** | 6.20 | 3.70 | 45.2 | 6.70 | 136 | 14.2 | 9.10 |
-| update every 10th row | **0.030** | 0.090 | 0.045 | 0.090 | 0.150 | 11.0 | 2.97 | 0.375 |
-| select a row | **<0.01** | **<0.01** | 0.020 | 0.235 | 0.125 | 11.5 | 1.10 | 0.165 |
-| swap 2 rows | **<0.01** | 0.110 | 0.085 | 0.485 | 0.525 | 11.5 | 2.94 | 2.06 |
-| remove a row | **<0.01** | 0.055 | 0.065 | 0.750 | 0.290 | 13.0 | 2.73 | 0.175 |
-| clear 1,000 | **0.300** | 0.700 | 0.400 | 0.700 | 164 | 4.90 | 0.600 | 2.10 |
+| create 1,000 | **1.90** | 4.30 | 2.10 | 4.50 | 4.20 | 11.4 | 3.35 | 5.65 |
+| create 10,000 | **17.4** | 41.8 | 20.8 | 161 | 49.7 | 130 | 33.3 | 228 |
+| append 1,000 to 10,000 | **1.60** | 4.30 | 2.50 | 36.7 | 4.90 | 95.2 | 12.0 | 6.85 |
+| update every 10th row | **0.030** | 0.083 | 0.033 | 0.090 | 0.118 | 6.78 | 0.910 | 0.318 |
+| select a row | **<0.01** | **<0.01** | **<0.01** | 0.240 | 0.098 | 6.80 | 0.815 | 0.152 |
+| swap 2 rows | **<0.01** | 0.102 | 0.080 | 0.468 | 0.407 | 6.78 | 0.882 | 1.72 |
+| remove a row | **<0.01** | 0.063 | 0.057 | 0.738 | 0.227 | 8.65 | 0.795 | 0.162 |
+| clear 1,000 | **0.200** | 0.600 | 0.350 | 0.400 | 152 | 3.55 | 0.400 | 1.50 |
 
 What this says, honestly:
 
-- **`each` is faster than React, Lit and Stencil on every operation in this suite.**
+- **`each` is faster than React and Stencil on every operation, and faster
+  than Lit on everything except create 1,000, where the two tie within noise.**
   Lit is the fair runtime custom-element comparison; Stencil is compiled but
   emits a virtual DOM, so a keyed update still walks the tree.
 - **The update path sits next to Solid.** Select, with `selector`, is at the
-  vanilla floor. Remove is 0.055 ms against Solid's 0.065. Swap is two
-  `insertBefore` calls (0.110 ms vs Solid's 0.085).
-- **Creation still costs ~1.7× vanilla / ~1.7× compiled Solid** on 1,000 rows.
+  vanilla floor. Remove is 0.063 ms against Solid's 0.057. Swap is two
+  `insertBefore` calls (0.102 ms vs Solid's 0.080).
+- **Creation still costs ~2.3× vanilla / ~2× compiled Solid** on 1,000 rows.
   That is the price of wiring bindings at runtime rather than compiling them.
   Alacris deliberately has no build step. If you need vanilla-speed creation of
   ten thousand rows, no runtime library will give it to you.

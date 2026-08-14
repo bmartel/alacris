@@ -1,7 +1,7 @@
 # AGENTS.md — building applications with Alacris
 
 You are working in a project that uses **Alacris** (npm: `alacris`) — web components
-with signals and fine-grained DOM updates. ~6 kB gzip, ESM-only, zero dependencies,
+with signals and fine-grained DOM updates. ~6.45 kB gzip, ESM-only, zero dependencies,
 no build step required. Docs: https://bmartel.github.io/alacris/
 
 This file tells you how to organize, write, and verify Alacris code. Follow it

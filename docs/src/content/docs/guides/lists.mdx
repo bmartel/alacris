@@ -108,7 +108,7 @@ html`<ul>${() => items().map((i) => keyed(i.id, html`<li>${i.text}</li>`))}</ul>
 <Aside type="caution" title="It does not scale">
 A `.map` rebuilds every row's template result on every change, so the renderer
 has to walk all N rows to discover that one moved. On a thousand rows a swap
-is **1.37 ms** with `.map` and **0.110 ms** with `each`.
+is **1.43 ms** with `.map` and **0.102 ms** with `each`.
 
 Reach for `each` past a few dozen items.
 </Aside>
