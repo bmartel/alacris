@@ -128,12 +128,16 @@ function write(s, v) {
 export function flush() {
   if (flushing) return;
   flushing = 1;
+  let err, thrown = 0;
   try {
     for (let i = 0; i < queue.length; i++) {
       const n = queue[i];
-      if (!n.d && n.st) update(n);
+      // One throwing effect must not starve the rest of the queue: run every
+      // effect, then resurface the first error once the flush is complete.
+      if (!n.d && n.st) try { update(n); } catch (e) { if (!thrown) { thrown = 1; err = e; } }
     }
   } finally { queue.length = 0; flushing = 0; }
+  if (thrown) throw err;
 }
 
 /** A readable/writable reactive value. `s()` reads, `s(v)` / `s.set(v)` writes. */
@@ -182,6 +186,13 @@ export function dispose(n) { destroy(n); }
 export function batch(fn) {
   batching++;
   try { return fn(); } finally { if (!--batching) flush(); }
+}
+
+/** True while a subscriber (an effect or a computed) is collecting
+ *  dependencies. Lets store-like integrations skip subscription bookkeeping
+ *  entirely for reads that nothing is listening to. */
+export function tracking() {
+  return obs !== null;
 }
 
 /** Read without subscribing. */

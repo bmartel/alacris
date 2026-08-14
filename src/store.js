@@ -8,7 +8,7 @@
 // This is what makes large state workable. Handing a fresh array to a signal
 // tells the renderer only "something changed"; a store tells it exactly what.
 
-import { signal, effect, untrack, batch, onCleanup } from './signal.js';
+import { signal, effect, untrack, tracking, batch, onCleanup } from './signal.js';
 
 const RAW = Symbol('alacris.raw');
 const KEYS = Symbol('alacris.keys');
@@ -75,7 +75,10 @@ const handler = {
       }
       return v;
     }
-    version(entry(t), k)();
+    // Subscribe only when something is listening. An untracked read — a
+    // JSON.stringify over a big tree, a one-off lookup in an event handler —
+    // would otherwise permanently allocate a version signal per key it visits.
+    if (tracking()) version(entry(t), k)();
     return plain(v) ? proxy(v) : v;
   },
 
@@ -115,12 +118,12 @@ const handler = {
   },
 
   has(t, k) {
-    if (typeof k !== 'symbol') version(entry(t), k)();
+    if (typeof k !== 'symbol' && tracking()) version(entry(t), k)();
     return Reflect.has(t, k);
   },
 
   ownKeys(t) {
-    version(entry(t), KEYS)();
+    if (tracking()) version(entry(t), KEYS)();
     return Reflect.ownKeys(t);
   },
 };

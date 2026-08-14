@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { signal, computed, effect, batch, untrack, root, onCleanup, flush } from '../src/signal.js';
+import { signal, computed, effect, batch, untrack, tracking, root, onCleanup, flush } from '../src/signal.js';
 
 test('signal reads and writes', () => {
   const a = signal(1);
@@ -209,4 +209,33 @@ test('repeated reads of the same source link once', () => {
   assert.equal(runs, 2);
   a(3);
   assert.equal(runs, 3);
+});
+
+test('tracking reports whether a subscriber is collecting dependencies', () => {
+  assert.equal(tracking(), false);
+  let inEffect, inComputed, inUntrack;
+  const c = computed(() => (inComputed = tracking()));
+  const stop = effect(() => {
+    inEffect = tracking();
+    c();
+    inUntrack = untrack(() => tracking());
+  });
+  assert.equal(inEffect, true);
+  assert.equal(inComputed, true);
+  assert.equal(inUntrack, false);
+  assert.equal(tracking(), false, 'restored after the effect returns');
+  stop();
+});
+
+test('a throwing effect does not starve the rest of the flush', () => {
+  const s = signal(0);
+  const seen = [];
+  const stop1 = effect(() => { if (s() === 1) throw new Error('boom'); });
+  const stop2 = effect(() => seen.push(s()));
+  assert.deepEqual(seen, [0]);
+  assert.throws(() => s(1), /boom/, 'the first error still surfaces');
+  assert.deepEqual(seen, [0, 1], 'the effect queued behind the thrower still ran');
+  s(2);
+  assert.deepEqual(seen, [0, 1, 2]);
+  stop1(); stop2();
 });

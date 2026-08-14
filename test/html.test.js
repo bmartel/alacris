@@ -319,3 +319,16 @@ test('booleans render nothing in child positions, sole and not', () => {
   on(false);
   assert.equal(c.querySelector('p').textContent, '');
 });
+
+test('a binding swallowed by raw text throws a clear SyntaxError', () => {
+  // happy-dom parses <textarea>/<title> contents as markup (real browsers do
+  // not), so <style> and a nested <template> stand in for the whole class.
+  assert.throws(
+    () => render(html`<style>${'p{}'}</style>`, host()),
+    { name: 'SyntaxError', message: /raw text/ }
+  );
+  assert.throws(
+    () => render(html`<template>${'x'}</template>`, host()),
+    { name: 'SyntaxError', message: /nested <template>/ }
+  );
+});

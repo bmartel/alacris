@@ -11,7 +11,7 @@ ESM-only · zero dependencies · no build step required · works inside any fram
 [![CI](https://github.com/bmartel/alacris/actions/workflows/ci.yml/badge.svg)](https://github.com/bmartel/alacris/actions/workflows/ci.yml)
 [![Docs](https://github.com/bmartel/alacris/actions/workflows/docs.yml/badge.svg)](https://bmartel.github.io/alacris/)
 [![npm](https://img.shields.io/npm/v/alacris.svg)](https://www.npmjs.com/package/alacris)
-[![core size](https://img.shields.io/badge/core-6.31%20kB%20gzip-blue)](#size)
+[![core size](https://img.shields.io/badge/core-6.45%20kB%20gzip-blue)](#size)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ***alacris*** *(Latin)* — brisk, lively, quick.
@@ -63,10 +63,10 @@ See [Performance](#performance) for the numbers and for where Alacris still pays
 
 | file | raw | gzip | brotli |
 | --- | ---: | ---: | ---: |
-| `dist/alacris.js` — signals + templates + styles + elements | 16.15 KB | **6.31 KB** | 5.74 KB |
-| `dist/store.js` — deep reactive state | 2.11 KB | **1.01 KB** | 0.94 KB |
+| `dist/alacris.js` — signals + templates + styles + elements | 16.47 KB | **6.45 KB** | 5.87 KB |
+| `dist/store.js` — deep reactive state | 2.14 KB | **1.03 KB** | 0.94 KB |
 | `dist/context.js` — cross-component context | 0.91 KB | **0.54 KB** | 0.46 KB |
-| `dist/signal.js` — reactivity alone, no DOM | 2.25 KB | **0.97 KB** | 0.92 KB |
+| `dist/signal.js` — reactivity alone, no DOM | 2.34 KB | **1.03 KB** | 0.96 KB |
 
 The add-ons are separate entry points that import the core, so you only pay for
 what you import — and there is exactly one reactive graph at runtime.
@@ -95,7 +95,7 @@ import { define, html, signal } from 'https://unpkg.com/alacris@0.2.4/dist/alacr
 import { define, html, signal } from 'https://cdn.jsdelivr.net/npm/alacris/+esm';
 ```
 
-Just the reactive core, without the renderer (0.97 KB):
+Just the reactive core, without the renderer (1.03 KB):
 
 ```js
 import { signal, computed, effect } from 'https://unpkg.com/alacris/dist/signal.js';
@@ -200,6 +200,10 @@ html`<ul>
 `row` is a signal, so read it inside a thunk (`${() => row().text}`) to keep the
 binding live. The second argument to the render function is the row's index,
 also a signal, supplied only if you ask for it.
+
+Place `each(...)` directly in the child position, as above — its source is
+already a function, so wrapping it in a thunk (`${() => each(...)}`) only makes
+every re-run build a fresh spec that tears down and rebuilds the whole list.
 
 For a short, static list, mapping the array yourself is fine, and `keyed` gives
 it stable identity:
@@ -592,6 +596,7 @@ for strings, numbers and booleans; properties (`el.tags = [...]`) work for every
 | `effect(fn)` | run on change; return a cleanup; returns a disposer |
 | `batch(fn)` | coalesce writes |
 | `untrack(fn)` | read without subscribing |
+| `tracking()` | whether a subscriber is currently collecting dependencies |
 | `root(fn)` | ownership scope; returns a disposer for everything created inside |
 | `onCleanup(fn)` | register a cleanup with the enclosing effect or root |
 | `flush()` | run queued effects now |
@@ -685,7 +690,7 @@ library itself, and its source lives at
 
 ```bash
 npm install
-npm test          # 160 tests: signals, rendering, lists, store, context, security, docs, built bundle
+npm test          # 163 tests: signals, rendering, lists, store, context, security, docs, built bundle
 npm run build     # dist/ + SIZE.md
 npm run typecheck # type-level tests against the .d.ts files
 npm run demo      # http://localhost:5173 — demo, browser tests, and /bench/

@@ -37,6 +37,10 @@ export function batch<T>(fn: () => T): T;
 
 export function untrack<T>(fn: () => T): T;
 
+/** True while a subscriber (an effect or a computed) is collecting
+ *  dependencies — reads made now will subscribe it. */
+export function tracking(): boolean;
+
 export function root(fn: () => void): Dispose;
 
 export function onCleanup(fn: Cleanup): Cleanup;

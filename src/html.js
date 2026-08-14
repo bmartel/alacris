@@ -214,6 +214,14 @@ function compile(strings, ns) {
     parts[targets[i]].pth = pth;
   }
 
+  // A marker the walker never found was swallowed whole: either a raw-text
+  // element (whose contents the HTML parser refuses to treat as markup) or a
+  // nested <template> (whose contents live in a fragment this one cannot
+  // reach). Fail loudly instead of leaving a cryptic crash for later.
+  for (let i = 0; i < parts.length; i++)
+    if (parts[i].pth === undefined)
+      throw new SyntaxError('alacris: a binding inside raw text (<script>/<style>/<textarea>/<title>) or a nested <template> is not supported — bind .value / .textContent instead');
+
   // Build each attribute part's setter once, here, so instances share them.
   for (let i = 0; i < parts.length; i++) if (parts[i].t === ATTR) prepare(parts[i]);
   return { e: el, p: parts };

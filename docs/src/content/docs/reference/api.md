@@ -64,6 +64,13 @@ Read without creating a dependency.
 
 Run any queued effects immediately. Rarely needed — writes apply synchronously.
 
+#### `tracking()`
+
+`true` while a subscriber (an effect or a computed) is collecting
+dependencies — reads made now will subscribe it. For store-like integrations
+that want to skip subscription bookkeeping on untracked reads; application
+code rarely needs it.
+
 #### `root(fn)`
 
 Create an ownership scope. Returns a disposer that tears down every effect
@@ -232,7 +239,7 @@ Ask the nearest provider above `host`. Returns a read-only signal, holding
 ## `alacris/signal`
 
 The reactive core with no DOM dependency: `signal`, `computed`, `effect`,
-`batch`, `untrack`, `flush`, `root`, `onCleanup`.
+`batch`, `untrack`, `tracking`, `flush`, `root`, `onCleanup`.
 
 It is a **separate build with its own graph**. If you are rendering, import your
 signals from `alacris`.

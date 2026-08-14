@@ -34,6 +34,7 @@ const NOT_AN_ENTRY = new Set(['./src/*', './package.json']);
  */
 const UNDOCUMENTED = {
   flush: 'only needed to drain effects after bypassing batch() — not app-level',
+  tracking: 'integration hook for store-like reactive wrappers — not app-level',
 };
 
 const entries = [];

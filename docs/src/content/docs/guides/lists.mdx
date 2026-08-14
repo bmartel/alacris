@@ -79,6 +79,21 @@ Use a key whenever your data is replaced rather than mutated — which is most o
 the time with plain signals. With [the store](../state/), rows are mutated in
 place and reference identity already works.
 
+### Create it where it runs once
+
+`each` keeps its state as long as the *same* `each(...)` value stays in place —
+which it does when the template is built once, in `setup`. Inside a re-run
+thunk, every run calls `each(...)` again, and a fresh spec tears the whole
+list down and rebuilds it:
+
+```js
+html`<ul>${each(() => rows(), renderRow)}</ul>`          // built once — rows persist
+html`<ul>${() => each(() => rows(), renderRow)}</ul>`    // rebuilt on every run — don't
+```
+
+The source is already a function, so there is nothing reactive to gain from
+the outer thunk — pass `each(...)` directly as the child value.
+
 ## Mapping the array yourself
 
 For a short, stable list, a plain `.map` is fine, and `keyed` gives items a

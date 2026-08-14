@@ -44,8 +44,10 @@ html`<div ${attrName}="x">`           // dynamic attribute names
 html`<div ${spreadProps}>`            // spreading
 ```
 
-Raw-text elements cannot take a child binding, because the HTML parser does not
-treat their contents as markup. Use a property:
+Raw-text elements (`<script>`, `<style>`, `<textarea>`, `<title>`) and nested
+`<template>` elements cannot take a child binding, because the HTML parser
+does not treat their contents as markup this template can reach — these throw
+a `SyntaxError` too. Use a property:
 
 ```js
 html`<textarea .value=${text}></textarea>`
