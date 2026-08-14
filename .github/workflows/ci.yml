@@ -63,9 +63,11 @@ jobs:
       - run: npm run typecheck
 
       # The published size is part of the contract. If a change moves it, the
-      # regenerated SIZE.md has to be committed alongside.
+      # regenerated SIZE.md has to be committed alongside. The check is exact
+      # on raw and gzip, with a few bytes of tolerance on brotli — that
+      # encoder ships with Node, and its patch releases move the output.
       - name: SIZE.md is current
-        run: git diff --exit-code -- SIZE.md
+        run: node scripts/size.js --check
 
       - name: Report size
         run: cat SIZE.md >> "$GITHUB_STEP_SUMMARY"
