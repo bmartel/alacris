@@ -4,6 +4,16 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.3.0](https://github.com/bmartel/alacris/compare/v0.2.4...v0.3.0) (2026-08-14)
+
+### Features
+
+* tracking(), untracked store reads allocate nothing, resilient flush ([e89f04b](https://github.com/bmartel/alacris/commit/e89f04b1ebe6effabd8d9fcee4c60888a892b8c3))
+
+### Bug Fixes
+
+* security and correctness fixes from a full review ([6a982b7](https://github.com/bmartel/alacris/commit/6a982b75d0132042ed26dbd4326585f76faff846))
+
 ## [0.2.4](https://github.com/bmartel/alacris/compare/v0.2.3...v0.2.4) (2026-08-14)
 
 ### Performance

@@ -64,7 +64,7 @@ See [Performance](#performance) for the numbers and for where Alacris still pays
 | file | raw | gzip | brotli |
 | --- | ---: | ---: | ---: |
 | `dist/alacris.js` — signals + templates + styles + elements | 16.47 KB | **6.45 KB** | 5.87 KB |
-| `dist/store.js` — deep reactive state | 2.14 KB | **1.03 KB** | 0.94 KB |
+| `dist/store.js` — deep reactive state | 2.14 KB | **1.03 KB** | 0.95 KB |
 | `dist/context.js` — cross-component context | 0.91 KB | **0.54 KB** | 0.46 KB |
 | `dist/signal.js` — reactivity alone, no DOM | 2.34 KB | **1.03 KB** | 0.96 KB |
 
@@ -90,7 +90,7 @@ Or skip installing entirely:
 // latest
 import { define, html, signal } from 'https://unpkg.com/alacris';
 // pinned (recommended for production)
-import { define, html, signal } from 'https://unpkg.com/alacris@0.2.4/dist/alacris.js';
+import { define, html, signal } from 'https://unpkg.com/alacris@0.3.0/dist/alacris.js';
 // or jsDelivr
 import { define, html, signal } from 'https://cdn.jsdelivr.net/npm/alacris/+esm';
 ```
