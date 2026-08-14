@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.2.4](https://github.com/bmartel/alacris/compare/v0.2.3...v0.2.4) (2026-08-14)
+
+### Performance
+
+* **html:** LIS keyed lists and compile-time binding paths ([620ddd0](https://github.com/bmartel/alacris/commit/620ddd0ba7223b8a6fedaec1045f6420d0801a9e))
+
 ## [0.2.3](https://github.com/bmartel/alacris/compare/v0.2.2...v0.2.3) (2026-08-13)
 
 ### Bug Fixes
