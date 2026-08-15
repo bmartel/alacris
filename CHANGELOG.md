@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.8.0](https://github.com/bmartel/alacris/compare/v0.7.0...v0.8.0) (2026-08-15)
+
+### Features
+
+* **starter:** default system type tokens to Google Sans Flex ([#6](https://github.com/bmartel/alacris/issues/6)) ([b8e6989](https://github.com/bmartel/alacris/commit/b8e698947d4228daf6f2c83a13cc4eb464ecf0dc))
+
 ## [0.7.0](https://github.com/bmartel/alacris/compare/v0.6.20...v0.7.0) (2026-08-15)
 
 ### Features
