@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.14](https://github.com/bmartel/alacris/compare/v0.6.13...v0.6.14) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** eliminate mid-scroll mutations and stabilize carousel transitions ([04baa29](https://github.com/bmartel/alacris/commit/04baa297be8bcc5c4a8d72c3205187e3467dc66c))
+
 ## [0.6.13](https://github.com/bmartel/alacris/compare/v0.6.12...v0.6.13) (2026-08-15)
 
 ### Bug Fixes
