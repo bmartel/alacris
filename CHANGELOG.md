@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.0](https://github.com/bmartel/alacris/compare/v0.5.0...v0.6.0) (2026-08-15)
+
+### Features
+
+* **starter:** complete the Material 3 catalog and fix overlay, search, slider, and carousel ([088db37](https://github.com/bmartel/alacris/commit/088db375a746453e6bf9a6bcd0fb88bf3f47a56d))
+
 ## [0.5.0](https://github.com/bmartel/alacris/compare/v0.4.0...v0.5.0) (2026-08-15)
 
 ### Features
