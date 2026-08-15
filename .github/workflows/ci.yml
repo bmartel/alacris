@@ -27,7 +27,9 @@ jobs:
             echo "Expected '<type>(<scope>): <summary>', for example:"
             echo "  fix(html): keep focus when a keyed row moves"
             echo "  feat(store)!: selector() takes a comparator"
+            echo "  feat(ui): add a combobox"
             echo "Types: feat fix perf refactor revert docs test build ci chore"
+            echo "Scope ui (or starter) publishes @alacris/ui, not @alacris/core."
             echo "See CONTRIBUTING.md for which types trigger a release."
             exit 1
           fi
@@ -47,7 +49,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      - run: npm run test:starter
+      - run: npm run test:ui
 
   build:
     name: build, types and size
@@ -80,3 +82,17 @@ jobs:
       # because the size figures are read from it.
       - name: Versions and sizes in the docs are current
         run: npm run sync-docs -- --check
+
+  isolate:
+    name: library source and UI source are not mixed
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: git fetch origin ${{ github.base_ref }}
+      - run: node scripts/check-pr-scope.mjs

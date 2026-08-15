@@ -1,5 +1,5 @@
-import { define, html, each } from 'alacris';
-import { store, selector } from 'alacris/store';
+import { define, html, each } from '@alacris/core';
+import { store, selector } from '@alacris/core/store';
 
 define('demo-store', {
   styles: `

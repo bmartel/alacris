@@ -23,7 +23,7 @@ Now the same thing, built up a piece at a time.
    that is the platform's rule for custom elements, not ours.
 
    ```js
-   import { define, html } from 'alacris';
+   import { define, html } from '@alacris/core';
 
    define('demo-counter', () => html`<p>hello</p>`);
    ```
@@ -37,7 +37,7 @@ Now the same thing, built up a piece at a time.
    A signal is a function. Call it to read, call it with an argument to write.
 
    ```js
-   import { define, html, signal } from 'alacris';
+   import { define, html, signal } from '@alacris/core';
 
    define('demo-counter', () => {
      const count = signal(0);
@@ -129,7 +129,7 @@ html`<p>${() => a() + b()}</p>`  // live, derived from both
 
 ## Next
 
-- [UI starter](../ui-starter/) — a copy-out design system of sixty-odd components
+- [Alacris UI](../../ui/getting-started/) — buttons, fields, and a theme, from npm
 - [Signals](../../guides/signals/) — computed values, effects and cleanup
 - [Templates](../../guides/templates/) — the full binding syntax
 - [Components](../../guides/components/) — props, events, lifecycle and slots

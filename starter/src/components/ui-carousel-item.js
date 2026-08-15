@@ -11,7 +11,7 @@
 // @part  surface — the snap item
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars, effect } from 'alacris';
+import { define, html, css, vars, effect } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 

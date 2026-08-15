@@ -14,7 +14,7 @@
 // @part  shape — the placeholder element
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars } from 'alacris';
+import { define, html, css, vars } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 

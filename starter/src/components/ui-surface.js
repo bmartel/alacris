@@ -13,7 +13,7 @@
 // @slot  (default)
 // @vars  (none — every value resolves through the system tokens)
 
-import { define, html, css, effect } from 'alacris';
+import { define, html, css, effect } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 

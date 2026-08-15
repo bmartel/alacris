@@ -28,7 +28,8 @@ it directly.
 | `npm run build` | writes `dist/` and regenerates `SIZE.md` |
 | `npm run typecheck` | compiles the type-level tests against the shipped `.d.ts` files |
 | `npm run size` | re-measures `dist/` without rebuilding |
-| `npm run demo` | serves the demo, the browser test suite and the benchmark on :5173 |
+| `npm run demo` | serves the demo, the browser test suite, the benchmark, and Alacris UI on :5173 |
+| `npm run test:ui` | Alacris UI smoke tests (`starter/`, happy-dom) |
 
 Before opening a pull request, run all three of `npm test`, `npm run build` and
 `npm run typecheck`.
@@ -85,7 +86,7 @@ npm run dev
 Every example on the site is **live**. Demo sources live in `docs/src/demos/`
 and are rendered by `<Demo>` as both a highlighted code block and a module
 script, from the same string — so what a reader sees is what executed, and the
-two cannot drift. The site carries an import map pointing `alacris` at the
+two cannot drift. The site carries an import map pointing `@alacris/core` at the
 built bundle, which `npm run build` syncs into `docs/public/lib`.
 
 `npm run build` in `docs/` also checks every internal link and fails on a broken
@@ -169,22 +170,45 @@ and typechecks the exact commit, then runs semantic-release, which:
 If no commit since the last tag warrants a release, it says so and stops. That
 is the normal outcome for a docs-only or CI-only change.
 
+### Alacris UI is a separate package
+
+`starter/` is the **@alacris/ui** npm package. It depends on `@alacris/core` and must
+never bundle a copy of it. It has its own version, changelog
+(`starter/CHANGELOG.md`), git tags (`ui-v*`), and workflow
+(`.github/workflows/release-ui.yml`).
+
+A commit scoped `ui` (or the legacy `starter`) publishes `@alacris/ui` and does
+**not** publish `@alacris/core`. A commit scoped anything else publishes `@alacris/core`
+and does not publish `@alacris/ui`. CI fails a pull request that changes
+`src/`/`types/` and `starter/src/`/`starter/types/` together — split those.
+
+```
+feat(ui): add a combobox          → @alacris/ui minor, @alacris/core unchanged
+fix(html): keep focus on a move   → @alacris/core patch, @alacris/ui unchanged
+```
+
+The UI trusted publisher on npm is pinned to `release-ui.yml`, independent of
+`release.yml`. Creating or renaming that file means updating the publisher on
+the `@alacris/ui` package. The first UI release seeds a `ui-v0.0.0` tag so the
+package starts at 0.1.0 rather than 1.0.0.
+
 ### Nothing documents a version or a size by hand
 
 <!-- sync-docs:ignore — this section names versions to explain the rule, so it
      must not be rewritten by the rule. -->
 
-`package.json` is the only place a version is set and `SIZE.md` is the only
-place a size is measured. Everything the docs say about either is derived from
-those two by `scripts/sync-docs.mjs`.
+`package.json` is the only place a **library** version is set (`@alacris/core`);
+`starter/package.json` is the only place a **UI** version is set (`@alacris/ui`).
+`SIZE.md` is the only place a size is measured. Everything the docs say about
+either is derived from those files by `scripts/sync-docs.mjs`.
 
 **Versions.** Most examples on the site are deliberately unpinned —
-`unpkg.com/alacris` always resolves to the newest release. The ones that *are*
+`unpkg.com/@alacris/core` always resolves to the newest release. The ones that *are*
 pinned exist to show how pinning works, so the number in them is illustrative
-and should be whatever shipped last. The script rewrites every `alacris@x.y.z`
+and should be whatever shipped last. The script rewrites every `@alacris/core@x.y.z`
 in the tracked prose. The shape of a pin is its intent, so it survives:
-`alacris@0.2` stays a minor pin and only becomes `alacris@0.3`, while
-`alacris@0.2.1` is rewritten in full.
+`@alacris/core@0.2` stays a minor pin and only becomes `@alacris/core@0.3`, while
+`@alacris/core@0.2.1` is rewritten in full.
 
 **Sizes.** The figures in the size tables and in the README's size badge are
 rewritten from `SIZE.md`. The tables are anchored on themselves rather than on
@@ -223,8 +247,9 @@ tarball carries [provenance](https://docs.npmjs.com/generating-provenance-statem
 linking it back to the commit and workflow run that produced it.
 
 The trust relationship is configured on npm, not here, and it is pinned to this
-repository *and* to the filename `release.yml`. Renaming or moving that workflow
-breaks publishing until the trusted publisher on npm is updated to match.
+repository *and* to the workflow filename. `release.yml` publishes `@alacris/core`;
+`release-ui.yml` publishes `@alacris/ui`. Renaming or moving a workflow
+breaks publishing until the trusted publisher on that package is updated to match.
 
 ## Style
 

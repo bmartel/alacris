@@ -8,7 +8,7 @@ sidebar:
 TypeScript declarations ship with the package, so your editor has all of this
 too.
 
-## `alacris`
+## `@alacris/core`
 
 ### Reactivity
 
@@ -191,7 +191,7 @@ Returns the element constructor.
 - `el.emit(type, detail?, init?)` — dispatch a bubbling, composed
   `CustomEvent`; returns `false` if cancelled
 
-## `alacris/store`
+## `@alacris/core/store`
 
 #### `store(object)`
 
@@ -223,7 +223,7 @@ const isSelected = selector(() => state.selected);
 isSelected(row.id); // boolean
 ```
 
-## `alacris/context`
+## `@alacris/core/context`
 
 #### `createContext(description?)`
 
@@ -245,10 +245,10 @@ Ask the nearest provider above `host`. Returns a read-only signal, holding
 
 `provide`, torn down automatically with the enclosing scope.
 
-## `alacris/signal`
+## `@alacris/core/signal`
 
 The reactive core with no DOM dependency: `signal`, `computed`, `effect`,
 `batch`, `untrack`, `tracking`, `flush`, `root`, `onCleanup`.
 
 It is a **separate build with its own graph**. If you are rendering, import your
-signals from `alacris`.
+signals from `@alacris/core`.

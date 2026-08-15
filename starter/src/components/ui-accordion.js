@@ -15,7 +15,7 @@
 // so only user interaction triggers single-open collapse; programmatic
 // `expanded` writes on an item are left alone.
 
-import { define, html, css, vars, onCleanup } from 'alacris';
+import { define, html, css, vars, onCleanup } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import './ui-accordion-item.js';

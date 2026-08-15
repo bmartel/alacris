@@ -1,6 +1,6 @@
 ---
 title: Playground
-description: Run and edit Alacris in your browser. An editor and a live page, with alacris installed from npm — nothing to clone and nothing to set up.
+description: Run and edit Alacris in your browser. An editor and a live page, with @alacris/core installed from npm — nothing to clone and nothing to set up.
 tableOfContents: false
 sidebar:
   order: 0
@@ -9,7 +9,7 @@ sidebar:
 import Playground from '../../components/Playground.astro';
 
 Pick an example and start it. You get an editor on the left and the running page
-on the right, with `alacris` installed from npm. Change the source and the
+on the right, with `@alacris/core` installed from npm. Change the source and the
 preview updates.
 
 <Playground height="min(78vh, 52rem)" />
@@ -21,16 +21,15 @@ cross-origin isolation headers, and a static host like GitHub Pages cannot send
 them. The embed above uses their classic runtime, which does not.)
 
 Nothing here is specific to this site. Alacris itself needs no build step; Vite
-appears in the exported project only so that `import 'alacris'` resolves from
+appears in the exported project only so that `import '@alacris/core'` resolves from
 `node_modules`. In a plain HTML page an import map does the same job:
 
 ```html
 <script type="importmap">
-  { "imports": { "alacris": "https://esm.sh/alacris" } }
+  { "imports": { "@alacris/core": "https://esm.sh/@alacris/core" } }
 </script>
 <script type="module" src="./main.js"></script>
 ```
 
 See [Installation](../start/installation/) for the other ways to load it, or
-the [UI starter](../start/ui-starter/) for a copy-out design system built on
-top.
+[Alacris UI](../ui/getting-started/) for buttons, fields, and a theme on top.

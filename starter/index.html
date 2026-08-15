@@ -3,21 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Alacris UI — design system starter</title>
+  <title>Alacris UI</title>
   <!--
-    Inside this repo the import map points at the local build (run `npm run build`
-    at the repo root first, or `npm run demo` which serves this page at
+    Inside this repo the import map points at the local Alacris build
+    (`npm run demo` from the repo root serves this page at
     http://localhost:5173/starter/).
 
-    In your own project, point it at a pinned CDN build instead:
-      "alacris": "https://cdn.jsdelivr.net/npm/alacris@0.6/dist/alacris.js"
+    In your own project, `npm install @alacris/ui` and import from
+    '@alacris/ui', or point an import map at pinned CDN builds of both
+    `@alacris/core` and `@alacris/ui`. See the package README.
   -->
   <script type="importmap">
   {
     "imports": {
-      "alacris": "../dist/alacris.js",
-      "alacris/store": "../dist/store.js",
-      "alacris/context": "../dist/context.js"
+      "@alacris/core": "../dist/alacris.js",
+      "@alacris/core/store": "../dist/store.js",
+      "@alacris/core/context": "../dist/context.js"
     }
   }
   </script>

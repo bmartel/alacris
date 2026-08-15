@@ -15,7 +15,7 @@
 // Focus: the host is the roving tab stop (<ui-bottom-nav> assigns tabindex);
 // focus is forwarded to the inner button so Enter/Space activate natively.
 
-import { define, html, css, vars, computed, onCleanup } from 'alacris';
+import { define, html, css, vars, computed, onCleanup } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { ripple } from '../motion/ripple.js';

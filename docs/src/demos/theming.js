@@ -1,4 +1,4 @@
-import { define, html, css, vars, adoptGlobal } from 'alacris';
+import { define, html, css, vars, adoptGlobal } from '@alacris/core';
 
 // The component declares what it can be themed by. Each token compiles to
 // var(--chip-bg, <default>), so a consumer overrides it with plain CSS.

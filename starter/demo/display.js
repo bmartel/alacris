@@ -1,6 +1,6 @@
 // Demo — data display family: avatar, badge, divider, list, table, tooltip.
 
-import { html, signal } from 'alacris';
+import { html, signal } from '@alacris/core';
 import { block, stackBlock } from './helpers.js';
 import '../src/components/ui-avatar.js';
 import '../src/components/ui-badge.js';

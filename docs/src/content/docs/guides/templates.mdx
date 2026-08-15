@@ -11,7 +11,7 @@ Templates are tagged template literals. There is no JSX, no compiler and no
 runtime parser of your own — the browser's HTML parser does the work, once.
 
 ```js
-import { html, render } from 'alacris';
+import { html, render } from '@alacris/core';
 
 render(html`<p>hello</p>`, document.body);
 ```
@@ -157,7 +157,7 @@ Use the `svg` tag for fragments that belong inside an `<svg>`, so children get
 the right namespace:
 
 ```js
-import { svg } from 'alacris';
+import { svg } from '@alacris/core';
 
 svg`<circle cx="10" cy="10" r=${radius} />`
 ```
@@ -168,7 +168,7 @@ For anything outside a component. Returns a disposer that removes the DOM and
 stops every binding:
 
 ```js
-import { html, render } from 'alacris';
+import { html, render } from '@alacris/core';
 
 const dispose = render(html`<p>${count}</p>`, document.querySelector('#app'));
 dispose();

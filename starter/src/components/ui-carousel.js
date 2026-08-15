@@ -21,7 +21,7 @@
 // @part  viewport, track, prev, next
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars, effect, computed, signal, onCleanup } from 'alacris';
+import { define, html, css, vars, effect, computed, signal, onCleanup } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base, focusRingOn } from './base.js';
 import { prefersReducedMotion } from '../motion/animate.js';

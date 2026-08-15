@@ -21,7 +21,7 @@
 // @part  field, input, label, helper
 // @vars  see `t` below
 
-import { define, html, css, vars, computed, signal } from 'alacris';
+import { define, html, css, vars, computed, signal } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { formBind } from '../util/form.js';

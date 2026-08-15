@@ -10,7 +10,7 @@
 // groups listen on the group host. Toggle-group allows deselection — empty
 // change events are ignored so a knob always has a value.
 
-import { define, html, css, signal } from 'alacris';
+import { define, html, css, signal } from '@alacris/core';
 import { sys } from '../src/tokens/sys.js';
 import { DEFAULT_SEED } from '../src/tokens/color.js';
 import { createTheme, applyTheme, setScheme, scheme, schemePreference } from '../src/theme/index.js';

@@ -2,10 +2,26 @@
   "branches": ["main"],
   "plugins": [
     [
+      "./scripts/release-filter-scopes.js",
+      { "exclude": ["ui", "starter"] }
+    ],
+    [
       "@semantic-release/commit-analyzer",
       {
         "preset": "conventionalcommits",
         "releaseRules": [
+          { "breaking": true, "scope": "ui", "release": false },
+          { "breaking": true, "scope": "starter", "release": false },
+          { "type": "feat", "scope": "ui", "release": false },
+          { "type": "feat", "scope": "starter", "release": false },
+          { "type": "fix", "scope": "ui", "release": false },
+          { "type": "fix", "scope": "starter", "release": false },
+          { "type": "perf", "scope": "ui", "release": false },
+          { "type": "perf", "scope": "starter", "release": false },
+          { "type": "refactor", "scope": "ui", "release": false },
+          { "type": "refactor", "scope": "starter", "release": false },
+          { "type": "revert", "scope": "ui", "release": false },
+          { "type": "revert", "scope": "starter", "release": false },
           { "type": "perf", "release": "patch" },
           { "type": "refactor", "release": "patch" },
           { "type": "revert", "release": "patch" },

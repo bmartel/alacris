@@ -1,21 +1,79 @@
 {
-  "name": "alacris-ui-starter",
+  "name": "@alacris/ui",
   "version": "0.1.0",
-  "description": "A complete, themeable design system and component library built with Alacris — Material design defaults, zero other dependencies.",
+  "description": "Themeable design system for Alacris — Material defaults, sixty-eight custom elements, ESM-only, no build step.",
   "type": "module",
-  "private": true,
   "exports": {
-    ".": "./src/index.js",
-    "./theme": "./src/theme/index.js",
-    "./motion": "./src/motion/index.js",
-    "./tokens": "./src/tokens/index.js"
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./theme": {
+      "types": "./types/index.d.ts",
+      "default": "./src/theme/index.js"
+    },
+    "./motion": {
+      "types": "./types/index.d.ts",
+      "default": "./src/motion/index.js"
+    },
+    "./tokens": {
+      "types": "./types/index.d.ts",
+      "default": "./src/tokens/index.js"
+    },
+    "./components/*": "./src/components/*",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
   },
+  "module": "./src/index.js",
+  "types": "./types/index.d.ts",
+  "unpkg": "./src/index.js",
+  "jsdelivr": "./src/index.js",
+  "sideEffects": [
+    "./src/index.js",
+    "./src/components/**/*.js"
+  ],
+  "files": [
+    "src",
+    "types",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "start": "node ../scripts/serve.js 5174",
-    "pretest": "node -e \"const fs=require('fs');fs.mkdirSync('node_modules',{recursive:true});try{fs.symlinkSync('../..','node_modules/alacris')}catch{}\"",
-    "test": "node --import ./test/setup.js --test test/*.test.js"
+    "pretest": "node -e \"const fs=require('fs');fs.mkdirSync('node_modules/@alacris',{recursive:true});try{fs.symlinkSync('../../..','node_modules/@alacris/core')}catch{}\"",
+    "test": "node --import ./test/setup.js --test test/*.test.js",
+    "catalog": "node scripts/catalog.mjs"
   },
   "dependencies": {
-    "alacris": "^0.3.0"
+    "@alacris/core": "^0.10.0"
+  },
+  "peerDependencies": {
+    "@alacris/core": "^0.10.0"
+  },
+  "keywords": [
+    "alacris",
+    "web-components",
+    "custom-elements",
+    "design-system",
+    "material",
+    "theme",
+    "esm"
+  ],
+  "license": "MIT",
+  "author": "Brandon Martel <brandonmartel@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bmartel/alacris.git",
+    "directory": "starter"
+  },
+  "homepage": "https://bmartel.github.io/alacris/ui/getting-started/",
+  "bugs": {
+    "url": "https://github.com/bmartel/alacris/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

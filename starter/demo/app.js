@@ -5,7 +5,7 @@
 // swallows @click. Slotted chrome (app-bar actions, search hits, drawer rows)
 // uses @click.capture so the host listener fires before that skip.
 
-import { define, html, css, signal, computed, effect, keyed } from 'alacris';
+import { define, html, css, signal, computed, effect, keyed } from '@alacris/core';
 import { sys } from '../src/tokens/sys.js';
 import { scheme } from '../src/theme/index.js';
 import { prefersReducedMotion } from '../src/motion/animate.js';

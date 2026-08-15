@@ -1,7 +1,7 @@
 // Smoke test — the kitchen-sink demo is itself a composition of the system.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { html, render, signal } from 'alacris';
+import { html, render, signal } from '@alacris/core';
 import { applyCurrentTheme } from '../demo/theme-controls.js';
 import { bindSearchDock } from '../demo/search-dock.js';
 import '../demo/app.js';

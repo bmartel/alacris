@@ -12,7 +12,7 @@
 // @part  handle
 // @vars  see `t` below
 
-import { define, html, css, vars } from 'alacris';
+import { define, html, css, vars } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base, focusRingOn } from './base.js';
 import { formBind } from '../util/form.js';

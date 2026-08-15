@@ -12,7 +12,7 @@
 // @part  control   — the <button>/<a>
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars, computed, signal } from 'alacris';
+import { define, html, css, vars, computed, signal } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base, focusRingOn, stateLayerOn } from './base.js';
 import { ripple } from '../motion/ripple.js';

@@ -94,8 +94,8 @@ Two copies of the library means two reactive graphs, and signals from one will
 not drive rendering in the other. With a bundler this is automatic; without one,
 use an import map.
 
-The same applies to `alacris/signal`, which is a **separate build** for non-DOM
-use. If you are rendering, import your signals from `alacris`.
+The same applies to `@alacris/core/signal`, which is a **separate build** for non-DOM
+use. If you are rendering, import your signals from `@alacris/core`.
 
 ## It is 0.x
 

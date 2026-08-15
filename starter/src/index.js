@@ -1,9 +1,10 @@
-// Alacris UI — public surface.
+// Alacris UI — public surface (`@alacris/ui` on npm).
 //
 // Importing this module registers every component and re-exports the theme,
 // motion, token, and utility APIs. Tree-shaking-friendly alternative: import
 // only the component files and helpers you use — each component module is
-// self-contained.
+// self-contained. Do not bundle a second copy of `@alacris/core`; these modules
+// import it by specifier so the app and the design system share one graph.
 
 // Theme
 export {

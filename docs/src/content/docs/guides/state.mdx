@@ -13,7 +13,7 @@ copy tells the renderer only *something changed*, so everything reading it
 re-runs. A store tells it exactly **which path** changed.
 
 ```js
-import { store } from 'alacris/store';
+import { store } from '@alacris/core/store';
 
 const state = store({ rows: [], filter: '', selected: -1 });
 
@@ -59,7 +59,7 @@ state.rows.splice(1, 2);  // observers see one consistent update
 ## unwrap and update
 
 ```js
-import { store, unwrap, update } from 'alacris/store';
+import { store, unwrap, update } from '@alacris/core/store';
 
 JSON.stringify(state);        // works — the proxy is transparent
 const raw = unwrap(state.rows); // the underlying array, untracked
@@ -78,7 +78,7 @@ comparing against `selected` means a thousand subscribers, so every selection
 change wakes every row.
 
 ```js
-import { selector } from 'alacris/store';
+import { selector } from '@alacris/core/store';
 
 const isSelected = selector(() => state.selected);
 
@@ -95,8 +95,8 @@ This is the combination that makes large lists cheap. `each` handles structure,
 the store handles contents:
 
 ```js
-import { html, each } from 'alacris';
-import { store } from 'alacris/store';
+import { html, each } from '@alacris/core';
+import { store } from '@alacris/core/store';
 
 const state = store({ rows: [/* … */] });
 

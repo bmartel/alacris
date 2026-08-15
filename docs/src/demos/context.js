@@ -1,5 +1,5 @@
-import { define, html, signal } from 'alacris';
-import { createContext, provide, consume } from 'alacris/context';
+import { define, html, signal } from '@alacris/core';
+import { createContext, provide, consume } from '@alacris/core/context';
 
 // One key object, imported by both the provider and the consumer.
 const Theme = createContext('demo-theme');

@@ -21,7 +21,7 @@
 // text mode sets the `content` from a private custom property; icon mode masks
 // a currentColor box with the icon's path, so it themes like any glyph.
 
-import { define, html, css, vars, effect } from 'alacris';
+import { define, html, css, vars, effect } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { iconPath, iconsVersion } from '../util/icons.js';

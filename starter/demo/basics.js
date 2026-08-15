@@ -1,7 +1,7 @@
 // Demo — the exemplar components: buttons, cards, switches, text fields,
 // dialog, bottom sheet, typography, icons.
 
-import { html, signal } from 'alacris';
+import { html, signal } from '@alacris/core';
 import { block, stackBlock, row } from './helpers.js';
 import { iconNames } from '../src/util/icons.js';
 import '../src/components/ui-button.js';

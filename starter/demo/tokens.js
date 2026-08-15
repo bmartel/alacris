@@ -1,6 +1,6 @@
 // Demo — theme tokens: the three tiers, live swatches, and a component override.
 
-import { html, signal } from 'alacris';
+import { html, signal } from '@alacris/core';
 import { sys } from '../src/tokens/sys.js';
 import { TYPE_ROLES } from '../src/tokens/typography.js';
 import { RADIUS_KEYS, ELEVATION_LEVELS, SPACE_STEPS } from '../src/tokens/system.js';

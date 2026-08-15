@@ -12,7 +12,7 @@
 // @slot  (default) — custom content when src/name/icon are all empty
 // @vars  --ui-avatar-size, --ui-avatar-bg, --ui-avatar-fg, --ui-avatar-radius
 
-import { define, html, css, vars, computed, effect, signal } from 'alacris';
+import { define, html, css, vars, computed, effect, signal } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import './ui-icon.js';

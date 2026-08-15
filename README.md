@@ -10,7 +10,7 @@ ESM-only · zero dependencies · no build step required · works inside any fram
 
 [![CI](https://github.com/bmartel/alacris/actions/workflows/ci.yml/badge.svg)](https://github.com/bmartel/alacris/actions/workflows/ci.yml)
 [![Docs](https://github.com/bmartel/alacris/actions/workflows/docs.yml/badge.svg)](https://bmartel.github.io/alacris/)
-[![npm](https://img.shields.io/npm/v/alacris.svg)](https://www.npmjs.com/package/alacris)
+[![npm](https://img.shields.io/npm/v/@alacris/core.svg)](https://www.npmjs.com/package/@alacris/core)
 [![core size](https://img.shields.io/badge/core-6.56%20kB%20gzip-blue)](#size)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -22,7 +22,7 @@ ESM-only · zero dependencies · no build step required · works inside any fram
 
 ```html
 <script type="module">
-  import { define, html, signal } from 'https://unpkg.com/alacris';
+  import { define, html, signal } from 'https://unpkg.com/@alacris/core';
 
   define('ala-counter', {
     props: { start: 0 },
@@ -77,40 +77,52 @@ reactivity and the custom-element layer.
 ## Install
 
 ```bash
-npm install alacris
+npm install @alacris/core
 ```
 
 ```js
-import { define, html, signal, computed, effect } from 'alacris';
+import { define, html, signal, computed, effect } from '@alacris/core';
 ```
+
+The package used to be the unscoped `alacris`. Same API; the specifier is now
+`@alacris/core`.
 
 Or skip installing entirely:
 
 ```js
 // latest
-import { define, html, signal } from 'https://unpkg.com/alacris';
+import { define, html, signal } from 'https://unpkg.com/@alacris/core';
 // pinned (recommended for production)
-import { define, html, signal } from 'https://unpkg.com/alacris@0.10.0/dist/alacris.js';
+import { define, html, signal } from 'https://unpkg.com/@alacris/core@0.10.0/dist/alacris.js';
 // or jsDelivr
-import { define, html, signal } from 'https://cdn.jsdelivr.net/npm/alacris/+esm';
+import { define, html, signal } from 'https://cdn.jsdelivr.net/npm/@alacris/core/+esm';
 ```
 
 Just the reactive core, without the renderer (1.03 KB):
 
 ```js
-import { signal, computed, effect } from 'https://unpkg.com/alacris/dist/signal.js';
+import { signal, computed, effect } from 'https://unpkg.com/@alacris/core/dist/signal.js';
 ```
 
 That build is for non-DOM use (a worker, a server): it carries its own copy of
 the reactive core, so don't mix it with the full bundle — signals from one
 graph do not drive the other.
 
+Want buttons, fields, and a theme rather than starting from `define(...)`?
+
+```bash
+npm install @alacris/ui
+```
+
+That is a separate package with its own version. It depends on `@alacris/core` and
+does not bundle a second copy. [Getting started →](https://bmartel.github.io/alacris/ui/getting-started/)
+
 ## Signals
 
 A signal is a function. Call it to read, call it with an argument to write.
 
 ```js
-import { signal, computed, effect, batch, untrack } from 'alacris';
+import { signal, computed, effect, batch, untrack } from '@alacris/core';
 
 const count = signal(0);
 count();            // 0        — read (and subscribe, if inside an effect/computed)
@@ -177,7 +189,7 @@ For anything that grows, shrinks or reorders, use `each`. Every row gets its own
 reactive scope, built once:
 
 ```js
-import { each } from 'alacris';
+import { each } from '@alacris/core';
 
 html`<ul>
   ${each(
@@ -222,14 +234,14 @@ items.
 Use the `svg` tag so children land in the SVG namespace:
 
 ```js
-import { svg } from 'alacris';
+import { svg } from '@alacris/core';
 svg`<svg viewBox="0 0 20 20"><circle cx="10" cy="10" r=${radius}/></svg>`
 ```
 
 ## Components
 
 ```js
-import { define, html, css, signal, computed } from 'alacris';
+import { define, html, css, signal, computed } from '@alacris/core';
 
 define('user-card', {
   // Prop names + defaults. The default's *type* drives attribute coercion:
@@ -311,7 +323,7 @@ whole page**, however many components use it and however many elements exist —
 pointer copy, not a parse.
 
 ```js
-import { define, html, css } from 'alacris';
+import { define, html, css } from '@alacris/core';
 
 const reset = css`*, ::before, ::after { box-sizing: border-box }`;
 
@@ -356,7 +368,7 @@ through, and Alacris leans on all three rather than inventing a fourth.
 into each declaration:
 
 ```js
-import { vars, css } from 'alacris';
+import { vars, css } from '@alacris/core';
 
 const t = vars('btn', { bg: '#111', fg: '#fff', radius: '8px' });
 // t.bg === 'var(--btn-bg, #111)'
@@ -410,7 +422,7 @@ Push a stylesheet into **every** Alacris component, including ones that do not
 exist yet:
 
 ```js
-import { adoptGlobal, css } from 'alacris';
+import { adoptGlobal, css } from '@alacris/core';
 
 const remove = adoptGlobal(css`
   :host { font-family: Inter, system-ui }
@@ -451,7 +463,7 @@ copy tells the renderer only *something changed* — so everything reading it
 re-runs. A store tells it exactly **which path** changed.
 
 ```js
-import { store } from 'alacris/store';
+import { store } from '@alacris/core/store';
 
 const state = store({ rows: [], filter: '', selected: -1 });
 
@@ -476,7 +488,7 @@ comparing against `selected` means a thousand subscribers, so every selection
 change wakes every row.
 
 ```js
-import { selector } from 'alacris/store';
+import { selector } from '@alacris/core/store';
 
 const isSelected = selector(() => state.selected);
 
@@ -496,7 +508,7 @@ event `@lit/context` uses — so it works *between* libraries, not just inside
 Alacris.
 
 ```js
-import { createContext, provide, consume } from 'alacris/context';
+import { createContext, provide, consume } from '@alacris/core/context';
 
 export const ThemeCtx = createContext('theme');
 
@@ -580,7 +592,7 @@ the other side.
 **Plain HTML**
 
 ```html
-<script type="module" src="https://unpkg.com/alacris/dist/alacris.js"></script>
+<script type="module" src="https://unpkg.com/@alacris/core/dist/alacris.js"></script>
 <user-card name="Ada" age="36"></user-card>
 ```
 
@@ -636,7 +648,7 @@ for strings, numbers and booleans; properties (`el.tags = [...]`) work for every
 | `render(value, container)` | render outside a component; returns a disposer |
 | `define(name, options)` | register a custom element |
 
-From `alacris/store`:
+From `@alacris/core/store`:
 
 | | |
 | --- | --- |
@@ -645,7 +657,7 @@ From `alacris/store`:
 | `update(target, fn)` | apply many mutations as one update |
 | `selector(source, equals?)` | O(1) "is this the selected one?" |
 
-From `alacris/context`:
+From `@alacris/core/context`:
 
 | | |
 | --- | --- |

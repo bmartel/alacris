@@ -22,7 +22,7 @@
 // @part  panel — the tooltip surface
 // @vars  see `t` below
 
-import { define, html, css, vars, effect, onCleanup, signal } from 'alacris';
+import { define, html, css, vars, effect, onCleanup, signal } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { presence } from '../motion/presence.js';

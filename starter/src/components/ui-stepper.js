@@ -19,7 +19,7 @@
 // step. Connector lines between steps turn primary once the segment before a
 // step is completed.
 
-import { define, html, css, vars, effect } from 'alacris';
+import { define, html, css, vars, effect } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import './ui-step.js';

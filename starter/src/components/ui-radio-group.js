@@ -17,7 +17,7 @@
 // @part  group — the layout container
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars, effect, onCleanup, untrack } from 'alacris';
+import { define, html, css, vars, effect, onCleanup, untrack } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { rovingTabindex } from '../util/keys.js';

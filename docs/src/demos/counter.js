@@ -1,4 +1,4 @@
-import { define, html, signal } from 'alacris';
+import { define, html, signal } from '@alacris/core';
 
 define('demo-counter', {
   props: { start: 0, step: 1 },

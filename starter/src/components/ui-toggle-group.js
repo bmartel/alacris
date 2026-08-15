@@ -20,7 +20,7 @@
 // @part  group — the outlined clipping container
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars, effect, untrack } from 'alacris';
+import { define, html, css, vars, effect, untrack } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import './ui-toggle-button.js';
