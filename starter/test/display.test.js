@@ -130,15 +130,16 @@ test('ui-list-item href renders a link row', async () => {
   unmountAll();
 });
 
-test('ui-table keeps its light-DOM table and reflects props', async () => {
+test('ui-table adopts the table into its shadow and reflects props', async () => {
   const el = mount(
     '<ui-table><table><thead><tr><th>Name</th></tr></thead>' +
     '<tbody><tr><td>Frozen yogurt</td></tr></tbody></table></ui-table>');
   await tick();
-  assert.equal(el.shadowRoot, null, 'light DOM — no shadow root');
-  const table = el.querySelector('table');
-  assert.ok(table, 'slotted table survives the empty render');
-  assert.equal(el.querySelector('td').textContent, 'Frozen yogurt');
+  assert.ok(el.shadowRoot, 'open shadow root');
+  const table = el.shadowRoot.querySelector('table');
+  assert.ok(table, 'table lives in the shadow tree');
+  assert.equal(el.querySelector('table'), null, 'not left in the light DOM');
+  assert.equal(table.querySelector('td').textContent, 'Frozen yogurt');
   el.dense = true;
   assert.ok(el.hasAttribute('dense'), 'dense reflects for CSS');
   el.stickyHeader = true;

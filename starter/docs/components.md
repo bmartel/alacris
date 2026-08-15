@@ -1351,7 +1351,8 @@ Source: [`src/components/ui-tab.js`](../src/components/ui-tab.js)
 
 ## `<ui-table>`
 
-Material data-table styling for a slotted native &lt;table&gt;.
+Material data-table. Pass a native &lt;table&gt;; it is moved into
+the open shadow tree so rows and cells are styled without document CSS.
 
   &lt;ui-table&gt;
     &lt;table&gt;
@@ -1360,21 +1361,19 @@ Material data-table styling for a slotted native &lt;table&gt;.
     &lt;/table&gt;
   &lt;/ui-table&gt;
 
-LIGHT DOM by design (`shadow: false`): the consumer's &lt;table&gt; markup stays
-exactly where it is, and this component only contributes CSS. Verified
-against Alacris internals: `render()` (src/html.js) appends its anchor
-comments to the host without clearing existing children, so `setup`
-returning an empty template leaves the slotted table intact. With
-`shadow: false` the `styles` sheet is applied to the containing document
-(see src/define.js), so EVERY rule below is scoped under the `ui-table`
-tag selector — nothing leaks. `base` is deliberately NOT included: its
-universal-selector reset must not reach the document.
+`::slotted()` cannot style descendants of a slotted node, so a slotted
+&lt;table&gt; could not be themed from the shadow. On connect the table is
+adopted into the wrapper (same node, new parent) and all rules below
+apply inside this tree. `base` is included — its reset stays in the
+shadow and never reaches the page.
 
 | | |
 | --- | --- |
 | `@prop` | {boolean} dense=false        — 40px rows instead of 52px (reflected as the `dense` attribute for CSS) |
 | `@prop` | {boolean} stickyHeader=false — sticky &lt;thead&gt; cells (reflected as `sticky-header`) |
-| `@vars` | --ui-table-row-height, --ui-table-dense-row-height, --ui-table-border-color, --ui-table-header-fg, --ui-table-fg, --ui-table-hover-bg, --ui-table-header-bg |
+| `@slot` | (default) — a native &lt;table&gt;; adopted into the shadow on connect |
+| `@part` | container — overflow wrapper around the table |
+| `@vars` | see `t` below (`themeVars.names`) |
 
 Source: [`src/components/ui-table.js`](../src/components/ui-table.js)
 

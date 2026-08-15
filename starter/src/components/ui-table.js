@@ -1,4 +1,5 @@
-// <ui-table> — Material data-table styling for a slotted native <table>.
+// <ui-table> — Material data-table. Pass a native <table>; it is moved into
+// the open shadow tree so rows and cells are styled without document CSS.
 //
 //   <ui-table>
 //     <table>
@@ -7,26 +8,23 @@
 //     </table>
 //   </ui-table>
 //
-// LIGHT DOM by design (`shadow: false`): the consumer's <table> markup stays
-// exactly where it is, and this component only contributes CSS. Verified
-// against Alacris internals: `render()` (src/html.js) appends its anchor
-// comments to the host without clearing existing children, so `setup`
-// returning an empty template leaves the slotted table intact. With
-// `shadow: false` the `styles` sheet is applied to the containing document
-// (see src/define.js), so EVERY rule below is scoped under the `ui-table`
-// tag selector — nothing leaks. `base` is deliberately NOT included: its
-// universal-selector reset must not reach the document.
+// `::slotted()` cannot style descendants of a slotted node, so a slotted
+// <table> could not be themed from the shadow. On connect the table is
+// adopted into the wrapper (same node, new parent) and all rules below
+// apply inside this tree. `base` is included — its reset stays in the
+// shadow and never reaches the page.
 //
 // @prop  {boolean} dense=false        — 40px rows instead of 52px (reflected
 //                                       as the `dense` attribute for CSS)
 // @prop  {boolean} stickyHeader=false — sticky <thead> cells (reflected as
 //                                       `sticky-header`)
-// @vars  --ui-table-row-height, --ui-table-dense-row-height,
-//        --ui-table-border-color, --ui-table-header-fg, --ui-table-fg,
-//        --ui-table-hover-bg, --ui-table-header-bg
+// @slot  (default) — a native <table>; adopted into the shadow on connect
+// @part  container — overflow wrapper around the table
+// @vars  see `t` below (`themeVars.names`)
 
 import { define, html, css, vars, effect } from 'alacris';
 import { sys } from '../tokens/sys.js';
+import { base } from './base.js';
 
 const t = vars('ui-table', {
   rowHeight: '52px',
@@ -38,35 +36,34 @@ const t = vars('ui-table', {
   hoverBg: sys.color.surfaceContainerLow,
 });
 
-// Light-DOM styles: every rule scoped under `ui-table`.
 const styles = css`
-  ui-table { display: block; overflow-x: auto; }
-  ui-table table {
+  :host { display: block; overflow-x: auto; }
+  table {
     inline-size: 100%;
     border-collapse: collapse;
     color: ${t.fg};
   }
-  ui-table tr { block-size: calc(${t.rowHeight} + var(--ui-density, 0) * 4px); }
-  ui-table[dense] tr { block-size: calc(${t.denseRowHeight} + var(--ui-density, 0) * 4px); }
-  ui-table th, ui-table td {
+  tr { block-size: calc(${t.rowHeight} + var(--ui-density, 0) * 4px); }
+  :host([dense]) tr { block-size: calc(${t.denseRowHeight} + var(--ui-density, 0) * 4px); }
+  th, td {
     padding-inline: ${sys.space(4)};
     border-block-end: 1px solid ${t.borderColor};
   }
-  ui-table th {
+  th {
     font: ${sys.type.labelLg};
     letter-spacing: ${sys.tracking.labelLg};
     color: ${t.headerFg};
     text-align: start;
   }
-  ui-table td {
+  td {
     font: ${sys.type.bodyMd};
     letter-spacing: ${sys.tracking.bodyMd};
   }
-  ui-table tbody tr {
+  tbody tr {
     transition: background-color ${sys.duration.short2} ${sys.easing.standard};
   }
-  ui-table tbody tr:hover { background: ${t.hoverBg}; }
-  ui-table[sticky-header] thead th {
+  tbody tr:hover { background: ${t.hoverBg}; }
+  :host([sticky-header]) thead th {
     position: sticky;
     inset-block-start: 0;
     z-index: 1;
@@ -76,14 +73,25 @@ const styles = css`
 
 define('ui-table', {
   props: { dense: false, stickyHeader: false },
-  shadow: false,
-  styles,
+  styles: [base, styles],
   setup({ dense, stickyHeader }, host) {
     effect(() => host.toggleAttribute('dense', dense()));
     effect(() => host.toggleAttribute('sticky-header', stickyHeader()));
-    // Empty template: render() only appends its anchors, so the consumer's
-    // light-DOM <table> children are preserved untouched.
-    return html``;
+
+    const adopt = (slot) => {
+      const wrap = slot.parentNode;
+      for (const el of slot.assignedElements()) {
+        if (el.localName === 'table') wrap.append(el);
+      }
+    };
+
+    return html`
+      <div class="wrap" part="container">
+        <slot ref=${(slot) => {
+          slot.addEventListener('slotchange', () => adopt(slot));
+          adopt(slot);
+        }}></slot>
+      </div>`;
   },
 });
 

@@ -77,6 +77,10 @@ export const themeVars = t;
   docs catalog is assembled from these headers.
 - Always include `base` (from `./base.js`) first in `styles`. It carries the
   box-sizing reset, the reduced-motion guard, and the focus-ring helper.
+- Never `shadow: false`. Every component uses the default open shadow root
+  so internals stay encapsulated. Composition is slots — not document CSS.
+  (`ui-table` adopts a native `<table>` into its shadow because `::slotted()`
+  cannot style cell descendants.)
 - Export `tag` and `themeVars` (the `vars()` object — its `.names` is the
   documented custom-property list).
 
@@ -215,4 +219,5 @@ Each component family has:
 4. Hover/focus/press state layers + ripple on Material-interactive surfaces.
 5. Enter/exit animation on anything that appears/disappears.
 6. No `!important`, no `.innerHTML`, no raw hex/px-size/duration literals.
-7. Smoke test passes; demo section shows every variant.
+7. Open shadow root — never `shadow: false`, never document-scoped component CSS.
+8. Smoke test passes; demo section shows every variant.
