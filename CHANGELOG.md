@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.20](https://github.com/bmartel/alacris/compare/v0.6.19...v0.6.20) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** name labeled controls from visible text and export themeVars only with vars() ([6e97f3c](https://github.com/bmartel/alacris/commit/6e97f3c8d52fc8183359c91002c500c012bbea5a))
+
 ## [0.6.19](https://github.com/bmartel/alacris/compare/v0.6.18...v0.6.19) (2026-08-15)
 
 ### Bug Fixes
