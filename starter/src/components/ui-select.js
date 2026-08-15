@@ -32,11 +32,11 @@
 
 import { define, html, css, vars, computed, signal, effect, onCleanup } from 'alacris';
 import { sys } from '../tokens/sys.js';
-import { base, focusRingOn } from './base.js';
+import { base } from './base.js';
 import { formBind } from '../util/form.js';
 import { presence } from '../motion/presence.js';
 import { fx } from '../motion/animate.js';
-import { position, autoUpdate } from '../util/position.js';
+import { autoUpdate } from '../util/position.js';
 import './ui-icon.js';
 import './ui-option.js';
 
@@ -55,6 +55,7 @@ const t = vars('ui-select', {
 const styles = css`
   :host { display: block; inline-size: 240px; }
   .root { display: block; position: relative; }
+  .field-wrap { position: relative; display: block; }
   .field {
     position: relative;
     display: flex;
@@ -63,7 +64,10 @@ const styles = css`
     inline-size: 100%;
     min-block-size: calc(${t.height} + var(--ui-density, 0) * 4px);
     padding-inline: ${sys.space(4)};
+    margin: 0;
     border: none;
+    outline: none;
+    appearance: none;
     border-radius: ${t.radius};
     background: transparent;
     font: ${t.font};
@@ -73,7 +77,6 @@ const styles = css`
     cursor: pointer;
     --ui-icon-size: 1.5rem;
   }
-  ${focusRingOn('.field')}
   .filled .field {
     background: ${t.bg};
     border-start-start-radius: ${t.radius};
@@ -91,18 +94,23 @@ const styles = css`
     transition: block-size ${sys.duration.short2} ${sys.easing.standard},
                 background-color ${sys.duration.short2} ${sys.easing.standard};
   }
+  .filled:focus-within .field::after,
   .filled.open .field::after { block-size: 2px; background: ${t.accent}; }
 
-  /* Outlined: a fieldset draws the border; its legend opens the label notch. */
+  /* Outlined: a fieldset (sibling of the button — never inside it, or the
+     UA paints a second inner border) draws the notchable outline. */
   fieldset {
     position: absolute;
     inset: -8px 0 0;
     margin: 0;
     padding: 0 calc(${sys.space(4)} - 4px);
+    min-inline-size: 0;
+    appearance: none;
     border: 1px solid ${t.outlineColor};
     border-radius: ${t.radius};
     pointer-events: none;
-    transition: border-color ${sys.duration.short2} ${sys.easing.standard};
+    transition: border-color ${sys.duration.short2} ${sys.easing.standard},
+                border-width ${sys.duration.short2} ${sys.easing.standard};
   }
   legend {
     padding: 0;
@@ -115,8 +123,9 @@ const styles = css`
   }
   legend span { padding-inline: 4px; }
   .outlined.floating legend { inline-size: auto; }
+  .outlined:focus-within fieldset,
   .outlined.open fieldset { border-width: 2px; border-color: ${t.accent}; }
-  .root:hover:not(.open) fieldset { border-color: ${sys.color.onSurface}; }
+  .root:hover:not(:focus-within):not(.open) fieldset { border-color: ${sys.color.onSurface}; }
 
   .label {
     position: absolute;
@@ -135,7 +144,7 @@ const styles = css`
     translate: 0 calc(-50% - (${t.height} + var(--ui-density, 0) * 4px) / 2);
     scale: 0.75;
   }
-  .open .label { color: ${t.accent}; }
+  .open .label, :focus-within .label { color: ${t.accent}; }
 
   .value {
     flex: 1;
@@ -340,23 +349,25 @@ define('ui-select', {
 
     return html`
       <div class=${cls}>
-        <button type="button" class="field" part="control" role="combobox"
-                aria-haspopup="listbox" aria-controls="listbox"
-                aria-expanded=${() => String(open())}
-                aria-required=${() => (required() ? 'true' : null)}
-                aria-activedescendant=${activeId}
-                aria-label=${() => label() || placeholder() || null}
-                ?disabled=${disabled}
-                @click=${() => (open() ? closePanel() : openPanel())}
-                @keydown=${onKeydown}
-                ref=${(el) => (fieldEl = el)}>
+        <div class="field-wrap">
           ${() => (variant() === 'outlined'
             ? html`<fieldset aria-hidden="true"><legend><span>${label}</span></legend></fieldset>`
             : null)}
-          ${() => (label() ? html`<span class="label" part="label">${label}${() => (required() ? ' *' : '')}</span>` : null)}
-          <span class=${() => `value${display() ? '' : ' empty'}`}>${() => display() || placeholder()}</span>
-          <ui-icon class="arrow" name="arrow-drop-down"></ui-icon>
-        </button>
+          <button type="button" class="field" part="control" role="combobox"
+                  aria-haspopup="listbox" aria-controls="listbox"
+                  aria-expanded=${() => String(open())}
+                  aria-required=${() => (required() ? 'true' : null)}
+                  aria-activedescendant=${activeId}
+                  aria-label=${() => label() || placeholder() || null}
+                  ?disabled=${disabled}
+                  @click=${() => (open() ? closePanel() : openPanel())}
+                  @keydown=${onKeydown}
+                  ref=${(el) => (fieldEl = el)}>
+            ${() => (label() ? html`<span class="label" part="label">${label}${() => (required() ? ' *' : '')}</span>` : null)}
+            <span class=${() => `value${display() ? '' : ' empty'}`}>${() => display() || placeholder()}</span>
+            <ui-icon class="arrow" name="arrow-drop-down"></ui-icon>
+          </button>
+        </div>
         ${presence(open, panelView, {
           enter: fx.scaleIn,
           exit: fx.fadeOut,

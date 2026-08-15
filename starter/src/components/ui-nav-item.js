@@ -1,4 +1,4 @@
-// <ui-nav-item> — one destination inside <ui-bottom-nav>.
+// <ui-nav-item> — one destination inside <ui-bottom-nav> or <ui-nav-rail>.
 //
 // @prop  {string}  value=''      — REQUIRED identity of the destination
 // @prop  {string}  icon=''       — registry icon name

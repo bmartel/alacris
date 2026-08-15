@@ -14,6 +14,7 @@
 // (one Tab stop for the whole bar via roving tabindex).
 //
 // @prop  {string} value='' — the selected tab's value
+// @prop  {string} variant='primary' — primary | secondary
 // @prop  {string} label='' — accessible name for the tablist
 // @event change — user selected a tab; detail: { value }
 // @slot  (default) — <ui-tab> children
@@ -55,14 +56,19 @@ const styles = css`
                 width ${sys.duration.medium2} ${sys.easing.emphasized},
                 opacity ${sys.duration.short2} ${sys.easing.standard};
   }
+  .secondary .indicator {
+    block-size: 2px;
+    border-radius: 0;
+    background: ${sys.color.onSurface};
+  }
 `;
 
 let uid = 0;
 
 define('ui-tabs', {
-  props: { value: '', label: '' },
+  props: { value: '', variant: 'primary', label: '' },
   styles: [base, styles],
-  setup({ value, label }, host) {
+  setup({ value, variant, label }, host) {
     const id = ++uid;
     const rev = signal(0); // bumped on slotchange so syncs re-run
     const bump = () => rev.update((n) => n + 1);
@@ -143,7 +149,7 @@ define('ui-tabs', {
     });
 
     return html`
-      <div class="tablist" part="tablist" role="tablist" aria-label=${() => label() || null}>
+      <div class=${() => `tablist ${variant()}`} part="tablist" role="tablist" aria-label=${() => label() || null}>
         <slot @slotchange=${bump}></slot>
         <span class="indicator" part="indicator" aria-hidden="true"
               style=${() => ({

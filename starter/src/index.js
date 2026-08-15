@@ -35,7 +35,9 @@ import './components/ui-text.js';
 import './components/ui-button.js';
 import './components/ui-icon-button.js';
 import './components/ui-fab.js';
+import './components/ui-fab-menu.js';
 import './components/ui-button-group.js';
+import './components/ui-split-button.js';
 import './components/ui-toggle-button.js';
 import './components/ui-toggle-group.js';
 
@@ -52,6 +54,9 @@ import './components/ui-option.js';
 import './components/ui-autocomplete.js';
 import './components/ui-chip.js';
 import './components/ui-chip-set.js';
+import './components/ui-date-picker.js';
+import './components/ui-time-picker.js';
+import './components/ui-search.js';
 
 // Data display
 import './components/ui-avatar.js';
@@ -61,14 +66,19 @@ import './components/ui-list.js';
 import './components/ui-list-item.js';
 import './components/ui-table.js';
 import './components/ui-tooltip.js';
+import './components/ui-carousel.js';
+import './components/ui-carousel-item.js';
 
 // Feedback
 import './components/ui-alert.js';
 import './components/ui-progress.js';
 import './components/ui-spinner.js';
+import './components/ui-loading-indicator.js';
 import './components/ui-skeleton.js';
 import './components/ui-snackbar.js';
 import './components/ui-backdrop.js';
+import './components/ui-sheet.js';
+import './components/ui-side-sheet.js';
 
 export { showSnackbar } from './components/ui-snackbar.js';
 
@@ -82,6 +92,8 @@ import './components/ui-menu.js';
 import './components/ui-menu-item.js';
 import './components/ui-drawer.js';
 import './components/ui-app-bar.js';
+import './components/ui-bottom-app-bar.js';
+import './components/ui-toolbar.js';
 import './components/ui-accordion.js';
 import './components/ui-accordion-item.js';
 import './components/ui-breadcrumbs.js';
@@ -90,6 +102,7 @@ import './components/ui-stepper.js';
 import './components/ui-step.js';
 import './components/ui-bottom-nav.js';
 import './components/ui-nav-item.js';
+import './components/ui-nav-rail.js';
 
 // Layout
 import './components/ui-stack.js';

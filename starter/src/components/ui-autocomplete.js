@@ -26,7 +26,7 @@
 
 import { define, html, css, vars, computed, signal, effect, onCleanup, each } from 'alacris';
 import { sys } from '../tokens/sys.js';
-import { base, focusRingOn } from './base.js';
+import { base } from './base.js';
 import { formBind } from '../util/form.js';
 import { presence } from '../motion/presence.js';
 import { fx } from '../motion/animate.js';
@@ -86,10 +86,13 @@ const styles = css`
     inset: -8px 0 0;
     margin: 0;
     padding: 0 calc(${sys.space(4)} - 4px);
+    min-inline-size: 0;
+    appearance: none;
     border: 1px solid ${t.outlineColor};
     border-radius: ${t.radius};
     pointer-events: none;
-    transition: border-color ${sys.duration.short2} ${sys.easing.standard};
+    transition: border-color ${sys.duration.short2} ${sys.easing.standard},
+                border-width ${sys.duration.short2} ${sys.easing.standard};
   }
   legend {
     padding: 0;
@@ -127,15 +130,16 @@ const styles = css`
   input {
     flex: 1;
     min-inline-size: 0;
+    margin: 0;
     border: none;
     outline: none;
+    appearance: none;
     background: transparent;
     font: inherit;
     letter-spacing: inherit;
     color: inherit;
     padding: 0;
   }
-  ${focusRingOn('input')}
   .filled.has-label input { padding-block-start: 18px; }
   input::placeholder { color: ${t.labelFg}; opacity: 0; transition: opacity ${sys.duration.short2} linear; }
   .floating input::placeholder { opacity: 1; }
@@ -239,6 +243,7 @@ define('ui-autocomplete', {
     };
 
     const onInput = (e) => {
+      e.stopPropagation();
       query.set(e.target.value);
       open.set(true);
       host.emit('input', { value: e.target.value });
@@ -313,7 +318,7 @@ define('ui-autocomplete', {
                  .value=${query}
                  placeholder=${() => placeholder() || null}
                  ?disabled=${disabled} ?required=${required}
-                 @input=${onInput} @keydown=${onKeydown}
+                 @input=${onInput} @change=${(e) => e.stopPropagation()} @keydown=${onKeydown}
                  @focus=${onFocus} @blur=${onBlur}>
           <ui-icon class="arrow" name="arrow-drop-down"></ui-icon>
         </label>

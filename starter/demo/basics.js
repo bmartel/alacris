@@ -1,5 +1,5 @@
 // Demo — the exemplar components: buttons, cards, switches, text fields,
-// dialog, typography, icons.
+// dialog, bottom sheet, typography, icons.
 
 import { html, signal } from 'alacris';
 import { block, stackBlock } from './helpers.js';
@@ -10,12 +10,16 @@ import '../src/components/ui-card.js';
 import '../src/components/ui-switch.js';
 import '../src/components/ui-text-field.js';
 import '../src/components/ui-dialog.js';
+import '../src/components/ui-sheet.js';
+import '../src/components/ui-side-sheet.js';
 import '../src/components/ui-text.js';
 import '../src/components/ui-icon.js';
 
 export const title = 'Basics';
 
 const dialogOpen = signal(false);
+const sheetOpen = signal(false);
+const sideOpen = signal(false);
 const email = signal('');
 
 export const section = () => html`
@@ -90,6 +94,24 @@ export const section = () => html`
       <ui-button slot="actions" variant="text" @click=${() => dialogOpen(false)}>Cancel</ui-button>
       <ui-button slot="actions" @click=${() => dialogOpen(false)}>Reset</ui-button>
     </ui-dialog>`)}
+
+  ${block('Bottom sheet', html`
+    <ui-button variant="tonal" @click=${() => sheetOpen(true)}>Open sheet</ui-button>
+    <ui-sheet open=${sheetOpen} @close=${() => sheetOpen(false)}>
+      <span slot="headline">Share</span>
+      A modal bottom sheet — slides up from the bottom, traps focus, and the
+      parent owns <code>open</code>. Escape or the scrim closes it.
+      <ui-button slot="actions" variant="text" @click=${() => sheetOpen(false)}>Close</ui-button>
+    </ui-sheet>`)}
+
+  ${block('Side sheet', html`
+    <ui-button variant="tonal" @click=${() => sideOpen(true)}>Open side sheet</ui-button>
+    <ui-side-sheet open=${sideOpen} @close=${() => sideOpen(false)}>
+      <span slot="headline">Filters</span>
+      Complementary content — distinct from a navigation drawer. Close via the
+      X, Escape, or the scrim.
+      <ui-button slot="actions" variant="text" @click=${() => sideOpen(false)}>Apply</ui-button>
+    </ui-side-sheet>`)}
 
   ${stackBlock('Type scale', html`
     <ui-text variant="display-sm">Display small</ui-text>

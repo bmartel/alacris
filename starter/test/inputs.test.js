@@ -14,6 +14,10 @@ import '../src/components/ui-radio.js';
 import '../src/components/ui-radio-group.js';
 import '../src/components/ui-slider.js';
 import '../src/components/ui-rating.js';
+import '../src/components/ui-search.js';
+import '../src/components/ui-split-button.js';
+import '../src/components/ui-menu-item.js';
+import '../src/components/ui-fab-menu.js';
 
 const key = (el, k) =>
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: k, bubbles: true, composed: true }));
@@ -316,5 +320,97 @@ test('ui-rating readonly ignores interaction', async () => {
   key(root, 'ArrowRight');
   assert.equal(changed, false);
   assert.equal(el.value, 4);
+  unmountAll();
+});
+
+test('ui-search types, emits input, clears, and submits on Enter', async () => {
+  const el = mount('<ui-search label="Search mail"></ui-search>');
+  await tick();
+  const input = el.shadowRoot.querySelector('input');
+  assert.equal(input.getAttribute('aria-label'), 'Search mail');
+  const typed = [];
+  el.addEventListener('input', (e) => typed.push(e.detail));
+  input.value = 'ada';
+  fire(input, 'input');
+  assert.equal(el.value, 'ada');
+  assert.equal(typed.length, 1, 'native input must not leak to the host');
+  assert.equal(typed[0].value, 'ada');
+
+  let submitted = null;
+  el.addEventListener('submit', (e) => (submitted = e.detail));
+  input.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, composed: true }));
+  assert.equal(submitted.value, 'ada');
+
+  let cleared = false;
+  el.addEventListener('clear', () => (cleared = true));
+  fire(el.shadowRoot.querySelector('ui-icon-button').shadowRoot.querySelector('button'), 'click');
+  assert.equal(el.value, '');
+  assert.equal(cleared, true);
+  unmountAll();
+});
+
+test('ui-slider range emits start/end and keeps thumbs from crossing', async () => {
+  const el = mount('<ui-slider label="Price" range value-start="20" value-end="80" name="price"></ui-slider>');
+  await tick();
+  const inputs = el.shadowRoot.querySelectorAll('input[type=range]');
+  assert.equal(inputs.length, 2);
+  let detail = null;
+  el.addEventListener('input', (e) => { if (e.detail && 'start' in e.detail) detail = e.detail; });
+  inputs[0].value = '30';
+  fire(inputs[0], 'input');
+  assert.equal(el.valueStart, 30);
+  assert.equal(detail.start, 30);
+  assert.equal(detail.end, 80);
+  inputs[1].value = '10';
+  fire(inputs[1], 'input');
+  assert.equal(el.valueEnd, 30, 'end cannot cross below start');
+  unmountAll();
+});
+
+test('ui-search view opens suggestions on focus', async () => {
+  const el = mount('<ui-search presentation="view" label="Search files"><span>Ada</span></ui-search>');
+  await tick();
+  assert.equal(el.shadowRoot.querySelector('.panel'), null);
+  fire(el.shadowRoot.querySelector('input'), 'focus');
+  assert.equal(el.open, true);
+  assert.ok(el.shadowRoot.querySelector('.panel'), 'view opens a suggestions panel');
+  const back = [...el.shadowRoot.querySelectorAll('ui-icon-button')]
+    .find((b) => b.label === 'Back' || b.getAttribute('label') === 'Back')
+    || el.shadowRoot.querySelector('ui-icon-button');
+  fire(back.shadowRoot.querySelector('button'), 'click');
+  assert.equal(el.open, false);
+  unmountAll();
+});
+
+test('ui-split-button menu select emits the item value', async () => {
+  const el = mount(`
+    <ui-split-button>
+      Save
+      <ui-menu-item slot="menu" value="draft">Save draft</ui-menu-item>
+    </ui-split-button>`);
+  await tick();
+  const menu = el.shadowRoot.querySelector('ui-menu');
+  menu.open = true;
+  assert.equal(menu.open, true);
+  let detail = null;
+  el.addEventListener('select', (e) => (detail = e.detail));
+  fire(el.querySelector('ui-menu-item'), 'click');
+  assert.equal(detail.value, 'draft');
+  unmountAll();
+});
+
+test('ui-fab-menu toggles related actions from the trigger', async () => {
+  const el = mount(`
+    <ui-fab-menu>
+      <ui-fab slot="trigger" icon="add"></ui-fab>
+      <ui-fab icon="edit" label="Edit"></ui-fab>
+    </ui-fab-menu>`);
+  await tick();
+  assert.equal(el.shadowRoot.querySelector('.actions'), null);
+  fire(el.querySelector('[slot="trigger"]'), 'click');
+  assert.equal(el.open, true);
+  assert.ok(el.shadowRoot.querySelector('.actions'));
+  fire(el.querySelector('ui-fab[icon="edit"]'), 'click');
+  assert.equal(el.open, false);
   unmountAll();
 });

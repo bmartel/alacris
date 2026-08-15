@@ -9,6 +9,8 @@ import '../src/components/ui-list.js';
 import '../src/components/ui-list-item.js';
 import '../src/components/ui-table.js';
 import '../src/components/ui-tooltip.js';
+import '../src/components/ui-carousel.js';
+import '../src/components/ui-carousel-item.js';
 import '../src/components/ui-icon-button.js';
 import '../src/components/ui-button.js';
 import '../src/components/ui-card.js';
@@ -128,4 +130,47 @@ export const section = () => html`
       </div>
       <ui-button variant="outlined">Rich</ui-button>
     </ui-tooltip>`)}
+
+  ${stackBlock('Carousel', html`
+    <ui-carousel label="Photos" style="max-inline-size: 480px">
+      <ui-carousel-item>
+        <div style="padding: 24px; min-block-size: 160px">
+          <ui-text variant="title-md">One</ui-text>
+          <ui-text variant="body-sm" color="onSurfaceVariant">Multi-browse slide</ui-text>
+        </div>
+      </ui-carousel-item>
+      <ui-carousel-item>
+        <div style="padding: 24px; min-block-size: 160px">
+          <ui-text variant="title-md">Two</ui-text>
+        </div>
+      </ui-carousel-item>
+      <ui-carousel-item>
+        <div style="padding: 24px; min-block-size: 160px">
+          <ui-text variant="title-md">Three</ui-text>
+        </div>
+      </ui-carousel-item>
+      <ui-carousel-item>
+        <div style="padding: 24px; min-block-size: 160px">
+          <ui-text variant="title-md">Four</ui-text>
+        </div>
+      </ui-carousel-item>
+    </ui-carousel>
+    <ui-carousel label="Hero photos" variant="hero" style="max-inline-size: 480px">
+      <ui-carousel-item>
+        <div style="padding: 24px; min-block-size: 160px">
+          <ui-text variant="title-md">Hero</ui-text>
+          <ui-text variant="body-sm" color="onSurfaceVariant">Selected slide dominates</ui-text>
+        </div>
+      </ui-carousel-item>
+      <ui-carousel-item>
+        <div style="padding: 24px; min-block-size: 160px">
+          <ui-text variant="title-md">Next</ui-text>
+        </div>
+      </ui-carousel-item>
+      <ui-carousel-item>
+        <div style="padding: 24px; min-block-size: 160px">
+          <ui-text variant="title-md">After</ui-text>
+        </div>
+      </ui-carousel-item>
+    </ui-carousel>`)}
 `;

@@ -7,6 +7,7 @@ import { mount, unmountAll, tick, fire } from './helpers.js';
 import '../src/components/ui-alert.js';
 import '../src/components/ui-progress.js';
 import '../src/components/ui-spinner.js';
+import '../src/components/ui-loading-indicator.js';
 import '../src/components/ui-skeleton.js';
 import '../src/components/ui-backdrop.js';
 import { showSnackbar } from '../src/components/ui-snackbar.js';
@@ -216,5 +217,18 @@ test('showSnackbar auto-dismiss chains the queue with real timers', async () => 
   await sleep(60);
   await b.closed;
   assert.equal(el.open, false);
+  unmountAll();
+});
+
+test('ui-loading-indicator is a busy progressbar with contained variant', async () => {
+  const el = mount('<ui-loading-indicator label="Loading"></ui-loading-indicator>');
+  await tick();
+  const track = el.shadowRoot.querySelector('[part=track]');
+  assert.equal(track.getAttribute('role'), 'progressbar');
+  assert.equal(track.getAttribute('aria-busy'), 'true');
+  assert.equal(track.getAttribute('aria-label'), 'Loading');
+  assert.equal(el.shadowRoot.querySelectorAll('.dot').length, 4);
+  el.variant = 'contained';
+  assert.ok(track.className.includes('contained'));
   unmountAll();
 });

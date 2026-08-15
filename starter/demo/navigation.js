@@ -1,4 +1,4 @@
-// Demo — Navigation: tabs, menu, drawer, app bar.
+// Demo — Navigation: tabs, menu, drawer, app bar, navigation rail.
 
 import { html, signal } from 'alacris';
 import { block, stackBlock } from './helpers.js';
@@ -6,6 +6,11 @@ import '../src/components/ui-tabs.js';
 import '../src/components/ui-menu.js';
 import '../src/components/ui-drawer.js';
 import '../src/components/ui-app-bar.js';
+import '../src/components/ui-bottom-app-bar.js';
+import '../src/components/ui-toolbar.js';
+import '../src/components/ui-nav-rail.js';
+import '../src/components/ui-nav-item.js';
+import '../src/components/ui-fab.js';
 import '../src/components/ui-button.js';
 import '../src/components/ui-icon-button.js';
 import '../src/components/ui-divider.js';
@@ -18,6 +23,7 @@ export const section = () => {
   const startOpen = signal(false);
   const endOpen = signal(false);
   const standardOpen = signal(true);
+  const railDest = signal('home');
 
   return html`
     ${stackBlock('Tabs', html`
@@ -34,6 +40,16 @@ export const section = () => {
         <ui-tab-panel slot="panels" value="settings">
           Settings panel (its tab is disabled, so you should never see this).
         </ui-tab-panel>
+      </ui-tabs>`)}
+
+    ${stackBlock('Secondary tabs', html`
+      <ui-tabs variant="secondary" value="one" label="Secondary">
+        <ui-tab value="one">One</ui-tab>
+        <ui-tab value="two">Two</ui-tab>
+        <ui-tab value="three">Three</ui-tab>
+        <ui-tab-panel slot="panels" value="one">Secondary tabs use a hairline indicator.</ui-tab-panel>
+        <ui-tab-panel slot="panels" value="two">Two</ui-tab-panel>
+        <ui-tab-panel slot="panels" value="three">Three</ui-tab-panel>
       </ui-tabs>`)}
 
     ${block('Menu', html`
@@ -90,5 +106,34 @@ export const section = () => {
           Large headline
           <ui-icon-button slot="actions" icon="settings" label="Settings"></ui-icon-button>
         </ui-app-bar>
-      </div>`)}`;
+      </div>`)}
+
+    ${stackBlock('Navigation rail', html`
+      <div style="display:flex; min-block-size: 280px; border: 1px solid var(--ui-color-outline-variant); border-radius: var(--ui-radius-md); overflow: hidden;">
+        <ui-nav-rail value=${railDest} @change=${(e) => railDest(e.detail.value)} label="Main">
+          <ui-icon-button slot="menu" icon="menu" label="Menu"></ui-icon-button>
+          <ui-fab slot="fab" icon="add" size="sm"></ui-fab>
+          <ui-nav-item value="home" icon="home" label="Home"></ui-nav-item>
+          <ui-nav-item value="search" icon="search" label="Search"></ui-nav-item>
+          <ui-nav-item value="favorites" icon="star-border" active-icon="star" label="Favorites"></ui-nav-item>
+          <ui-nav-item value="settings" icon="settings" label="Settings"></ui-nav-item>
+        </ui-nav-rail>
+        <p style="align-self:center; padding: var(--ui-space-4);">destination: ${railDest}</p>
+      </div>`)}
+
+    ${stackBlock('Bottom app bar', html`
+      <ui-bottom-app-bar>
+        <ui-icon-button slot="navigation" icon="menu" label="Menu"></ui-icon-button>
+        <ui-fab slot="fab" icon="add"></ui-fab>
+        <ui-icon-button slot="actions" icon="search" label="Search"></ui-icon-button>
+        <ui-icon-button slot="actions" icon="more-vert" label="More"></ui-icon-button>
+      </ui-bottom-app-bar>`)}
+
+    ${block('Toolbar', html`
+      <ui-toolbar label="Selection">
+        <ui-icon-button icon="edit" label="Edit"></ui-icon-button>
+        <ui-icon-button icon="delete" label="Delete"></ui-icon-button>
+        <ui-icon-button icon="send" label="Share"></ui-icon-button>
+        <ui-fab slot="fab" icon="add" size="sm"></ui-fab>
+      </ui-toolbar>`)}`;
 };

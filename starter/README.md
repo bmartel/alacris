@@ -2,7 +2,7 @@
 
 A complete, production-shaped design system and component library built with
 **[Alacris](https://github.com/bmartel/alacris)** and nothing else. No other
-runtime dependencies, no build step, no CSS framework — ~40 components, a
+runtime dependencies, no build step, no CSS framework — ~70 components, a
 three-tier token system, a theme engine that re-skins the whole page with one
 stylesheet write, and a documented motion layer.
 
@@ -155,7 +155,7 @@ either way, give a component a `name` and it submits like a native field.
 
 ## Components
 
-~40 elements across inputs, selection, data display, feedback, navigation,
+~70 elements across inputs, selection, pickers, data display, feedback, navigation,
 surfaces and layout — the MUI/Material breadth. Every component documents its
 props, events, slots, parts and theme vars in its file header;
 [docs/components.md](docs/components.md) is the assembled catalog.

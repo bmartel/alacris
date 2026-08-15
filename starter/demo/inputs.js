@@ -1,5 +1,5 @@
 // Demo — Inputs & actions: FAB, button groups, segmented buttons, checkbox,
-// radio, slider, rating.
+// radio, slider, rating, search.
 
 import { html, signal } from 'alacris';
 import { block, stackBlock } from './helpers.js';
@@ -13,6 +13,11 @@ import '../src/components/ui-radio.js';
 import '../src/components/ui-radio-group.js';
 import '../src/components/ui-slider.js';
 import '../src/components/ui-rating.js';
+import '../src/components/ui-search.js';
+import '../src/components/ui-split-button.js';
+import '../src/components/ui-menu-item.js';
+import '../src/components/ui-fab-menu.js';
+import '../src/components/ui-text.js';
 
 export const title = 'Inputs & actions';
 
@@ -20,6 +25,10 @@ export const section = () => {
   const alignment = signal('center');
   const toppings = signal(['cheese']);
   const volume = signal(30);
+  const rangeStart = signal(20);
+  const rangeEnd = signal(80);
+  const query = signal('');
+  const searchOpen = signal(false);
 
   return html`
     ${block('FAB — variants', html`
@@ -36,6 +45,27 @@ export const section = () => {
       <ui-fab icon="add" size="lg"></ui-fab>
       <ui-fab icon="edit" label="Compose"></ui-fab>
       <ui-fab icon="send" variant="secondary" label="Send" disabled></ui-fab>
+    `)}
+
+    ${block('FAB menu', html`
+      <ui-fab-menu label="Compose">
+        <ui-fab slot="trigger" icon="add"></ui-fab>
+        <ui-fab icon="edit" label="Edit" size="sm"></ui-fab>
+        <ui-fab icon="send" label="Send" size="sm" variant="secondary"></ui-fab>
+      </ui-fab-menu>
+    `)}
+
+    ${block('Split button', html`
+      <ui-split-button>
+        Save
+        <ui-menu-item slot="menu" value="draft">Save draft</ui-menu-item>
+        <ui-menu-item slot="menu" value="copy">Save a copy</ui-menu-item>
+      </ui-split-button>
+      <ui-split-button variant="tonal">
+        Export
+        <ui-menu-item slot="menu" value="pdf">PDF</ui-menu-item>
+        <ui-menu-item slot="menu" value="csv">CSV</ui-menu-item>
+      </ui-split-button>
     `)}
 
     ${block('Button group', html`
@@ -104,7 +134,11 @@ export const section = () => {
       <ui-slider label="Brightness" value="70" show-value></ui-slider>
       <ui-slider label="Steps of 10" min="0" max="50" step="10" value="20" show-value></ui-slider>
       <ui-slider label="Disabled" value="40" disabled></ui-slider>
-      <span>volume: ${volume}</span>
+      <ui-slider label="Price range" range show-value value-start=${rangeStart} value-end=${rangeEnd}
+                 @input=${(e) => { rangeStart(e.detail.start); rangeEnd(e.detail.end); }}></ui-slider>
+      <ui-text variant="body-sm" color="onSurfaceVariant">
+        volume: ${volume} · range: ${rangeStart}–${rangeEnd}
+      </ui-text>
     `)}
 
     ${block('Rating', html`
@@ -114,6 +148,25 @@ export const section = () => {
       <ui-rating label="Disabled rating" value="2" disabled></ui-rating>
       <ui-rating label="Big rating" value="3" size="2rem"></ui-rating>
       <ui-rating label="Out of ten" value="7" max="10"></ui-rating>
+    `)}
+
+    ${stackBlock('Search bar', html`
+      <ui-search label="Search mail" value=${query}
+                 @input=${(e) => query(e.detail.value)}
+                 @submit=${(e) => query(e.detail.value)}></ui-search>
+      <ui-search label="Disabled search" value="cannot type" disabled></ui-search>
+      <ui-text variant="body-sm" color="onSurfaceVariant">
+        ${() => (query() ? `query: ${query()}` : 'type and press Enter')}
+      </ui-text>
+    `)}
+
+    ${stackBlock('Search view', html`
+      <ui-search presentation="view" label="Search files" open=${searchOpen}
+                 @input=${(e) => query(e.detail.value)}>
+        <ui-text variant="body-sm" color="onSurfaceVariant" style="padding: 8px 16px">
+          Recent — Ada, Grace, Katherine
+        </ui-text>
+      </ui-search>
     `)}
   `;
 };

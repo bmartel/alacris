@@ -1,7 +1,7 @@
 # Component catalog
 
 Assembled from each component's file header by `scripts/catalog.mjs` — the
-headers are the source of truth. 53 components. Every component
+headers are the source of truth. 66 components. Every component
 also exports `themeVars` (when it declares component tokens); `themeVars.names`
 is the machine-readable custom-property list.
 
@@ -195,6 +195,31 @@ style. Appearing/disappearing animates with a scale-in/out.
 
 Source: [`src/components/ui-badge.js`](../src/components/ui-badge.js)
 
+## `<ui-bottom-app-bar>`
+
+the Material bottom app bar.
+
+  &lt;ui-bottom-app-bar&gt;
+    &lt;ui-icon-button slot="navigation" icon="menu" label="Menu"&gt;&lt;/ui-icon-button&gt;
+    &lt;ui-icon-button slot="actions" icon="search" label="Search"&gt;&lt;/ui-icon-button&gt;
+    &lt;ui-fab slot="fab" icon="add"&gt;&lt;/ui-fab&gt;
+  &lt;/ui-bottom-app-bar&gt;
+
+A surface for a leading navigation icon, trailing actions, and an optional
+FAB. The host flows with the page — pin it with CSS when it should hug the
+viewport bottom. Distinct from &lt;ui-bottom-nav&gt;, which is destination tabs.
+
+| | |
+| --- | --- |
+| `@prop` | {string} fabAlign='end' — end \| center — where the FAB sits |
+| `@slot` | navigation — leading icon button |
+| `@slot` | actions    — trailing icon buttons |
+| `@slot` | fab        — optional &lt;ui-fab&gt; |
+| `@part` | bar, navigation, actions, fab |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-bottom-app-bar.js`](../src/components/ui-bottom-app-bar.js)
+
 ## `<ui-bottom-nav>`
 
 the Material navigation bar.
@@ -290,6 +315,48 @@ a Material card surface.
 
 Source: [`src/components/ui-card.js`](../src/components/ui-card.js)
 
+## `<ui-carousel-item>`
+
+one slide inside &lt;ui-carousel&gt;.
+
+`selected` is written by the parent carousel; set the carousel's `index`
+instead of this prop.
+
+| | |
+| --- | --- |
+| `@prop` | {boolean} selected=false — managed by the parent &lt;ui-carousel&gt; |
+| `@slot` | (default) — slide content |
+| `@part` | surface — the snap item |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-carousel-item.js`](../src/components/ui-carousel-item.js)
+
+## `<ui-carousel>`
+
+a Material carousel: snap-scrolling slides with previous /
+next controls.
+
+  &lt;ui-carousel label="Photos" variant="multi-browse"&gt;
+    &lt;ui-carousel-item&gt;One&lt;/ui-carousel-item&gt;
+    &lt;ui-carousel-item&gt;Two&lt;/ui-carousel-item&gt;
+  &lt;/ui-carousel&gt;
+
+multi-browse shows several items; uncontained lets slides overflow the
+frame; hero makes the selected slide dominate. Selection reflects down as
+`selected` on each &lt;ui-carousel-item&gt;.
+
+| | |
+| --- | --- |
+| `@prop` | {number} index=0 — the selected slide |
+| `@prop` | {string} variant='multi-browse' — multi-browse \| uncontained \| hero |
+| `@prop` | {string} label='' — accessible name for the region |
+| `@event` | change — index moved; detail: { index } |
+| `@slot` | (default) — &lt;ui-carousel-item&gt; children |
+| `@part` | viewport, track, prev, next |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-carousel.js`](../src/components/ui-carousel.js)
+
 ## `<ui-checkbox>`
 
 the Material checkbox with indeterminate support.
@@ -378,6 +445,45 @@ a centered max-width content wrapper.
 
 Source: [`src/components/ui-container.js`](../src/components/ui-container.js)
 
+## `<ui-date-picker>`
+
+Material date picker: a text-field-style control that
+opens a calendar. Docked (default) commits on day click; modal confirms
+with OK / Cancel.
+
+  &lt;ui-date-picker label="Event" value=${date}
+                  @change=${(e) =&gt; date(e.detail.value)}&gt;&lt;/ui-date-picker&gt;
+
+`value` is an ISO date string (YYYY-MM-DD), or '' for none. Typing an
+ISO or locale-formatted date into the field commits on blur / Enter.
+Set `range` to pick a start and end; `change` then reports
+`{ start, end, value }` where `value` is `start/end`.
+
+| | |
+| --- | --- |
+| `@prop` | {string}  label='' |
+| `@prop` | {string}  value=''         — ISO date (YYYY-MM-DD); range: start/end |
+| `@prop` | {boolean} range=false      — pick a start and end date |
+| `@prop` | {string}  start=''         — range start ISO |
+| `@prop` | {string}  end=''           — range end ISO |
+| `@prop` | {string}  variant='filled' — filled \| outlined |
+| `@prop` | {string}  presentation='docked' — docked \| modal |
+| `@prop` | {string}  min=''           — inclusive ISO lower bound |
+| `@prop` | {string}  max=''           — inclusive ISO upper bound |
+| `@prop` | {string}  locale=''        — BCP 47 tag; empty uses the runtime locale |
+| `@prop` | {boolean} disabled=false |
+| `@prop` | {boolean} required=false |
+| `@prop` | {string}  name=''          — form participation |
+| `@prop` | {string}  placeholder='' |
+| `@event` | change — committed; detail: { value } or { start, end, value } when range |
+| `@event` | input  — field keystroke; detail: { value } (the raw text) |
+| `@event` | open   — calendar visible (after the enter animation) |
+| `@event` | close  — calendar removed (after the exit animation) |
+| `@part` | field, input, label, panel, day |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-date-picker.js`](../src/components/ui-date-picker.js)
+
 ## `<ui-dialog>`
 
 a modal dialog.
@@ -455,6 +561,34 @@ no scrim, no trap.
 | `@vars` | see `t` below (`themeVars.names`) |
 
 Source: [`src/components/ui-drawer.js`](../src/components/ui-drawer.js)
+
+## `<ui-fab-menu>`
+
+a Material FAB menu: a trigger FAB that expands related
+actions stacked above it.
+
+  &lt;ui-fab-menu&gt;
+    &lt;ui-fab slot="trigger" icon="add"&gt;&lt;/ui-fab&gt;
+    &lt;ui-fab icon="edit" label="Edit" size="sm"&gt;&lt;/ui-fab&gt;
+    &lt;ui-fab icon="send" label="Send" size="sm"&gt;&lt;/ui-fab&gt;
+  &lt;/ui-fab-menu&gt;
+
+The PARENT may pass `open`; clicking the trigger toggles it and emits
+`open`/`close`. Choosing an action emits `select` (the action's click still
+bubbles) and closes the menu.
+
+| | |
+| --- | --- |
+| `@prop` | {boolean} open=false |
+| `@prop` | {string}  label='' — accessible name for the action list |
+| `@event` | open  — menu visible (after the enter animation) |
+| `@event` | close — menu removed (after the exit animation) |
+| `@slot` | trigger  — the &lt;ui-fab&gt; that toggles the menu |
+| `@slot` | (default) — related &lt;ui-fab&gt; actions |
+| `@part` | actions, trigger |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-fab-menu.js`](../src/components/ui-fab-menu.js)
 
 ## `<ui-fab>`
 
@@ -549,6 +683,25 @@ a Material list container for &lt;ui-list-item&gt; children.
 
 Source: [`src/components/ui-list.js`](../src/components/ui-list.js)
 
+## `<ui-loading-indicator>`
+
+the Material loading indicator: morphing dots,
+distinct from determinate &lt;ui-progress&gt; / &lt;ui-spinner&gt;.
+
+  &lt;ui-loading-indicator label="Loading"&gt;&lt;/ui-loading-indicator&gt;
+  &lt;ui-loading-indicator variant="contained"&gt;&lt;/ui-loading-indicator&gt;
+
+Always indeterminate. `contained` draws the dots on a tonal pill.
+
+| | |
+| --- | --- |
+| `@prop` | {string} variant='uncontained' — uncontained \| contained |
+| `@prop` | {string} label='Loading'       — accessible name |
+| `@part` | track, dot |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-loading-indicator.js`](../src/components/ui-loading-indicator.js)
+
 ## `<ui-menu-item>`
 
 one action inside &lt;ui-menu&gt;.
@@ -604,7 +757,7 @@ Source: [`src/components/ui-menu.js`](../src/components/ui-menu.js)
 
 ## `<ui-nav-item>`
 
-one destination inside &lt;ui-bottom-nav&gt;.
+one destination inside &lt;ui-bottom-nav&gt; or &lt;ui-nav-rail&gt;.
 
 | | |
 | --- | --- |
@@ -621,6 +774,34 @@ one destination inside &lt;ui-bottom-nav&gt;.
 | `@vars` | see `t` below (`themeVars.names`)  Focus: the host is the roving tab stop (&lt;ui-bottom-nav&gt; assigns tabindex); focus is forwarded to the inner button so Enter/Space activate natively. |
 
 Source: [`src/components/ui-nav-item.js`](../src/components/ui-nav-item.js)
+
+## `<ui-nav-rail>`
+
+the Material navigation rail.
+
+  &lt;ui-nav-rail value=${route} @change=${(e) =&gt; route(e.detail.value)}&gt;
+    &lt;ui-fab slot="fab" icon="add"&gt;&lt;/ui-fab&gt;
+    &lt;ui-nav-item value="home" icon="home" label="Home"&gt;&lt;/ui-nav-item&gt;
+    &lt;ui-nav-item value="search" icon="search" label="Search"&gt;&lt;/ui-nav-item&gt;
+  &lt;/ui-nav-rail&gt;
+
+A compact vertical destination list (the large-screen counterpart of
+&lt;ui-bottom-nav&gt;). Reuses &lt;ui-nav-item&gt;. The host flows with the page —
+pin it with position: sticky/fixed yourself.
+
+| | |
+| --- | --- |
+| `@prop` | {string} value='' — the selected item's `value` |
+| `@prop` | {string} label='' — accessible name of the &lt;nav&gt; |
+| `@prop` | {string} align='start' — start \| center \| end (where destinations sit) |
+| `@event` | change — a destination was chosen; detail: { value } |
+| `@slot` | menu — optional leading icon button (typically "menu") |
+| `@slot` | fab  — optional FAB above the destinations |
+| `@slot` | (default) — &lt;ui-nav-item&gt; children |
+| `@part` | rail — the &lt;nav&gt; container |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-nav-rail.js`](../src/components/ui-nav-rail.js)
 
 ## `<ui-option>`
 
@@ -755,6 +936,46 @@ Clicking the star matching the current value clears the rating to 0
 
 Source: [`src/components/ui-rating.js`](../src/components/ui-rating.js)
 
+## `<ui-search>`
+
+Material search bar.
+
+  &lt;ui-search label="Search mail" value=${q}
+             @input=${(e) =&gt; q(e.detail.value)}
+             @submit=${(e) =&gt; run(e.detail.value)}&gt;&lt;/ui-search&gt;
+
+A pill-shaped field with a leading search icon, a trailing clear control
+while there is text, and an optional trailing slot (avatar, voice, …).
+Enter emits `submit`. The field chrome is the focus indicator — the inner
+input has no extra outline.
+
+`presentation="view"` expands into a search view: a back control and a
+suggestions list (the default slot) while open. The bar also shows that
+list when it has slotted suggestions and the field is focused.
+
+| | |
+| --- | --- |
+| `@prop` | {string}  label='Search'   — accessible name (and the floating placeholder) |
+| `@prop` | {string}  value='' |
+| `@prop` | {string}  placeholder=''   — shown in the field; falls back to `label` |
+| `@prop` | {string}  presentation='bar' — bar \| view |
+| `@prop` | {boolean} open=false       — view / suggestions visibility |
+| `@prop` | {boolean} disabled=false |
+| `@prop` | {string}  name=''          — form participation |
+| `@event` | input  — every keystroke; detail: { value } |
+| `@event` | change — committed (blur/Enter); detail: { value } |
+| `@event` | submit — Enter pressed; detail: { value } |
+| `@event` | clear  — the clear affordance was used |
+| `@event` | open   — suggestions visible (after the enter animation) |
+| `@event` | close  — suggestions removed (after the exit animation) |
+| `@slot` | leading  — replaces the search icon |
+| `@slot` | trailing — after the clear button (avatar, extra actions) |
+| `@slot` | (default) — suggestion rows (ui-list-item, …) |
+| `@part` | bar, input, panel |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-search.js`](../src/components/ui-search.js)
+
 ## `<ui-select>`
 
 Material select: a text-field-style field button that opens a
@@ -789,6 +1010,72 @@ on outside pointerdown and returns focus to the field.
 
 Source: [`src/components/ui-select.js`](../src/components/ui-select.js)
 
+## `<ui-sheet>`
+
+a Material bottom sheet.
+
+  &lt;ui-sheet open=${open} @close=${() =&gt; open(false)}&gt;
+    &lt;span slot="headline"&gt;Title&lt;/span&gt;
+    Sheet body
+    &lt;ui-button slot="actions" variant="text"&gt;Close&lt;/ui-button&gt;
+  &lt;/ui-sheet&gt;
+
+Modal (default): a scrim plus a panel that slides up from the bottom.
+Focus is trapped and page scroll locked while open. The PARENT owns
+`open`: Escape and scrim clicks emit `close` with a reason.
+Standard: an in-flow panel that expands from zero height — no scrim,
+no trap.
+
+| | |
+| --- | --- |
+| `@prop` | {boolean} open=false |
+| `@prop` | {string}  variant='modal' — modal \| standard |
+| `@prop` | {boolean} persistent=false — Escape/scrim do not request closing |
+| `@prop` | {string}  label=''         — accessible name if no headline slot |
+| `@event` | close  — detail: { reason: 'esc' \| 'scrim' \| 'method' } |
+| `@event` | opened — enter animation finished |
+| `@event` | closed — exit animation finished, DOM removed |
+| `@slot` | (default) — body content |
+| `@slot` | headline |
+| `@slot` | actions |
+| `@part` | scrim, surface, handle, headline, body, actions |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-sheet.js`](../src/components/ui-sheet.js)
+
+## `<ui-side-sheet>`
+
+a Material side sheet for complementary content.
+
+  &lt;ui-side-sheet open=${open} @close=${() =&gt; open(false)}&gt;
+    &lt;span slot="headline"&gt;Filters&lt;/span&gt;
+    Sheet body
+    &lt;ui-button slot="actions" variant="text"&gt;Apply&lt;/ui-button&gt;
+  &lt;/ui-side-sheet&gt;
+
+Distinct from &lt;ui-drawer&gt; (navigation) and &lt;ui-sheet&gt; (bottom). Modal
+(default): a scrim plus a panel that slides in from the end edge. Focus is
+trapped and page scroll locked while open. The PARENT owns `open`. Standard:
+an in-flow panel that animates its inline size — no scrim, no trap.
+
+| | |
+| --- | --- |
+| `@prop` | {boolean} open=false |
+| `@prop` | {string}  variant='modal' — modal \| standard |
+| `@prop` | {string}  anchor='end'    — start \| end |
+| `@prop` | {boolean} persistent=false — Escape/scrim do not request closing |
+| `@prop` | {string}  label=''         — accessible name if no headline slot |
+| `@event` | close  — detail: { reason: 'esc' \| 'scrim' \| 'method' } |
+| `@event` | opened — enter animation finished |
+| `@event` | closed — exit animation finished, DOM removed |
+| `@slot` | (default) — body content |
+| `@slot` | headline |
+| `@slot` | actions |
+| `@part` | scrim, surface, headline, body, actions |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-side-sheet.js`](../src/components/ui-side-sheet.js)
+
 ## `<ui-skeleton>`
 
 a loading placeholder shape.
@@ -813,12 +1100,12 @@ Source: [`src/components/ui-skeleton.js`](../src/components/ui-skeleton.js)
 
 ## `<ui-slider>`
 
-a Material single-value slider on a NATIVE &lt;input type="range"&gt;
-for bulletproof keyboard and screen-reader behavior.
+a Material slider on native &lt;input type="range"&gt;s for
+keyboard and screen-reader behavior.
 
-The active track portion is painted with a `--ui-slider-fill` percentage
-bound from the template into a gradient; the thumb's hover/focus halo is a
-box-shadow state layer (it replaces the native focus outline).
+The active track portion is painted with `--ui-slider-fill` (or start/end
+when `range`) bound from the template into a gradient; the thumb's
+hover/focus halo is a box-shadow state layer.
 
 | | |
 | --- | --- |
@@ -826,13 +1113,16 @@ box-shadow state layer (it replaces the native focus outline).
 | `@prop` | {number}  min=0 |
 | `@prop` | {number}  max=100 |
 | `@prop` | {number}  step=1 |
+| `@prop` | {boolean} range=false — two thumbs; uses valueStart / valueEnd |
+| `@prop` | {number}  valueStart=0 |
+| `@prop` | {number}  valueEnd=100 |
 | `@prop` | {string}  label=''   — REQUIRED accessible name (aria-label) |
 | `@prop` | {boolean} disabled=false |
 | `@prop` | {boolean} showValue=false — value bubble above the thumb while focused/dragging (animates in and out) |
 | `@prop` | {string}  name=''    — form participation |
-| `@event` | input  — every drag/keystroke; detail: { value } |
-| `@event` | change — committed value; detail: { value } |
-| `@part` | input — the native &lt;input type="range"&gt; |
+| `@event` | input  — every drag/keystroke; detail: { value } or { start, end } |
+| `@event` | change — committed value; detail: { value } or { start, end } |
+| `@part` | input — the native &lt;input type="range"&gt; (both, when range) |
 | `@vars` | see `t` below (`themeVars.names`) |
 
 Source: [`src/components/ui-slider.js`](../src/components/ui-slider.js)
@@ -888,6 +1178,34 @@ Material circular progress.
 | `@vars` | see `t` below (`themeVars.names`)  One SVG circle in a 44-unit viewBox with a 4-unit stroke, so the stroke scales with `size`. Determinate progress binds stroke-dashoffset from the value; indeterminate is the classic rotate + dash-grow loop as CSS keyframes, its cycle derived from the motion tokens. |
 
 Source: [`src/components/ui-spinner.js`](../src/components/ui-spinner.js)
+
+## `<ui-split-button>`
+
+a Material split button: a primary action plus a
+connected chevron that opens related actions.
+
+  &lt;ui-split-button variant="filled" @click=${save}&gt;
+    Save
+    &lt;ui-menu-item slot="menu" value="draft"&gt;Save draft&lt;/ui-menu-item&gt;
+    &lt;ui-menu-item slot="menu" value="copy"&gt;Save a copy&lt;/ui-menu-item&gt;
+  &lt;/ui-split-button&gt;
+
+The leading segment is the primary action (native click bubbles). Choosing
+a menu item emits `select` with that item's value.
+
+| | |
+| --- | --- |
+| `@prop` | {string}  variant='filled' — filled \| tonal \| outlined \| elevated |
+| `@prop` | {boolean} disabled=false |
+| `@event` | (native click bubbles from the leading segment) |
+| `@event` | select — a menu action was chosen; detail: { value } |
+| `@slot` | (default) — leading-segment label |
+| `@slot` | icon      — leading icon on the primary action |
+| `@slot` | menu      — &lt;ui-menu-item&gt; children |
+| `@part` | group, action, chevron |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-split-button.js`](../src/components/ui-split-button.js)
 
 ## `<ui-stack>`
 
@@ -1066,6 +1384,7 @@ Activation is AUTOMATIC per the ARIA APG: arrow keys move focus AND select
 | | |
 | --- | --- |
 | `@prop` | {string} value='' — the selected tab's value |
+| `@prop` | {string} variant='primary' — primary \| secondary |
 | `@prop` | {string} label='' — accessible name for the tablist |
 | `@event` | change — user selected a tab; detail: { value } |
 | `@slot` | (default) — &lt;ui-tab&gt; children |
@@ -1119,6 +1438,36 @@ typography, the type scale as an element.
 
 Source: [`src/components/ui-text.js`](../src/components/ui-text.js)
 
+## `<ui-time-picker>`
+
+Material time picker: a text-field-style control that
+opens an hour/minute chooser. Value is a 24-hour `HH:mm` string.
+
+  &lt;ui-time-picker label="Alarm" value=${time}
+                  @change=${(e) =&gt; time(e.detail.value)}&gt;&lt;/ui-time-picker&gt;
+
+| | |
+| --- | --- |
+| `@prop` | {string}  label='' |
+| `@prop` | {string}  value=''         — 24-hour HH:mm, or '' for none |
+| `@prop` | {string}  variant='filled' — filled \| outlined |
+| `@prop` | {string}  view='clock'     — clock \| input (dial vs digital grid) |
+| `@prop` | {string}  hourCycle='12'   — 12 \| 24 |
+| `@prop` | {number}  minuteStep=5     — minute choices (1, 5, or 15 typical) |
+| `@prop` | {string}  locale=''        — BCP 47 tag; empty uses the runtime locale |
+| `@prop` | {boolean} disabled=false |
+| `@prop` | {boolean} required=false |
+| `@prop` | {string}  name=''          — form participation |
+| `@prop` | {string}  placeholder='' |
+| `@event` | change — committed; detail: { value } |
+| `@event` | input  — field keystroke; detail: { value } (the raw text) |
+| `@event` | open   — panel visible (after the enter animation) |
+| `@event` | close  — panel removed (after the exit animation) |
+| `@part` | field, input, label, panel |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-time-picker.js`](../src/components/ui-time-picker.js)
+
 ## `<ui-toggle-button>`
 
 one Material segmented button, used inside
@@ -1169,6 +1518,27 @@ stops — no roving tabindex, per the toolbar-of-toggle-buttons pattern.
 | `@vars` | see `t` below (`themeVars.names`) |
 
 Source: [`src/components/ui-toggle-group.js`](../src/components/ui-toggle-group.js)
+
+## `<ui-toolbar>`
+
+a Material contextual toolbar: a floating strip of icon
+actions, optionally with an attached FAB.
+
+  &lt;ui-toolbar label="Selection"&gt;
+    &lt;ui-icon-button icon="edit" label="Edit"&gt;&lt;/ui-icon-button&gt;
+    &lt;ui-icon-button icon="delete" label="Delete"&gt;&lt;/ui-icon-button&gt;
+    &lt;ui-fab slot="fab" icon="add" size="sm"&gt;&lt;/ui-fab&gt;
+  &lt;/ui-toolbar&gt;
+
+| | |
+| --- | --- |
+| `@prop` | {string} label='' — accessible name for the toolbar |
+| `@slot` | (default) — icon buttons and other actions |
+| `@slot` | fab       — optional &lt;ui-fab&gt; attached to the end |
+| `@part` | bar, actions, fab |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-toolbar.js`](../src/components/ui-toolbar.js)
 
 ## `<ui-tooltip>`
 

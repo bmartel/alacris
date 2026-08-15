@@ -7,6 +7,12 @@ import '../src/components/ui-tabs.js';
 import '../src/components/ui-menu.js';
 import '../src/components/ui-drawer.js';
 import '../src/components/ui-app-bar.js';
+import '../src/components/ui-nav-rail.js';
+import '../src/components/ui-nav-item.js';
+import '../src/components/ui-fab.js';
+import '../src/components/ui-bottom-app-bar.js';
+import '../src/components/ui-toolbar.js';
+import '../src/components/ui-icon-button.js';
 
 const TABS = `
   <ui-tabs value="one" label="Demo">
@@ -172,5 +178,63 @@ test('ui-app-bar variants, elevation, and scroll elevation', async () => {
     window.dispatchEvent(new window.Event('scroll'));
     assert.ok(!bar.className.includes('raised'), 'back at top lowers the bar');
   }
+  unmountAll();
+});
+
+test('ui-nav-rail coordinates selection and emits change', async () => {
+  const el = mount(`
+    <ui-nav-rail value="home" label="Main">
+      <ui-fab slot="fab" icon="add"></ui-fab>
+      <ui-nav-item value="home" icon="home" label="Home"></ui-nav-item>
+      <ui-nav-item value="search" icon="search" label="Search"></ui-nav-item>
+    </ui-nav-rail>`);
+  await tick();
+  const [home, search] = el.querySelectorAll('ui-nav-item');
+  assert.equal(home.selected, true);
+  assert.ok(el.shadowRoot.querySelector('nav'));
+  let value = null;
+  el.addEventListener('change', (e) => (value = e.detail.value));
+  fire(search.shadowRoot.querySelector('button'), 'click');
+  assert.equal(value, 'search');
+  assert.equal(search.selected, true);
+  assert.equal(home.selected, false);
+  unmountAll();
+});
+
+test('ui-tabs secondary variant is live on the tablist', async () => {
+  const el = mount(TABS);
+  await tick();
+  const tablist = el.shadowRoot.querySelector('[role=tablist]');
+  assert.ok(tablist.className.includes('primary'));
+  el.variant = 'secondary';
+  assert.ok(tablist.className.includes('secondary'));
+  unmountAll();
+});
+
+test('ui-bottom-app-bar renders navigation, actions, and fab slots', async () => {
+  const el = mount(`
+    <ui-bottom-app-bar>
+      <ui-icon-button slot="navigation" icon="menu" label="Menu"></ui-icon-button>
+      <ui-fab slot="fab" icon="add"></ui-fab>
+      <ui-icon-button slot="actions" icon="search" label="Search"></ui-icon-button>
+    </ui-bottom-app-bar>`);
+  await tick();
+  const bar = el.shadowRoot.querySelector('[part=bar]');
+  assert.equal(bar.getAttribute('role'), 'toolbar');
+  assert.ok(bar.className.includes('end'));
+  el.fabAlign = 'center';
+  assert.ok(bar.className.includes('center'));
+  unmountAll();
+});
+
+test('ui-toolbar is a labeled toolbar', async () => {
+  const el = mount(`
+    <ui-toolbar label="Selection">
+      <ui-icon-button icon="edit" label="Edit"></ui-icon-button>
+    </ui-toolbar>`);
+  await tick();
+  const bar = el.shadowRoot.querySelector('[part=bar]');
+  assert.equal(bar.getAttribute('role'), 'toolbar');
+  assert.equal(bar.getAttribute('aria-label'), 'Selection');
   unmountAll();
 });

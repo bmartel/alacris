@@ -81,10 +81,13 @@ const styles = css`
     inset: -8px 0 0;
     margin: 0;
     padding: 0 calc(${sys.space(4)} - 4px);
+    min-inline-size: 0;
+    appearance: none;
     border: 1px solid ${t.outlineColor};
     border-radius: ${t.radius};
     pointer-events: none;
-    transition: border-color ${sys.duration.short2} ${sys.easing.standard};
+    transition: border-color ${sys.duration.short2} ${sys.easing.standard},
+                border-width ${sys.duration.short2} ${sys.easing.standard};
   }
   legend {
     padding: 0;
@@ -130,8 +133,10 @@ const styles = css`
   input, textarea {
     flex: 1;
     min-inline-size: 0;
+    margin: 0;
     border: none;
     outline: none;
+    appearance: none;
     background: transparent;
     font: inherit;
     letter-spacing: inherit;

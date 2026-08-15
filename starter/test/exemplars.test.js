@@ -12,6 +12,8 @@ import '../src/components/ui-text.js';
 import '../src/components/ui-switch.js';
 import '../src/components/ui-text-field.js';
 import '../src/components/ui-dialog.js';
+import '../src/components/ui-sheet.js';
+import '../src/components/ui-side-sheet.js';
 
 test('createTheme produces both schemes with contrast-mapped roles', () => {
   const theme = createTheme({ seed: '#0b57d0' });
@@ -110,6 +112,50 @@ test('ui-dialog mounts on open, emits close on scrim, removes after exit', async
   const surface = el.shadowRoot.querySelector('.surface');
   assert.ok(surface, 'open renders the overlay synchronously');
   assert.equal(surface.getAttribute('aria-modal'), 'true');
+
+  let reason = null;
+  el.addEventListener('close', (e) => (reason = e.detail.reason));
+  fire(el.shadowRoot.querySelector('.scrim'), 'click');
+  assert.equal(reason, 'scrim', 'scrim click requests close');
+
+  el.open = false;
+  await tick();
+  await tick();
+  assert.equal(el.shadowRoot.querySelector('.overlay'), null, 'exit removes the DOM');
+  unmountAll();
+});
+
+test('ui-sheet mounts on open, emits close on scrim, removes after exit', async () => {
+  const el = mount('<ui-sheet label="Share"><p>Body</p></ui-sheet>');
+  await tick();
+  assert.equal(el.shadowRoot.querySelector('.overlay'), null, 'closed = no DOM');
+  el.open = true;
+  const surface = el.shadowRoot.querySelector('.surface');
+  assert.ok(surface, 'open renders the overlay synchronously');
+  assert.equal(surface.getAttribute('aria-modal'), 'true');
+  assert.ok(el.shadowRoot.querySelector('.handle'), 'shows the drag handle');
+
+  let reason = null;
+  el.addEventListener('close', (e) => (reason = e.detail.reason));
+  fire(el.shadowRoot.querySelector('.scrim'), 'click');
+  assert.equal(reason, 'scrim', 'scrim click requests close');
+
+  el.open = false;
+  await tick();
+  await tick();
+  assert.equal(el.shadowRoot.querySelector('.overlay'), null, 'exit removes the DOM');
+  unmountAll();
+});
+
+test('ui-side-sheet mounts on open, emits close on scrim, removes after exit', async () => {
+  const el = mount('<ui-side-sheet label="Filters"><p>Body</p></ui-side-sheet>');
+  await tick();
+  assert.equal(el.shadowRoot.querySelector('.overlay'), null, 'closed = no DOM');
+  el.open = true;
+  const surface = el.shadowRoot.querySelector('.surface');
+  assert.ok(surface, 'open renders the overlay synchronously');
+  assert.equal(surface.getAttribute('aria-modal'), 'true');
+  assert.ok(surface.className.includes('end'), 'default anchor is end');
 
   let reason = null;
   el.addEventListener('close', (e) => (reason = e.detail.reason));

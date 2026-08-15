@@ -5,6 +5,7 @@ import { block, stackBlock } from './helpers.js';
 import '../src/components/ui-alert.js';
 import '../src/components/ui-progress.js';
 import '../src/components/ui-spinner.js';
+import '../src/components/ui-loading-indicator.js';
 import '../src/components/ui-skeleton.js';
 import '../src/components/ui-backdrop.js';
 import { showSnackbar } from '../src/components/ui-snackbar.js';
@@ -65,6 +66,13 @@ export const section = () => {
         <ui-spinner label="Loading" size="56px"></ui-spinner>
         <ui-spinner label="Upload progress" value=${progress}></ui-spinner>
         <ui-spinner label="Upload progress" value=${progress} size="56px"></ui-spinner>`,
+    )}
+
+    ${block(
+      'Loading indicator',
+      html`
+        <ui-loading-indicator label="Loading"></ui-loading-indicator>
+        <ui-loading-indicator variant="contained" label="Loading"></ui-loading-indicator>`,
     )}
 
     ${block(

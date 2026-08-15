@@ -4,6 +4,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mount, unmountAll, tick, fire } from './helpers.js';
 
+const key = (el, k) =>
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: k, bubbles: true, composed: true, cancelable: true }));
+
 import '../src/components/ui-avatar.js';
 import '../src/components/ui-badge.js';
 import '../src/components/ui-divider.js';
@@ -11,6 +14,8 @@ import '../src/components/ui-list.js';
 import '../src/components/ui-list-item.js';
 import '../src/components/ui-table.js';
 import '../src/components/ui-tooltip.js';
+import '../src/components/ui-carousel.js';
+import '../src/components/ui-carousel-item.js';
 
 test('ui-avatar renders initials from name and labels itself', async () => {
   const el = mount('<ui-avatar name="Ada Lovelace"></ui-avatar>');
@@ -170,5 +175,31 @@ test('ui-tooltip hides on Escape and supports rich content', async () => {
   document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   await tick();
   assert.equal(el.shadowRoot.querySelector('.panel'), null, 'Escape hides');
+  unmountAll();
+});
+
+test('ui-carousel next/prev move index and emit change', async () => {
+  const el = mount(`
+    <ui-carousel label="Photos">
+      <ui-carousel-item>One</ui-carousel-item>
+      <ui-carousel-item>Two</ui-carousel-item>
+      <ui-carousel-item>Three</ui-carousel-item>
+    </ui-carousel>`);
+  await tick();
+  const items = [...el.querySelectorAll('ui-carousel-item')];
+  assert.equal(items[0].selected, true);
+  assert.equal(items[0].hasAttribute('selected'), true);
+  let detail = null;
+  el.addEventListener('change', (e) => (detail = e.detail));
+  fire(el.shadowRoot.querySelector('[part=next]').shadowRoot.querySelector('button'), 'click');
+  assert.equal(el.index, 1);
+  assert.equal(detail.index, 1);
+  assert.equal(items[1].selected, true);
+  assert.equal(items[1].hasAttribute('selected'), true);
+  assert.equal(items[0].hasAttribute('selected'), false);
+  fire(el.shadowRoot.querySelector('[part=prev]').shadowRoot.querySelector('button'), 'click');
+  assert.equal(el.index, 0);
+  key(el.shadowRoot.querySelector('.root'), 'ArrowRight');
+  assert.equal(el.index, 1);
   unmountAll();
 });

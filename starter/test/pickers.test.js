@@ -8,6 +8,8 @@ import '../src/components/ui-option.js';
 import '../src/components/ui-autocomplete.js';
 import '../src/components/ui-chip.js';
 import '../src/components/ui-chip-set.js';
+import '../src/components/ui-date-picker.js';
+import '../src/components/ui-time-picker.js';
 
 const key = (el, k) =>
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: k, bubbles: true, composed: true, cancelable: true }));
@@ -213,3 +215,167 @@ test('ui-chip-set coordinates single-select filter chips and emits the value', a
   unmountAll();
   await tick();
 });
+
+test('ui-select outlined fieldset is not inside the combobox button', async () => {
+  const el = mount(`
+    <ui-select label="Flavor" variant="outlined">
+      <ui-option value="vanilla">Vanilla</ui-option>
+    </ui-select>`);
+  await tick();
+  const field = el.shadowRoot.querySelector('[role="combobox"]');
+  assert.equal(field.querySelector('fieldset'), null, 'fieldset is a sibling, not a button descendant');
+  assert.ok(el.shadowRoot.querySelector('fieldset'), 'outlined still draws a fieldset');
+  unmountAll();
+  await tick();
+});
+
+test('ui-date-picker opens a calendar, selects a day, emits change', async () => {
+  const el = mount('<ui-date-picker label="Event" value="2026-08-14"></ui-date-picker>');
+  await tick();
+  assert.equal(el.shadowRoot.querySelector('.panel'), null, 'closed = no panel');
+  const iconBtn = el.shadowRoot.querySelector('ui-icon-button');
+  fire(iconBtn.shadowRoot.querySelector('button'), 'click');
+  const panel = el.shadowRoot.querySelector('.panel');
+  assert.ok(panel, 'calendar opens');
+  const selected = panel.querySelector('[data-iso="2026-08-14"]');
+  assert.ok(selected, 'selected day is in the grid');
+  assert.equal(selected.getAttribute('aria-selected'), 'true');
+
+  let detail = null;
+  el.addEventListener('change', (e) => (detail = e.detail));
+  const next = panel.querySelector('[data-iso="2026-08-20"]');
+  fire(next, 'click');
+  assert.equal(el.value, '2026-08-20');
+  assert.equal(detail.value, '2026-08-20');
+  await tick();
+  await tick();
+  assert.equal(el.shadowRoot.querySelector('.panel'), null, 'day click closes the docked panel');
+  unmountAll();
+  await tick();
+});
+
+test('ui-date-picker live value write and modal OK commit', async () => {
+  const el = mount('<ui-date-picker label="Deadline" presentation="modal"></ui-date-picker>');
+  await tick();
+  el.value = '2026-01-01';
+  assert.match(el.shadowRoot.querySelector('input').value, /2026|Jan/);
+
+  fire(el.shadowRoot.querySelector('ui-icon-button').shadowRoot.querySelector('button'), 'click');
+  const overlay = el.shadowRoot.querySelector('.overlay');
+  assert.ok(overlay, 'modal opens an overlay');
+  fire(overlay.querySelector('[data-iso="2026-01-15"]'), 'click');
+  assert.equal(el.value, '2026-01-01', 'modal day click is a draft until OK');
+  const ok = [...overlay.querySelectorAll('ui-button')].find((b) => b.textContent.includes('OK'));
+  fire(ok.shadowRoot.querySelector('button'), 'click');
+  assert.equal(el.value, '2026-01-15');
+  unmountAll();
+  await tick();
+});
+
+test('ui-time-picker opens, picks a minute, emits HH:mm', async () => {
+  const el = mount('<ui-time-picker label="Alarm" value="07:30"></ui-time-picker>');
+  await tick();
+  fire(el.shadowRoot.querySelector('ui-icon-button').shadowRoot.querySelector('button'), 'click');
+  const panel = el.shadowRoot.querySelector('.panel');
+  assert.ok(panel, 'time panel opens');
+  fire(panel.querySelector('[data-hour="8"]'), 'click');
+  let detail = null;
+  el.addEventListener('change', (e) => (detail = e.detail));
+  fire(panel.querySelector('[data-minute="45"]'), 'click');
+  assert.equal(el.value, '08:45');
+  assert.equal(detail.value, '08:45');
+  unmountAll();
+  await tick();
+});
+
+test('ui-date-picker range selects start then end', async () => {
+  const el = mount('<ui-date-picker label="Trip" range></ui-date-picker>');
+  await tick();
+  fire(el.shadowRoot.querySelector('ui-icon-button').shadowRoot.querySelector('button'), 'click');
+  const panel = el.shadowRoot.querySelector('.panel');
+  assert.ok(panel);
+
+  fire(panel.querySelector('[data-iso="2026-08-14"]'), 'click');
+  assert.equal(el.start, '2026-08-14');
+  assert.equal(el.end, '');
+  assert.ok(el.shadowRoot.querySelector('.panel'), 'first click keeps the panel open');
+
+  let detail = null;
+  el.addEventListener('change', (e) => (detail = e.detail));
+  fire(el.shadowRoot.querySelector('[data-iso="2026-08-20"]'), 'click');
+  assert.equal(el.start, '2026-08-14');
+  assert.equal(el.end, '2026-08-20');
+  assert.equal(detail.start, '2026-08-14');
+  assert.equal(detail.end, '2026-08-20');
+  unmountAll();
+  await tick();
+});
+
+test('position flips above the anchor without covering it', async () => {
+  const { position } = await import('../src/util/position.js');
+  const panel = document.createElement('div');
+  const anchor = document.createElement('div');
+  document.body.append(anchor, panel);
+  Object.defineProperty(panel, 'offsetWidth', { configurable: true, get: () => 240 });
+  Object.defineProperty(panel, 'offsetHeight', { configurable: true, get: () => 280 });
+  anchor.getBoundingClientRect = () => ({
+    top: 400, bottom: 456, left: 16, right: 256, width: 240, height: 56,
+  });
+  const prevH = Object.getOwnPropertyDescriptor(window, 'innerHeight');
+  const prevW = Object.getOwnPropertyDescriptor(window, 'innerWidth');
+  Object.defineProperty(window, 'innerHeight', { configurable: true, value: 500 });
+  Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+  try {
+    const result = position(panel, anchor, { placement: 'bottom-start', offset: 4, padding: 8 });
+    assert.match(result.placement, /^top/);
+    const y = parseFloat(panel.style.top);
+    assert.ok(y + 280 <= 400 - 4 + 0.5, 'panel stays above the field');
+    assert.equal(panel.style.transformOrigin, 'bottom center');
+  } finally {
+    if (prevH) Object.defineProperty(window, 'innerHeight', prevH);
+    if (prevW) Object.defineProperty(window, 'innerWidth', prevW);
+    unmountAll();
+  }
+});
+
+test('position constrains height instead of overlapping the anchor', async () => {
+  const { position } = await import('../src/util/position.js');
+  const panel = document.createElement('div');
+  const anchor = document.createElement('div');
+  document.body.append(anchor, panel);
+  Object.defineProperty(panel, 'offsetWidth', { configurable: true, get: () => 240 });
+  Object.defineProperty(panel, 'offsetHeight', { configurable: true, get: () => 280 });
+  anchor.getBoundingClientRect = () => ({
+    top: 100, bottom: 156, left: 16, right: 256, width: 240, height: 56,
+  });
+  const prevH = Object.getOwnPropertyDescriptor(window, 'innerHeight');
+  const prevW = Object.getOwnPropertyDescriptor(window, 'innerWidth');
+  Object.defineProperty(window, 'innerHeight', { configurable: true, value: 200 });
+  Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+  try {
+    position(panel, anchor, { placement: 'bottom-start', offset: 4, padding: 8 });
+    // More room above (100-4-8=88) than below (200-156-4-8=32).
+    assert.equal(panel.style.maxHeight, '88px');
+    const y = parseFloat(panel.style.top);
+    assert.ok(y + 280 > 156 || parseFloat(panel.style.maxHeight) <= 88,
+      'does not clamp a full-height panel over the field');
+  } finally {
+    if (prevH) Object.defineProperty(window, 'innerHeight', prevH);
+    if (prevW) Object.defineProperty(window, 'innerWidth', prevW);
+    unmountAll();
+  }
+});
+
+test('ui-time-picker input view still uses the hour/minute grids', async () => {
+  const el = mount('<ui-time-picker label="Alarm" view="input" value="07:30"></ui-time-picker>');
+  await tick();
+  fire(el.shadowRoot.querySelector('ui-icon-button').shadowRoot.querySelector('button'), 'click');
+  const panel = el.shadowRoot.querySelector('.panel');
+  assert.ok(panel.querySelector('.grid'), 'digital grid is used when view=input');
+  fire(panel.querySelector('[data-hour="8"]'), 'click');
+  fire(panel.querySelector('[data-minute="45"]'), 'click');
+  assert.equal(el.value, '08:45');
+  unmountAll();
+  await tick();
+});
+
