@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.9.0](https://github.com/bmartel/alacris/compare/v0.8.0...v0.9.0) (2026-08-15)
+
+### Features
+
+* **starter:** compose the kitchen-sink demo from the design system ([870ae7e](https://github.com/bmartel/alacris/commit/870ae7eb34614de5203e4063378fad9d4140a5e6))
+
 ## [0.8.0](https://github.com/bmartel/alacris/compare/v0.7.0...v0.8.0) (2026-08-15)
 
 ### Features
