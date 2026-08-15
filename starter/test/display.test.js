@@ -149,6 +149,123 @@ test('ui-table adopts the table into its shadow and reflects props', async () =>
   unmountAll();
 });
 
+test('ui-table markup sort buttons reorder rows and set aria-sort', async () => {
+  const el = mount(
+    '<ui-table label="Nutrition"><table><thead><tr>' +
+    '<th data-sortable data-key="name">Dessert</th>' +
+    '<th data-sortable data-numeric data-key="cal">Calories</th>' +
+    '</tr></thead><tbody>' +
+    '<tr><td>Cupcake</td><td data-numeric>305</td></tr>' +
+    '<tr><td>Yogurt</td><td data-numeric>159</td></tr>' +
+    '</tbody></table></ui-table>');
+  await tick();
+  const table = el.shadowRoot.querySelector('table');
+  assert.equal(table.getAttribute('aria-label'), 'Nutrition');
+  const cal = table.querySelector('th[data-key="cal"]');
+  assert.ok(cal.className.includes('numeric'));
+  assert.ok(table.querySelector('td.numeric'), 'numeric header paints the column');
+  const btn = cal.querySelector('button.sort');
+  assert.ok(btn);
+  let sort = null;
+  el.addEventListener('sort', (e) => (sort = e.detail));
+  fire(btn, 'click');
+  assert.equal(sort.key, 'cal');
+  assert.equal(sort.dir, 'asc');
+  assert.equal(cal.getAttribute('aria-sort'), 'ascending');
+  assert.equal(table.querySelector('tbody tr td').textContent, 'Yogurt', 'asc by calories');
+  fire(btn, 'click');
+  assert.equal(sort.dir, 'desc');
+  assert.equal(cal.getAttribute('aria-sort'), 'descending');
+  assert.equal(table.querySelector('tbody tr td').textContent, 'Cupcake');
+  unmountAll();
+});
+
+test('ui-table data mode sorts, selects, paginates, and filters', async () => {
+  const el = mount('<ui-table></ui-table>');
+  el.headline = 'Nutrition';
+  el.columns = [
+    { key: 'name', label: 'Dessert', sortable: true },
+    { key: 'calories', label: 'Calories', numeric: true, sortable: true },
+  ];
+  el.rows = [
+    { id: 'yogurt', name: 'Frozen yogurt', calories: 159 },
+    { id: 'eclair', name: 'Eclair', calories: 262 },
+    { id: 'cupcake', name: 'Cupcake', calories: 305 },
+  ];
+  el.selectable = 'multiple';
+  el.pageSize = 2;
+  await tick();
+
+  const table = el.shadowRoot.querySelector('[role=table]');
+  assert.ok(table, 'data mode renders a table');
+  assert.equal(table.getAttribute('aria-label'), 'Nutrition');
+  assert.equal(table.querySelectorAll('.tbody [role=row]').length, 2, 'pageSize slices rows');
+  assert.ok(table.querySelector('.th.numeric'), 'numeric column class');
+  assert.match(
+    el.shadowRoot.querySelector('ui-table-footer').shadowRoot.querySelector('.range').textContent,
+    /1–2 of 3/,
+  );
+
+  let sort = null;
+  el.addEventListener('sort', (e) => (sort = e.detail));
+  const nameBtn = [...table.querySelectorAll('button.sort')]
+    .find((b) => b.textContent.includes('Dessert'));
+  fire(nameBtn, 'click');
+  assert.equal(sort.key, 'name');
+  assert.equal(sort.dir, 'asc');
+  assert.equal(nameBtn.closest('[role=columnheader]').getAttribute('aria-sort'), 'ascending');
+  const firstData = table.querySelector('.tbody [role=row] [role=cell]:nth-child(2), .tbody [role=row] .td:nth-child(2)');
+  assert.equal(firstData.textContent.trim(), 'Cupcake');
+
+  let changed = null;
+  el.addEventListener('change', (e) => (changed = e.detail));
+  const rowBox = table.querySelector('.tbody ui-checkbox').shadowRoot.querySelector('[role=checkbox]');
+  fire(rowBox, 'click');
+  assert.deepEqual(changed.selected, ['cupcake']);
+  assert.equal(table.querySelector('.tbody [role=row]').getAttribute('aria-selected'), 'true');
+  assert.ok(el.shadowRoot.querySelector('ui-table-toolbar').shadowRoot.querySelector('.bar.picking'));
+  assert.match(
+    el.shadowRoot.querySelector('ui-table-toolbar').shadowRoot.getElementById('table-title').textContent,
+    /1 selected/,
+  );
+
+  let page = null;
+  el.addEventListener('page', (e) => (page = e.detail));
+  const pager = el.shadowRoot.querySelector('ui-table-footer').shadowRoot.querySelector('ui-pagination');
+  const next = [...pager.shadowRoot.querySelectorAll('button')]
+    .find((b) => (b.getAttribute('aria-label') || '').match(/next/i));
+  fire(next, 'click');
+  assert.equal(page.page, 2);
+  assert.equal(table.querySelectorAll('.tbody [role=row]').length, 1);
+
+  el.filter = 'yogurt';
+  el.page = 1;
+  assert.equal(table.querySelectorAll('.tbody [role=row]').length, 1);
+  assert.match(table.querySelector('.tbody [role=row]').textContent, /Frozen yogurt/);
+
+  el.rows = [];
+  assert.ok(table.querySelector('.empty'));
+  assert.match(table.querySelector('.empty').textContent, /No results/);
+
+  el.loading = true;
+  assert.equal(table.getAttribute('aria-busy'), 'true');
+  assert.ok(el.shadowRoot.querySelector('ui-progress'));
+  unmountAll();
+});
+
+test('ui-table infers columns from rows and names checkboxes', async () => {
+  const el = mount('<ui-table></ui-table>');
+  el.rows = [{ id: 1, name: 'Ada', age: 36 }];
+  el.selectable = 'single';
+  await tick();
+  const headers = [...el.shadowRoot.querySelectorAll('[role=columnheader]')];
+  assert.ok(headers.some((th) => th.textContent.includes('Name')));
+  assert.ok(headers.some((th) => th.textContent.includes('Age')));
+  const box = el.shadowRoot.querySelector('.tbody ui-checkbox');
+  assert.equal(box.label, 'Select Ada');
+  unmountAll();
+});
+
 test('ui-tooltip shows on focus, renders the text, hides on blur', async () => {
   const el = mount('<ui-tooltip text="Save changes" delay="0"><button>Save</button></ui-tooltip>');
   await tick();

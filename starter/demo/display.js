@@ -1,6 +1,6 @@
 // Demo — data display family: avatar, badge, divider, list, table, tooltip.
 
-import { html } from 'alacris';
+import { html, signal } from 'alacris';
 import { block, stackBlock } from './helpers.js';
 import '../src/components/ui-avatar.js';
 import '../src/components/ui-badge.js';
@@ -25,7 +25,57 @@ const portrait =
 
 export const title = 'Data display';
 
-export const section = () => html`
+const desserts = [
+  { id: 'yogurt', name: 'Frozen yogurt', calories: 159, fat: 6.0, carbs: 24, protein: 4.0 },
+  { id: 'sandwich', name: 'Ice cream sandwich', calories: 237, fat: 9.0, carbs: 37, protein: 4.3 },
+  { id: 'eclair', name: 'Eclair', calories: 262, fat: 16.0, carbs: 24, protein: 6.0 },
+  { id: 'cupcake', name: 'Cupcake', calories: 305, fat: 3.7, carbs: 67, protein: 4.3 },
+  { id: 'gingerbread', name: 'Gingerbread', calories: 356, fat: 16.0, carbs: 49, protein: 3.9 },
+  { id: 'jelly', name: 'Jelly bean', calories: 375, fat: 0.0, carbs: 94, protein: 0.0 },
+  { id: 'lollipop', name: 'Lollipop', calories: 392, fat: 0.2, carbs: 98, protein: 0.0 },
+  { id: 'honeycomb', name: 'Honeycomb', calories: 408, fat: 3.2, carbs: 87, protein: 6.5 },
+  { id: 'donut', name: 'Donut', calories: 452, fat: 25.0, carbs: 51, protein: 4.9 },
+  { id: 'kitkat', name: 'KitKat', calories: 518, fat: 26.0, carbs: 65, protein: 7.0 },
+];
+
+const dessertCols = [
+  { key: 'name', label: 'Dessert (100g serving)', sortable: true },
+  { key: 'calories', label: 'Calories', numeric: true, sortable: true, aggregate: 'sum' },
+  { key: 'fat', label: 'Fat (g)', numeric: true, sortable: true, aggregate: 'sum' },
+  { key: 'carbs', label: 'Carbs (g)', numeric: true, sortable: true },
+  { key: 'protein', label: 'Protein (g)', numeric: true, sortable: true },
+];
+
+const trades = [
+  { id: 1, commodity: 'Adzuki bean', quantity: 84000, filled: true, status: 'Open', unitPrice: 6.12 },
+  { id: 2, commodity: 'Adzuki bean', quantity: 52000, filled: true, status: 'Filled', unitPrice: 6.08 },
+  { id: 3, commodity: 'Adzuki bean', quantity: 127208, filled: false, status: 'Open', unitPrice: 6.21 },
+  { id: 4, commodity: 'Cocoa', quantity: 41000, filled: true, status: 'Filled', unitPrice: 3.4 },
+  { id: 5, commodity: 'Cocoa', quantity: 18500, filled: false, status: 'Open', unitPrice: 3.52 },
+  { id: 6, commodity: 'Cocoa', quantity: 22000, filled: true, status: 'Filled', unitPrice: 3.44 },
+  { id: 7, commodity: 'Coffee', quantity: 96000, filled: true, status: 'Open', unitPrice: 1.92 },
+  { id: 8, commodity: 'Coffee', quantity: 64000, filled: false, status: 'Open', unitPrice: 1.88 },
+  { id: 9, commodity: 'Robusta coffee', quantity: 33000, filled: true, status: 'Filled', unitPrice: 2.15 },
+  { id: 10, commodity: 'Soybeans', quantity: 210000, filled: false, status: 'Open', unitPrice: 14.02 },
+  { id: 11, commodity: 'Soybeans', quantity: 175000, filled: true, status: 'Filled', unitPrice: 13.9 },
+  { id: 12, commodity: 'Wheat', quantity: 88000, filled: true, status: 'Open', unitPrice: 5.41 },
+];
+
+const tradeCols = [
+  { key: 'commodity', label: 'Commodity', sortable: true },
+  { key: 'quantity', label: 'Quantity', numeric: true, sortable: true, aggregate: 'sum' },
+  { key: 'filled', label: 'Is filled', sortable: true,
+    render: (row) => (row.filled ? 'Yes' : 'No') },
+  { key: 'status', label: 'Status', sortable: true },
+  { key: 'unitPrice', label: 'Unit price', numeric: true, sortable: true, aggregate: 'avg' },
+];
+
+export const section = () => {
+  const selected = signal([]);
+  const query = signal('');
+  const loading = signal(false);
+
+  return html`
   ${block('Avatars', html`
     <ui-avatar src=${portrait} label="Portrait of Ada Lovelace"></ui-avatar>
     <ui-avatar name="Ada Lovelace"></ui-avatar>
@@ -91,22 +141,48 @@ export const section = () => html`
     </ui-card>`)}
 
   ${stackBlock('Table', html`
-    <ui-card variant="outlined" style="--ui-card-padding: 0;">
-      <ui-table>
-        <table>
-          <thead>
-            <tr><th>Dessert</th><th>Calories</th><th>Fat (g)</th><th>Carbs (g)</th><th>Protein (g)</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Frozen yogurt</td><td>159</td><td>6.0</td><td>24</td><td>4.0</td></tr>
-            <tr><td>Ice cream sandwich</td><td>237</td><td>9.0</td><td>37</td><td>4.3</td></tr>
-            <tr><td>Eclair</td><td>262</td><td>16.0</td><td>24</td><td>6.0</td></tr>
-            <tr><td>Cupcake</td><td>305</td><td>3.7</td><td>67</td><td>4.3</td></tr>
-            <tr><td>Gingerbread</td><td>356</td><td>16.0</td><td>49</td><td>3.9</td></tr>
-          </tbody>
-        </table>
-      </ui-table>
-    </ui-card>`)}
+    <ui-table label="Nutrition facts">
+      <table>
+        <thead>
+          <tr>
+            <th data-sortable data-key="name">Dessert</th>
+            <th data-sortable data-numeric data-key="calories">Calories</th>
+            <th data-sortable data-numeric data-key="fat">Fat (g)</th>
+            <th data-sortable data-numeric data-key="carbs">Carbs (g)</th>
+            <th data-sortable data-numeric data-key="protein">Protein (g)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Frozen yogurt</td><td data-numeric>159</td><td data-numeric>6.0</td><td data-numeric>24</td><td data-numeric>4.0</td></tr>
+          <tr><td>Ice cream sandwich</td><td data-numeric>237</td><td data-numeric>9.0</td><td data-numeric>37</td><td data-numeric>4.3</td></tr>
+          <tr><td>Eclair</td><td data-numeric>262</td><td data-numeric>16.0</td><td data-numeric>24</td><td data-numeric>6.0</td></tr>
+          <tr><td>Cupcake</td><td data-numeric>305</td><td data-numeric>3.7</td><td data-numeric>67</td><td data-numeric>4.3</td></tr>
+          <tr><td>Gingerbread</td><td data-numeric>356</td><td data-numeric>16.0</td><td data-numeric>49</td><td data-numeric>3.9</td></tr>
+        </tbody>
+      </table>
+    </ui-table>
+    <ui-table headline="Nutrition" supporting="Per 100g serving"
+              columns=${dessertCols} rows=${desserts}
+              selectable="multiple" page-size="5" sticky-header
+              quick-filter column-menu density-menu csv-export
+              selected=${selected} filter=${query}
+              @change=${(e) => selected.set(e.detail.selected)}
+              @filter=${(e) => query.set(e.detail.value)}>
+    </ui-table>
+    <ui-table headline="Trades" supporting="Grouped by commodity, quantity summed"
+              columns=${tradeCols} rows=${trades}
+              group-by="commodity" page-size="10"
+              column-menu density-menu csv-export sticky-header>
+    </ui-table>
+    <ui-table headline="Dense" columns=${dessertCols} rows=${desserts.slice(0, 5)}
+              dense striped></ui-table>
+    <ui-table headline="Loading" columns=${dessertCols} rows=${desserts.slice(0, 3)}
+              loading=${loading}></ui-table>
+    <ui-button variant="tonal" @click=${() => loading.set(!loading())}>
+      Toggle loading
+    </ui-button>
+    <ui-table headline="Empty" columns=${dessertCols} rows=${[]}
+              empty-text="No desserts match"></ui-table>`)}
 
   ${block('Tooltips', html`
     <ui-tooltip text="Tooltip on top" position="top">
@@ -174,3 +250,4 @@ export const section = () => html`
       </ui-carousel-item>
     </ui-carousel>`)}
 `;
+};

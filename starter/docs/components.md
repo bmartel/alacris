@@ -1,7 +1,7 @@
 # Component catalog
 
 Assembled from each component's file header by `scripts/catalog.mjs` — the
-headers are the source of truth. 66 components. Every component
+headers are the source of truth. 68 components. Every component
 also exports `themeVars` (when it declares component tokens); `themeVars.names`
 is the machine-readable custom-property list.
 
@@ -385,6 +385,7 @@ clears `indeterminate` and toggles `checked`. The check/dash is the MD3
 | `@event` | change — detail: { checked, indeterminate: false } |
 | `@part` | control — the &lt;button role="checkbox"&gt; (the 40px target) |
 | `@part` | box     — the visible 18px box |
+| `@part` | label   — the visible label span (omit `label` and this is absent) |
 | `@vars` | see `t` below (`themeVars.names`) |
 
 Source: [`src/components/ui-checkbox.js`](../src/components/ui-checkbox.js)
@@ -1349,30 +1350,143 @@ yourself — set the tabs' `value` instead.
 
 Source: [`src/components/ui-tab.js`](../src/components/ui-tab.js)
 
-## `<ui-table>`
+## `<ui-table-footer>`
 
-Material data-table. Pass a native &lt;table&gt;; it is moved into
-the open shadow tree so rows and cells are styled without document CSS.
+pagination and row-count for &lt;ui-table&gt;.
+Composes &lt;ui-pagination&gt; for the page window and a rows-per-page &lt;select&gt;.
 
-  &lt;ui-table&gt;
-    &lt;table&gt;
-      &lt;thead&gt;&lt;tr&gt;&lt;th&gt;Dessert&lt;/th&gt;…&lt;/tr&gt;&lt;/thead&gt;
-      &lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Frozen yogurt&lt;/td&gt;…&lt;/tr&gt;&lt;/tbody&gt;
-    &lt;/table&gt;
-  &lt;/ui-table&gt;
-
-`::slotted()` cannot style descendants of a slotted node, so a slotted
-&lt;table&gt; could not be themed from the shadow. On connect the table is
-adopted into the wrapper (same node, new parent) and all rules below
-apply inside this tree. `base` is included — its reset stays in the
-shadow and never reaches the page.
+  &lt;ui-table-footer page=${page} page-size="10" row-count=${n}
+                   @page=${(e) =&gt; page(e.detail.page)}&gt;&lt;/ui-table-footer&gt;
 
 | | |
 | --- | --- |
-| `@prop` | {boolean} dense=false        — 40px rows instead of 52px (reflected as the `dense` attribute for CSS) |
-| `@prop` | {boolean} stickyHeader=false — sticky &lt;thead&gt; cells (reflected as `sticky-header`) |
-| `@slot` | (default) — a native &lt;table&gt;; adopted into the shadow on connect |
-| `@part` | container — overflow wrapper around the table |
+| `@prop` | {number}  page=1 |
+| `@prop` | {number}  pageSize=0       — 0 hides the pager and shows a total only |
+| `@prop` | {number}  rowCount=0 |
+| `@prop` | {Array}   pageSizeOptions=[] — default 5, 10, 25 |
+| `@prop` | {boolean} disabled=false |
+| `@prop` | {string}  label='Table pagination' |
+| `@event` | page — page or page-size changed; detail: { page, pageSize } |
+| `@part` | footer, range |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-table-footer.js`](../src/components/ui-table-footer.js)
+
+## `<ui-table-toolbar>`
+
+DataGrid chrome: title, selection count, quick filter,
+column visibility, density, and CSV export. Built from &lt;ui-search&gt;,
+&lt;ui-icon-button&gt;, &lt;ui-menu&gt;, and &lt;ui-checkbox&gt;.
+
+  &lt;ui-table-toolbar headline="Nutrition" quick-filter column-menu
+                    density-menu csv-export
+                    columns=${cols} hidden-columns=${hidden}
+                    @filter=${…} @density=${…}
+                    @column-visibility=${…} @export=${…}&gt;
+    &lt;ui-button slot="actions"&gt;Add&lt;/ui-button&gt;
+  &lt;/ui-table-toolbar&gt;
+
+| | |
+| --- | --- |
+| `@prop` | {string}  headline='' |
+| `@prop` | {string}  supporting='' |
+| `@prop` | {number}  selectedCount=0  — when &gt;0 the bar switches to the "N selected" selection state |
+| `@prop` | {string}  filter=''        — quick-filter value |
+| `@prop` | {boolean} quickFilter=false |
+| `@prop` | {boolean} columnMenu=false |
+| `@prop` | {boolean} densityMenu=false |
+| `@prop` | {boolean} csvExport=false |
+| `@prop` | {Array}   columns=[]       — { key, label } (JSON or property) |
+| `@prop` | {Array}   hiddenColumns=[] |
+| `@prop` | {string}  density='standard' — compact \| standard \| comfortable |
+| `@prop` | {boolean} disabled=false |
+| `@event` | filter             — quick filter changed; detail: { value } |
+| `@event` | density            — density chosen; detail: { density } |
+| `@event` | column-visibility  — a column was toggled; detail: { hidden } |
+| `@event` | export             — export requested; detail: { format: 'csv' } |
+| `@slot` | headline  — replaces the headline text |
+| `@slot` | supporting |
+| `@slot` | actions   — extra trailing controls (after the built-in tools) |
+| `@part` | bar, titles, tools |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-table-toolbar.js`](../src/components/ui-table-toolbar.js)
+
+## `<ui-table>`
+
+Material data-table / DataGrid.
+
+Markup mode — pass a native &lt;table&gt; (adopted into the shadow so cells can
+be themed). `data-sortable` / `data-numeric` decorate headers.
+
+  &lt;ui-table label="Nutrition"&gt;
+    &lt;table&gt;…&lt;/table&gt;
+  &lt;/ui-table&gt;
+
+Data mode — `columns` + `rows`. The grid is `role="table"` (Alacris cannot
+bind inside native &lt;tr&gt;). Pipeline (filter → sort → group → paginate →
+aggregate) lives in `util/table.js`. Chrome is &lt;ui-table-toolbar&gt; and
+&lt;ui-table-footer&gt;, composed from search, menus, checkboxes, and pagination.
+
+  &lt;ui-table headline="Trades" columns=${cols} rows=${rows}
+            selectable="multiple" group-by="commodity"
+            quick-filter column-menu density-menu csv-export
+            page-size="10"&gt;&lt;/ui-table&gt;
+
+Column objects: { key, label, numeric, sortable, width, hidden, align,
+  aggregate: 'sum'|'avg'|'min'|'max'|'count', render(row, col), sortValue(row) }
+
+| | |
+| --- | --- |
+| `@prop` | {string}  label='' |
+| `@prop` | {string}  headline='' |
+| `@prop` | {string}  supporting='' |
+| `@prop` | {string}  variant='outlined' — outlined \| standard |
+| `@prop` | {string}  density='standard' — compact \| standard \| comfortable |
+| `@prop` | {boolean} dense=false        — alias for density="compact" |
+| `@prop` | {boolean} stickyHeader=false |
+| `@prop` | {boolean} stickyFirst=false |
+| `@prop` | {boolean} striped=false |
+| `@prop` | {boolean} loading=false |
+| `@prop` | {string}  maxHeight='' |
+| `@prop` | {string}  selectable='none'  — none \| single \| multiple |
+| `@prop` | {Array}   selected=[] |
+| `@prop` | {Array}   columns=[] |
+| `@prop` | {Array}   rows=[] |
+| `@prop` | {object}  getRowId=null      — (row, index) =&gt; id |
+| `@prop` | {string}  sortBy='' |
+| `@prop` | {string}  sortDir='asc'      — asc \| desc |
+| `@prop` | {string}  sortMode='client'  — client \| server |
+| `@prop` | {string}  filter='' |
+| `@prop` | {string}  groupBy=''         — column key to group rows |
+| `@prop` | {Array}   expandedGroups=[]  — empty means all groups expanded |
+| `@prop` | {Array}   hiddenColumns=[] |
+| `@prop` | {number}  page=1 |
+| `@prop` | {number}  pageSize=0         — 0 shows every row |
+| `@prop` | {number}  rowCount=0 |
+| `@prop` | {string}  paginationMode='client' — client \| server |
+| `@prop` | {Array}   pageSizeOptions=[] |
+| `@prop` | {boolean} quickFilter=false |
+| `@prop` | {boolean} columnMenu=false |
+| `@prop` | {boolean} densityMenu=false |
+| `@prop` | {boolean} csvExport=false |
+| `@prop` | {string}  csvFileName='table.csv' |
+| `@prop` | {string}  emptyText='No results' |
+| `@event` | change            — selection; detail: { selected } |
+| `@event` | sort              — detail: { key, dir } |
+| `@event` | page              — detail: { page, pageSize } |
+| `@event` | filter            — detail: { value } |
+| `@event` | density           — detail: { density } |
+| `@event` | column-visibility — detail: { hidden } |
+| `@event` | group             — a group was toggled; detail: { key, expanded, expandedGroups } |
+| `@event` | row-click         — detail: { id, row } |
+| `@event` | export            — CSV produced; detail: { format, filename } |
+| `@slot` | (default) — native &lt;table&gt; (markup mode) |
+| `@slot` | toolbar   — replaces the default &lt;ui-table-toolbar&gt; |
+| `@slot` | headline, supporting, actions — projected into the default toolbar |
+| `@slot` | footer    — replaces the default &lt;ui-table-footer&gt; |
+| `@slot` | empty |
+| `@part` | container, table |
 | `@vars` | see `t` below (`themeVars.names`) |
 
 Source: [`src/components/ui-table.js`](../src/components/ui-table.js)

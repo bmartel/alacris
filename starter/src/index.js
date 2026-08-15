@@ -26,6 +26,10 @@ export { focusTrap, focusables, scrollLock } from './util/focus.js';
 export { rovingTabindex } from './util/keys.js';
 export { formBind } from './util/form.js';
 export { registerIcons, iconPath, iconNames } from './util/icons.js';
+export {
+  processTable, filterRows, sortRows, groupRows, paginate,
+  aggregateRow, toCsv, downloadText, inferColumns, visibleColumns,
+} from './util/table.js';
 
 // Components — importing registers the custom element.
 import './components/ui-icon.js';
@@ -65,6 +69,8 @@ import './components/ui-divider.js';
 import './components/ui-list.js';
 import './components/ui-list-item.js';
 import './components/ui-table.js';
+import './components/ui-table-toolbar.js';
+import './components/ui-table-footer.js';
 import './components/ui-tooltip.js';
 import './components/ui-carousel.js';
 import './components/ui-carousel-item.js';

@@ -80,7 +80,10 @@ export const themeVars = t; // omit when there is no vars() contract
 - Never `shadow: false`. Every component uses the default open shadow root
   so internals stay encapsulated. Composition is slots — not document CSS.
   (`ui-table` adopts a native `<table>` into its shadow because `::slotted()`
-  cannot style cell descendants.)
+  cannot style cell descendants. Data mode (`columns`/`rows`) is a CSS table
+  with ARIA roles — Alacris cannot bind inside native `<tr>`. Sort, filter,
+  group, and aggregate live in `util/table.js`; chrome is `<ui-table-toolbar>`
+  and `<ui-table-footer>`, which compose search, menus, checkboxes, and pagination.)
 - Always export `tag`. Export `themeVars` (the `vars()` object — its `.names`
   is the documented custom-property list) only when the component declares
   `vars()`. Layout and typography primitives that only consume system tokens

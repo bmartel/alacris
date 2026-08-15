@@ -15,6 +15,7 @@
 // @event change — detail: { checked, indeterminate: false }
 // @part  control — the <button role="checkbox"> (the 40px target)
 // @part  box     — the visible 18px box
+// @part  label   — the visible label span (omit `label` and this is absent)
 // @vars  see `t` below (`themeVars.names`)
 
 import { define, html, svg, css, vars, computed } from 'alacris';
@@ -155,7 +156,7 @@ define('ui-checkbox', {
             })}
           </span>
         </button>
-        ${() => (label() ? html`<span id="label">${label}</span>` : null)}
+        ${() => (label() ? html`<span id="label" part="label">${label}</span>` : null)}
       </label>`;
   },
 });

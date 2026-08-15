@@ -2,7 +2,7 @@
 // roving. Assert the DOM the user-agent exposes — not source text.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mount, unmountAll, tick } from './helpers.js';
+import { mount, unmountAll, tick, fire } from './helpers.js';
 
 import '../src/components/ui-dialog.js';
 import '../src/components/ui-sheet.js';
@@ -23,6 +23,7 @@ import '../src/components/ui-list-item.js';
 import '../src/components/ui-checkbox.js';
 import '../src/components/ui-switch.js';
 import '../src/components/ui-radio.js';
+import '../src/components/ui-table.js';
 
 const key = (el, keyName) =>
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: keyName, bubbles: true, composed: true }));
@@ -237,5 +238,40 @@ test('ui-card documents the body part', async () => {
   const el = mount('<ui-card>Hello</ui-card>');
   await tick();
   assert.ok(el.shadowRoot.querySelector('[part=body]'));
+  unmountAll();
+});
+
+test('ui-table is a named native table with sort and selection semantics', async () => {
+  const el = mount('<ui-table></ui-table>');
+  el.headline = 'Nutrition';
+  el.columns = [
+    { key: 'name', label: 'Dessert', sortable: true },
+    { key: 'calories', label: 'Calories', numeric: true, sortable: true },
+  ];
+  el.rows = [
+    { id: 'yogurt', name: 'Frozen yogurt', calories: 159 },
+    { id: 'eclair', name: 'Eclair', calories: 262 },
+  ];
+  el.selectable = 'multiple';
+  await tick();
+
+  const table = el.shadowRoot.querySelector('[role=table]');
+  assert.equal(table.getAttribute('role'), 'table');
+  assert.equal(table.getAttribute('aria-label'), 'Nutrition');
+  assert.ok(table.querySelector('[role=columnheader]'));
+
+  const sortBtn = [...table.querySelectorAll('button.sort')]
+    .find((b) => b.textContent.includes('Calories'));
+  assert.match(sortBtn.getAttribute('aria-label'), /Sort by Calories/);
+  fire(sortBtn, 'click');
+  assert.equal(sortBtn.closest('[role=columnheader]').getAttribute('aria-sort'), 'ascending');
+  assert.match(sortBtn.getAttribute('aria-label'), /sorted ascending/);
+
+  const selectAll = table.querySelector('.thead ui-checkbox');
+  assert.equal(selectAll.label, 'Select all rows on this page');
+  const rowBox = table.querySelector('.tbody ui-checkbox');
+  assert.equal(rowBox.label, 'Select Frozen yogurt');
+  fire(rowBox.shadowRoot.querySelector('[role=checkbox]'), 'click');
+  assert.equal(table.querySelector('.tbody [role=row]').getAttribute('aria-selected'), 'true');
   unmountAll();
 });
