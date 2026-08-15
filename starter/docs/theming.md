@@ -57,8 +57,10 @@ ui-button { --ui-button-radius: 4px; }              /* all buttons */
 .danger-zone ui-button { --ui-button-filled-bg: var(--ui-color-error); }
 ```
 
-Each component's file header lists its vars; `themeVars.names` on the module
-is the machine-readable list.
+Each component that declares `vars()` lists them in its file header and
+exports `themeVars`; `themeVars.names` is the machine-readable list. Layout
+and typography primitives with no component tokens (`ui-stack`, `ui-surface`,
+`ui-text`) export `tag` only.
 
 ## The theme engine
 

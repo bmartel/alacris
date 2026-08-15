@@ -70,7 +70,7 @@ define('ui-thing', {
 });
 
 export const tag = 'ui-thing';
-export const themeVars = t;
+export const themeVars = t; // omit when there is no vars() contract
 ```
 
 - The header comment is the component's documentation. Keep it accurate — the
@@ -81,8 +81,10 @@ export const themeVars = t;
   so internals stay encapsulated. Composition is slots — not document CSS.
   (`ui-table` adopts a native `<table>` into its shadow because `::slotted()`
   cannot style cell descendants.)
-- Export `tag` and `themeVars` (the `vars()` object — its `.names` is the
-  documented custom-property list).
+- Always export `tag`. Export `themeVars` (the `vars()` object — its `.names`
+  is the documented custom-property list) only when the component declares
+  `vars()`. Layout and typography primitives that only consume system tokens
+  (`ui-stack`, `ui-surface`, `ui-text`) export `tag` only.
 
 ## Interactive control recipe
 
@@ -149,8 +151,11 @@ compresses every control by 4px per step:
 
 - Real native elements where possible (`<button>`, `<input>`, `<a>`); ARIA
   roles/patterns where not (tabs, menu, slider composed parts).
-- Every input takes a `label` prop; if empty, apply `aria-label` fallback from
-  other props where sensible. Never render an unlabeled control.
+- Every input takes a `label` prop. Where that string is the visible text
+  (checkbox, switch, radio, text field, …) it is also the accessible name —
+  empty is an authoring error, not a prompt to invent "Checkbox". Icon-only
+  chrome (icon-button, fab, slider) falls back from other props or a short
+  noun so the control is never unnamed.
 - Keyboard: follow the WAI-ARIA Authoring Practices pattern for the widget
   (roving tabindex for tabs/menus/radio-groups — use `rovingTabindex` from
   `../util/keys.js`; Escape closes overlays; arrow keys move within composites).

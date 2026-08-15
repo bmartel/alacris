@@ -4,7 +4,10 @@ import assert from 'node:assert/strict';
 import { mount, unmountAll, tick, fire } from './helpers.js';
 
 import { createTheme, applyTheme, themeCss } from '../src/theme/index.js';
-import '../src/components/ui-icon.js';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { themeVars as iconThemeVars } from '../src/components/ui-icon.js';
 import '../src/components/ui-button.js';
 import '../src/components/ui-icon-button.js';
 import '../src/components/ui-card.js';
@@ -196,4 +199,16 @@ test('ui-text applies the type role', async () => {
   await tick();
   assert.ok(el.style.font.includes('--ui-type-headline-md'));
   unmountAll();
+});
+
+test('themeVars is exported exactly when the component declares vars()', () => {
+  assert.deepEqual([...iconThemeVars.names], ['--ui-icon-size']);
+  const dir = fileURLToPath(new URL('../src/components/', import.meta.url));
+  for (const file of readdirSync(dir).filter((f) => f.startsWith('ui-') && f.endsWith('.js'))) {
+    const src = readFileSync(join(dir, file), 'utf8');
+    assert.equal(
+      /export const themeVars/.test(src),
+      /vars\('ui-/.test(src),
+      file);
+  }
 });

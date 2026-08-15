@@ -8,7 +8,8 @@
 // @prop  {boolean} checked=false
 // @prop  {boolean} indeterminate=false — aria-checked="mixed", shows a dash
 // @prop  {boolean} disabled=false
-// @prop  {string}  label=''  — visible label (also the accessible name)
+// @prop  {string}  label=''  — visible label; also the accessible name.
+//                               Empty leaves the control unnamed (authoring error).
 // @prop  {string}  name=''   — form field name (submits `value` while checked)
 // @prop  {string}  value='on'
 // @event change — detail: { checked, indeterminate: false }
@@ -136,6 +137,7 @@ define('ui-checkbox', {
       <label class=${() => (disabled() ? 'disabled' : null)}>
         <button part="control" class="control" type="button" role="checkbox"
                 aria-checked=${state} ?disabled=${disabled}
+                aria-labelledby=${() => (label() ? 'label' : null)}
                 @click=${onClick}
                 ref=${(el) => ripple(el, { disabled, centered: true })}>
           <span class="layer" aria-hidden="true"></span>
@@ -153,7 +155,7 @@ define('ui-checkbox', {
             })}
           </span>
         </button>
-        ${() => label() || null}
+        ${() => (label() ? html`<span id="label">${label}</span>` : null)}
       </label>`;
   },
 });

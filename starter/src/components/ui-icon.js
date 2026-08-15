@@ -4,11 +4,15 @@
 // @prop  {string} label='' — accessible name; empty marks the icon decorative
 // @prop  {string} size=''  — CSS length; overrides --ui-icon-size for this element
 // @slot  (default) — a custom <svg> when no name is given
-// @vars  --ui-icon-size (default 1.5rem)
+// @vars  see `t` below (`themeVars.names`)
 
-import { define, html, svg, css, effect } from 'alacris';
+import { define, html, svg, css, vars, effect } from 'alacris';
 import { base } from './base.js';
 import { iconPath, iconsVersion } from '../util/icons.js';
+
+const t = vars('ui-icon', {
+  size: '1.5rem',
+});
 
 define('ui-icon', {
   props: { name: '', label: '', size: '' },
@@ -18,8 +22,8 @@ define('ui-icon', {
       align-items: center;
       justify-content: center;
       vertical-align: middle;
-      inline-size: var(--ui-icon-size, 1.5rem);
-      block-size: var(--ui-icon-size, 1.5rem);
+      inline-size: ${t.size};
+      block-size: ${t.size};
       flex: none;
       color: inherit;
     }
@@ -57,3 +61,4 @@ define('ui-icon', {
 });
 
 export const tag = 'ui-icon';
+export const themeVars = t;

@@ -8,7 +8,8 @@
 // @prop  {string}  value=''      — REQUIRED identity within the group
 // @prop  {boolean} checked=false — set by the owning group
 // @prop  {boolean} disabled=false
-// @prop  {string}  label=''      — visible label (also the accessible name)
+// @prop  {string}  label=''      — visible label; also the accessible name.
+//                                   Empty leaves the control unnamed (authoring error).
 // @event ui-radio-select — pressed; detail: { value } (consumed by ui-radio-group)
 // @part  control — the <button role="radio"> (the 40px target)
 // @part  circle  — the visible 20px ring
@@ -120,6 +121,7 @@ define('ui-radio', {
         <button part="control" class="control" type="button" role="radio"
                 tabindex="-1"
                 aria-checked=${() => String(checked())} ?disabled=${disabled}
+                aria-labelledby=${() => (label() ? 'label' : null)}
                 @click=${onClick}
                 ref=${(el) => { btn = el; ripple(el, { disabled, centered: true }); }}>
           <span class="layer" aria-hidden="true"></span>
@@ -132,7 +134,7 @@ define('ui-radio', {
             })}
           </span>
         </button>
-        ${() => label() || null}
+        ${() => (label() ? html`<span id="label">${label}</span>` : null)}
       </label>`;
   },
 });

@@ -20,6 +20,9 @@ import '../src/components/ui-icon-button.js';
 import '../src/components/ui-bottom-app-bar.js';
 import '../src/components/ui-card.js';
 import '../src/components/ui-list-item.js';
+import '../src/components/ui-checkbox.js';
+import '../src/components/ui-switch.js';
+import '../src/components/ui-radio.js';
 
 const key = (el, keyName) =>
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: keyName, bubbles: true, composed: true }));
@@ -198,6 +201,36 @@ test('ui-bottom-app-bar toolbar has an accessible name', async () => {
   const bar = el.shadowRoot.querySelector('[role=toolbar]');
   assert.equal(bar.getAttribute('aria-label'), 'Bottom app bar');
   unmountAll();
+});
+
+test('ui-checkbox, ui-switch, and ui-radio take their name from the visible label', async () => {
+  for (const [tag, role, html] of [
+    ['ui-checkbox', 'checkbox', '<ui-checkbox label="Terms"></ui-checkbox>'],
+    ['ui-switch', 'switch', '<ui-switch label="Terms"></ui-switch>'],
+    ['ui-radio', 'radio', '<ui-radio value="t" label="Terms"></ui-radio>'],
+  ]) {
+    const el = mount(html);
+    await tick();
+    const control = el.shadowRoot.querySelector(`[role=${role}]`);
+    assert.equal(control.getAttribute('aria-labelledby'), 'label', `${tag} points at the visible text`);
+    assert.equal(el.shadowRoot.getElementById('label').textContent, 'Terms');
+    assert.equal(control.hasAttribute('aria-label'), false, `${tag} does not invent an aria-label`);
+    unmountAll();
+  }
+
+  for (const [tag, role, html] of [
+    ['ui-checkbox', 'checkbox', '<ui-checkbox></ui-checkbox>'],
+    ['ui-switch', 'switch', '<ui-switch></ui-switch>'],
+    ['ui-radio', 'radio', '<ui-radio value="t"></ui-radio>'],
+  ]) {
+    const el = mount(html);
+    await tick();
+    const control = el.shadowRoot.querySelector(`[role=${role}]`);
+    assert.equal(control.hasAttribute('aria-labelledby'), false);
+    assert.equal(control.hasAttribute('aria-label'), false, `${tag} does not invent a name when label is empty`);
+    assert.equal(el.shadowRoot.getElementById('label'), null);
+    unmountAll();
+  }
 });
 
 test('ui-card documents the body part', async () => {

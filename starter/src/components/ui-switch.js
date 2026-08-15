@@ -2,7 +2,8 @@
 //
 // @prop  {boolean} checked=false
 // @prop  {boolean} disabled=false
-// @prop  {string}  label=''  — visible label (also the accessible name)
+// @prop  {string}  label=''  — visible label; also the accessible name.
+//                               Empty leaves the control unnamed (authoring error).
 // @prop  {string}  name=''   — form field name (submits 'on'/value while checked)
 // @prop  {string}  value='on'
 // @prop  {boolean} icons=false — show check/close glyphs in the handle
@@ -136,13 +137,14 @@ define('ui-switch', {
       <label>
         <button part="control" class=${() => `control${icons() ? ' with-icons' : ''}`} type="button" role="switch"
                 aria-checked=${() => String(checked())}
+                aria-labelledby=${() => (label() ? 'label' : null)}
                 ?disabled=${disabled}
                 @click=${toggle}>
           <span part="handle" class="handle" aria-hidden="true">
             ${() => (icons() ? html`<ui-icon name=${() => (checked() ? 'check' : 'close')}></ui-icon>` : null)}
           </span>
         </button>
-        ${() => label() || null}
+        ${() => (label() ? html`<span id="label">${label}</span>` : null)}
       </label>`;
   },
 });

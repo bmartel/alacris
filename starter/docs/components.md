@@ -379,7 +379,7 @@ clears `indeterminate` and toggles `checked`. The check/dash is the MD3
 | `@prop` | {boolean} checked=false |
 | `@prop` | {boolean} indeterminate=false — aria-checked="mixed", shows a dash |
 | `@prop` | {boolean} disabled=false |
-| `@prop` | {string}  label=''  — visible label (also the accessible name) |
+| `@prop` | {string}  label=''  — visible label; also the accessible name. Empty leaves the control unnamed (authoring error). |
 | `@prop` | {string}  name=''   — form field name (submits `value` while checked) |
 | `@prop` | {string}  value='on' |
 | `@event` | change — detail: { checked, indeterminate: false } |
@@ -651,7 +651,7 @@ an icon from the registry, or any slotted SVG.
 | `@prop` | {string} label='' — accessible name; empty marks the icon decorative |
 | `@prop` | {string} size=''  — CSS length; overrides --ui-icon-size for this element |
 | `@slot` | (default) — a custom &lt;svg&gt; when no name is given |
-| `@vars` | --ui-icon-size (default 1.5rem) |
+| `@vars` | see `t` below (`themeVars.names`) |
 
 Source: [`src/components/ui-icon.js`](../src/components/ui-icon.js)
 
@@ -911,7 +911,7 @@ host forwards focus to the inner button).
 | `@prop` | {string}  value=''      — REQUIRED identity within the group |
 | `@prop` | {boolean} checked=false — set by the owning group |
 | `@prop` | {boolean} disabled=false |
-| `@prop` | {string}  label=''      — visible label (also the accessible name) |
+| `@prop` | {string}  label=''      — visible label; also the accessible name. Empty leaves the control unnamed (authoring error). |
 | `@event` | ui-radio-select — pressed; detail: { value } (consumed by ui-radio-group) |
 | `@part` | control — the &lt;button role="radio"&gt; (the 40px target) |
 | `@part` | circle  — the visible 20px ring |
@@ -1299,7 +1299,7 @@ the Material switch.
 | --- | --- |
 | `@prop` | {boolean} checked=false |
 | `@prop` | {boolean} disabled=false |
-| `@prop` | {string}  label=''  — visible label (also the accessible name) |
+| `@prop` | {string}  label=''  — visible label; also the accessible name. Empty leaves the control unnamed (authoring error). |
 | `@prop` | {string}  name=''   — form field name (submits 'on'/value while checked) |
 | `@prop` | {string}  value='on' |
 | `@prop` | {boolean} icons=false — show check/close glyphs in the handle |
