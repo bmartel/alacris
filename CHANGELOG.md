@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.3](https://github.com/bmartel/alacris/compare/v0.6.2...v0.6.3) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** close remaining Material Design 3 spec gaps ([aa72963](https://github.com/bmartel/alacris/commit/aa729632ed25050fa40a33c79f8fe53c9975f15d))
+
 ## [0.6.2](https://github.com/bmartel/alacris/compare/v0.6.1...v0.6.2) (2026-08-15)
 
 ### Bug Fixes
