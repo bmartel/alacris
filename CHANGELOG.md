@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.17](https://github.com/bmartel/alacris/compare/v0.6.16...v0.6.17) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** standardize off-state switch thumb to 16px across icon variants ([2f9db23](https://github.com/bmartel/alacris/commit/2f9db233c40a88ef6ab5cfad9ff67d136f0bc6a8))
+
 ## [0.6.16](https://github.com/bmartel/alacris/compare/v0.6.15...v0.6.16) (2026-08-15)
 
 ### Bug Fixes
