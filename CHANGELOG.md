@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.12](https://github.com/bmartel/alacris/compare/v0.6.11...v0.6.12) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** eliminate button jitter and enable smooth manual scroll on hero carousel ([3df6eba](https://github.com/bmartel/alacris/commit/3df6ebaaea621745b56c505afde2a9d67c753353))
+
 ## [0.6.11](https://github.com/bmartel/alacris/compare/v0.6.10...v0.6.11) (2026-08-15)
 
 ### Bug Fixes

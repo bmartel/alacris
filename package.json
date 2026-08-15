@@ -1,6 +1,6 @@
 {
   "name": "alacris",
-  "version": "0.6.11",
+  "version": "0.6.12",
   "description": "Fast web components with signals and fine-grained DOM updates. 6.5 kB, ESM-only, zero dependencies, no build step.",
   "type": "module",
   "exports": {
