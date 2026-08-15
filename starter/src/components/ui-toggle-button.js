@@ -3,7 +3,8 @@
 // standalone the segment is a flat pill).
 //
 // Selecting animates a leading check icon in smoothly via width and scale transitions,
-// adhering to Material Design 3 and matching the filter chip pattern without reserving dead space.
+// adhering to Material Design 3. When an icon is already present, selecting smoothly
+// crossfades and morphs between the custom icon and the checkmark in both directions.
 // The button does not own its selection: it emits `ui-toggle` and the group
 // (or any parent) sets `selected` back down.
 //
@@ -20,8 +21,6 @@ import { define, html, css, vars, computed } from 'alacris';
 import { sys } from '../tokens/sys.js';
 import { base, focusRingOn } from './base.js';
 import { ripple } from '../motion/ripple.js';
-import { presence } from '../motion/presence.js';
-import { fx } from '../motion/animate.js';
 import './ui-icon.js';
 
 const t = vars('ui-toggle-button', {
@@ -60,11 +59,12 @@ const styles = css`
     --ui-icon-size: 1.125rem;
   }
   .lead {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    position: relative;
+    display: inline-grid;
+    place-items: center;
     inline-size: 0;
     min-inline-size: 0;
+    block-size: 1.125rem;
     overflow: hidden;
     opacity: 0;
     pointer-events: none;
@@ -78,6 +78,36 @@ const styles = css`
     opacity: 1;
     pointer-events: auto;
   }
+  .lead ui-icon {
+    grid-area: 1 / 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity ${sys.duration.short3} ${sys.easing.standard},
+                scale ${sys.duration.short3} ${sys.easing.emphasized},
+                transform ${sys.duration.short3} ${sys.easing.emphasized};
+  }
+  .lead .check-glyph {
+    opacity: 0;
+    scale: 0.5;
+    pointer-events: none;
+  }
+  .lead .check-glyph.on {
+    opacity: 1;
+    scale: 1;
+    pointer-events: auto;
+  }
+  .lead .custom-glyph {
+    opacity: 1;
+    scale: 1;
+    pointer-events: auto;
+  }
+  .lead .custom-glyph.off {
+    opacity: 0;
+    scale: 0.5;
+    pointer-events: none;
+  }
+
   ${focusRingOn('.control')}
   .layer {
     position: absolute; inset: 0; z-index: -1;
@@ -114,27 +144,23 @@ define('ui-toggle-button', {
       host.emit('ui-toggle', { value: value() });
     };
 
-    const checkWhen = computed(() => selected());
-    const showLead = computed(() => selected() || !!icon());
-
-    const checkIcon = presence(checkWhen, () => html`<ui-icon name="check"></ui-icon>`, {
-      enter: fx.scaleIn,
-      exit: fx.scaleOut,
-      enterDuration: 'short3',
-      exitDuration: 'short2',
-    });
+    const isSelected = () => selected();
+    const hasIcon = () => !!icon();
+    const showLead = () => isSelected() || hasIcon();
 
     return html`
       <button part="control" class="control" type="button" ?disabled=${disabled}
               aria-pressed=${() => String(selected())}
               @click=${onClick} ref=${(el) => ripple(el, { disabled })}>
         <span class="layer" aria-hidden="true"></span>
-        ${() => (showLead()
-          ? html`<span class=${() => `lead${checkWhen() || icon() ? ' on' : ''}`}>
-              ${checkIcon}
-              ${() => (icon() && !checkWhen() ? html`<ui-icon name=${icon}></ui-icon>` : null)}
-            </span>`
-          : null)}
+        <span class=${() => `lead${showLead() ? ' on' : ''}`}>
+          <ui-icon class=${() => `check-glyph${isSelected() ? ' on' : ''}`}
+                   name="check" aria-hidden=${() => isSelected() ? 'false' : 'true'}></ui-icon>
+          ${() => (hasIcon()
+            ? html`<ui-icon class=${() => `custom-glyph${isSelected() ? ' off' : ''}`}
+                           name=${icon} aria-hidden=${() => isSelected() ? 'true' : 'false'}></ui-icon>`
+            : null)}
+        </span>
         <slot></slot>
       </button>`;
   },
