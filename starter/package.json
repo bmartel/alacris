@@ -45,10 +45,10 @@
     "catalog": "node scripts/catalog.mjs"
   },
   "dependencies": {
-    "@alacris/core": "^0.10.0"
+    "@alacris/core": "^0.11.0"
   },
   "peerDependencies": {
-    "@alacris/core": "^0.10.0"
+    "@alacris/core": "^0.11.0"
   },
   "keywords": [
     "alacris",
