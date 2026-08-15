@@ -2,9 +2,10 @@
 // <ui-toggle-group> (the group draws the outlined container and dividers;
 // standalone the segment is a flat pill).
 //
-// Selecting shows a leading check icon, animated in and out. The button does
-// not own its selection: it emits `ui-toggle` and the group (or any parent)
-// sets `selected` back down.
+// Selecting shows a leading check icon. The check slot is always reserved so
+// selecting a segment does not shift its neighbors; the glyph scales in.
+// The button does not own its selection: it emits `ui-toggle` and the group
+// (or any parent) sets `selected` back down.
 //
 // @prop  {string}  value=''       — REQUIRED identity within the group
 // @prop  {boolean} selected=false — set by the owning group
@@ -19,8 +20,6 @@ import { define, html, css, vars } from 'alacris';
 import { sys } from '../tokens/sys.js';
 import { base, focusRingOn } from './base.js';
 import { ripple } from '../motion/ripple.js';
-import { presence } from '../motion/presence.js';
-import { fx } from '../motion/animate.js';
 import './ui-icon.js';
 
 const t = vars('ui-toggle-button', {
@@ -35,7 +34,7 @@ const t = vars('ui-toggle-button', {
 });
 
 const styles = css`
-  :host { display: inline-flex; vertical-align: middle; }
+  :host { display: inline-flex; vertical-align: middle; flex: 1; }
   .control {
     position: relative;
     isolation: isolate;
@@ -43,6 +42,7 @@ const styles = css`
     align-items: center;
     justify-content: center;
     gap: ${sys.space(2)};
+    inline-size: 100%;
     block-size: calc(${t.height} + var(--ui-density, 0) * 4px);
     padding-inline: ${sys.space(3)};
     border: none;
@@ -57,6 +57,24 @@ const styles = css`
     transition: background-color ${sys.duration.short4} ${sys.easing.standard},
                 color ${sys.duration.short4} ${sys.easing.standard};
     --ui-icon-size: 1.125rem;
+  }
+  .check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1.125rem;
+    min-inline-size: 1.125rem;
+    flex-shrink: 0;
+    overflow: hidden;
+    opacity: 0;
+    scale: 0.8;
+    pointer-events: none;
+    transition: opacity ${sys.duration.short2} ${sys.easing.standard},
+                scale ${sys.duration.short4} ${sys.easing.emphasized};
+  }
+  .check.on {
+    opacity: 1;
+    scale: 1;
   }
   ${focusRingOn('.control')}
   .layer {
@@ -99,12 +117,9 @@ define('ui-toggle-button', {
               aria-pressed=${() => String(selected())}
               @click=${onClick} ref=${(el) => ripple(el, { disabled })}>
         <span class="layer" aria-hidden="true"></span>
-        ${presence(selected, () => html`<ui-icon name="check"></ui-icon>`, {
-          enter: fx.scaleIn,
-          exit: fx.scaleOut,
-          enterDuration: 'short4',
-          exitDuration: 'short2',
-        })}
+        <span class=${() => `check${selected() ? ' on' : ''}`} aria-hidden=${() => selected() ? 'false' : 'true'}>
+          <ui-icon name="check"></ui-icon>
+        </span>
         ${() => (icon() ? html`<ui-icon name=${icon}></ui-icon>` : null)}
         <slot></slot>
       </button>`;

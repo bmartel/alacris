@@ -28,7 +28,7 @@ export const section = () => {
   const rangeStart = signal(20);
   const rangeEnd = signal(80);
   const query = signal('');
-  const searchOpen = signal(false);
+  const filesQuery = signal('');
 
   return html`
     ${block('FAB — variants', html`
@@ -161,8 +161,8 @@ export const section = () => {
     `)}
 
     ${stackBlock('Search view', html`
-      <ui-search presentation="view" label="Search files" open=${searchOpen}
-                 @input=${(e) => query(e.detail.value)}>
+      <ui-search presentation="view" label="Search files" value=${filesQuery}
+                 @input=${(e) => filesQuery(e.detail.value)}>
         <ui-text variant="body-sm" color="onSurfaceVariant" style="padding: 8px 16px">
           Recent — Ada, Grace, Katherine
         </ui-text>

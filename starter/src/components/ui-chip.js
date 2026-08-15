@@ -59,7 +59,7 @@ const styles = css`
     isolation: isolate;
     display: inline-flex;
     align-items: center;
-    gap: ${sys.space(2)};
+    gap: 0;
     block-size: calc(${t.height} + var(--ui-density, 0) * 4px);
     padding-inline: ${sys.space(4)};
     border: 1px solid ${t.outlineColor};
@@ -73,7 +73,28 @@ const styles = css`
     white-space: nowrap;
     --ui-icon-size: 1.125rem;
     transition: background-color ${sys.duration.short2} ${sys.easing.standard},
-                border-color ${sys.duration.short2} ${sys.easing.standard};
+                border-color ${sys.duration.short2} ${sys.easing.standard},
+                padding-inline-start ${sys.duration.short4} ${sys.easing.emphasized};
+  }
+  .selected .control { padding-inline-start: ${sys.space(2)}; }
+  .lead {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 0;
+    min-inline-size: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: inline-size ${sys.duration.short4} ${sys.easing.emphasized},
+                margin-inline-end ${sys.duration.short4} ${sys.easing.emphasized},
+                opacity ${sys.duration.short2} ${sys.easing.standard};
+  }
+  .lead.on {
+    inline-size: 1.125rem;
+    margin-inline-end: ${sys.space(2)};
+    opacity: 1;
+    pointer-events: auto;
   }
   .layer {
     position: absolute; inset: 0; z-index: -1;
@@ -140,10 +161,11 @@ define('ui-chip', {
       }
     });
 
+    const checkWhen = computed(() => variant() === 'filter' && selected());
     const rootCls = computed(() =>
       [
-        selected() && variant() === 'filter' ? 'selected' : '',
-        (icon() || (variant() === 'filter' && selected())) ? 'with-lead' : '',
+        checkWhen() ? 'selected' : '',
+        icon() ? 'with-lead' : '',
         dismissible() ? 'with-dismiss' : '',
       ].filter(Boolean).join(' '));
 
@@ -172,22 +194,27 @@ define('ui-chip', {
       settled(anim).then(() => host.emit('dismiss'));
     };
 
-    // Filter check: replaces the leading icon while selected, scaling in/out.
-    const checkWhen = computed(() => variant() === 'filter' && selected());
+    // Filter check: replaces the leading icon while selected, scaling in/out
+    // inside a width-animated slot so the chip grows instead of jumping.
     const lead = presence(checkWhen, () => html`<ui-icon name="check"></ui-icon>`, {
       enter: fx.scaleIn,
       exit: fx.scaleOut,
       enterDuration: 'short3',
       exitDuration: 'short2',
     });
+    const showLead = computed(() => variant() === 'filter' || !!icon());
 
     return html`
       <span class=${rootCls}>
         <span class="control" part="control" @click=${activate}
               ref=${(el) => ripple(el, { disabled })}>
           <span class="layer" aria-hidden="true"></span>
-          ${lead}
-          ${() => (icon() && !checkWhen() ? html`<ui-icon name=${icon}></ui-icon>` : null)}
+          ${() => (showLead()
+            ? html`<span class=${() => `lead${checkWhen() || icon() ? ' on' : ''}`}>
+                ${lead}
+                ${() => (icon() && !checkWhen() ? html`<ui-icon name=${icon}></ui-icon>` : null)}
+              </span>`
+            : null)}
           <span class="label"><slot></slot></span>
           ${() => (dismissible()
             ? html`<ui-icon-button class="dismiss" icon="close" label="Remove"

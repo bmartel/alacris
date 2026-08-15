@@ -211,7 +211,7 @@ viewport bottom. Distinct from &lt;ui-bottom-nav&gt;, which is destination tabs.
 
 | | |
 | --- | --- |
-| `@prop` | {string} fabAlign='end' — end \| center — where the FAB sits |
+| `@prop` | {string} fabAlign='end' — end \| center \| start — where the FAB sits |
 | `@slot` | navigation — leading icon button |
 | `@slot` | actions    — trailing icon buttons |
 | `@slot` | fab        — optional &lt;ui-fab&gt; |
@@ -777,7 +777,7 @@ one destination inside &lt;ui-bottom-nav&gt; or &lt;ui-nav-rail&gt;.
 | `@event` | ui-nav-select — activated; detail: { value } |
 | `@slot` | icon — custom icon content when `icon` is empty |
 | `@part` | control — the &lt;button&gt; |
-| `@part` | pill    — the 64×32 icon container |
+| `@part` | pill    — the 56×32 icon container |
 | `@vars` | see `t` below (`themeVars.names`)  Focus: the host is the roving tab stop (&lt;ui-bottom-nav&gt; assigns tabindex); focus is forwarded to the inner button so Enter/Space activate natively. |
 
 Source: [`src/components/ui-nav-item.js`](../src/components/ui-nav-item.js)
@@ -957,10 +957,12 @@ Enter emits `submit`. The field chrome is the focus indicator — the inner
 input has no extra outline.
 
 `presentation="view"` expands into a docked search view: a back control
-and a suggestions list (the default slot) while open. The bar also shows
-that list when it has slotted suggestions and the field is focused. The
-open surface is one extra-large rounded container (not a stretched pill)
-with a divider between the field and the list.
+and a suggestions list (the default slot) while open. Typing a query opens
+the view; clearing the field (keyboard or the clear button) closes it back
+to the pill bar. Focus on an empty view still shows recents, but a clear
+while focused stays on the bar. The open surface is one extra-large
+rounded container (not a stretched pill) with a divider between the field
+and the list.
 
 | | |
 | --- | --- |
@@ -1455,6 +1457,10 @@ opens an hour/minute chooser. Value is a 24-hour `HH:mm` string.
   &lt;ui-time-picker label="Alarm" value=${time}
                   @change=${(e) =&gt; time(e.detail.value)}&gt;&lt;/ui-time-picker&gt;
 
+The keyboard icon in the panel toggles between the analog dial and the
+digital hour/minute grids (MD3 input-method toggle). Hour and minute
+faces crossfade; the clock hand rotates with the motion tokens.
+
 | | |
 | --- | --- |
 | `@prop` | {string}  label='' |
@@ -1483,9 +1489,10 @@ one Material segmented button, used inside
 &lt;ui-toggle-group&gt; (the group draws the outlined container and dividers;
 standalone the segment is a flat pill).
 
-Selecting shows a leading check icon, animated in and out. The button does
-not own its selection: it emits `ui-toggle` and the group (or any parent)
-sets `selected` back down.
+Selecting shows a leading check icon. The check slot is always reserved so
+selecting a segment does not shift its neighbors; the glyph scales in.
+The button does not own its selection: it emits `ui-toggle` and the group
+(or any parent) sets `selected` back down.
 
 | | |
 | --- | --- |

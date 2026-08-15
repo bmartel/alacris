@@ -10,7 +10,7 @@
 // FAB. The host flows with the page — pin it with CSS when it should hug the
 // viewport bottom. Distinct from <ui-bottom-nav>, which is destination tabs.
 //
-// @prop  {string} fabAlign='end' — end | center — where the FAB sits
+// @prop  {string} fabAlign='end' — end | center | start — where the FAB sits
 // @slot  navigation — leading icon button
 // @slot  actions    — trailing icon buttons
 // @slot  fab        — optional <ui-fab>
@@ -40,19 +40,18 @@ const styles = css`
     color: ${t.fg};
     box-shadow: ${t.shadow};
   }
-  .nav, .actions {
+  .nav, .actions, .fab {
     display: inline-flex;
     align-items: center;
     gap: ${sys.space(1)};
   }
-  .actions { margin-inline-start: auto; }
-  .fab {
-    display: inline-flex;
-    align-items: center;
-    margin-inline-start: ${sys.space(2)};
-  }
-  .center .actions { margin-inline-start: 0; }
+  .nav { order: 0; }
+  .actions { order: 1; margin-inline-start: auto; }
+  .fab { order: 2; margin-inline-start: ${sys.space(2)}; }
+  .start .fab { order: 1; }
+  .start .actions { order: 2; }
   .center .fab {
+    order: 0;
     position: absolute;
     inset-inline-start: 50%;
     translate: -50% 0;
@@ -64,7 +63,7 @@ define('ui-bottom-app-bar', {
   props: { fabAlign: 'end' },
   styles: [base, styles],
   setup({ fabAlign }) {
-    const cls = computed(() => `bar ${fabAlign() === 'center' ? 'center' : 'end'}`);
+    const cls = computed(() => `bar ${fabAlign() === 'center' ? 'center' : fabAlign() === 'start' ? 'start' : 'end'}`);
     return html`
       <div class=${cls} part="bar" role="toolbar">
         <div class="nav" part="navigation"><slot name="navigation"></slot></div>

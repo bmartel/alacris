@@ -4,6 +4,10 @@
 //   <ui-time-picker label="Alarm" value=${time}
 //                   @change=${(e) => time(e.detail.value)}></ui-time-picker>
 //
+// The keyboard icon in the panel toggles between the analog dial and the
+// digital hour/minute grids (MD3 input-method toggle). Hour and minute
+// faces crossfade; the clock hand rotates with the motion tokens.
+//
 // @prop  {string}  label=''
 // @prop  {string}  value=''         — 24-hour HH:mm, or '' for none
 // @prop  {string}  variant='filled' — filled | outlined
@@ -224,6 +228,8 @@ const styles = css`
     font: ${sys.type.displaySm};
     letter-spacing: ${sys.tracking.displaySm};
     cursor: pointer;
+    transition: background-color ${sys.duration.short4} ${sys.easing.standard},
+                color ${sys.duration.short4} ${sys.easing.standard};
   }
   .digit.active { background: ${t.selectedBg}; color: ${t.selectedFg}; }
   .digit:focus-visible { outline: var(--ui-focus-ring); outline-offset: 2px; }
@@ -253,6 +259,8 @@ const styles = css`
     font: ${sys.type.labelMd};
     letter-spacing: ${sys.tracking.labelMd};
     cursor: pointer;
+    transition: background-color ${sys.duration.short4} ${sys.easing.standard},
+                color ${sys.duration.short4} ${sys.easing.standard};
   }
   .period button.active { background: ${t.selectedBg}; color: ${t.selectedFg}; }
   .period button:focus-visible { outline: var(--ui-focus-ring); outline-offset: -2px; }
@@ -261,8 +269,12 @@ const styles = css`
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: ${sys.space(1)};
+    transition: opacity ${sys.duration.short4} ${sys.easing.standard};
   }
-  .grid[hidden] { display: none; }
+  .grid.off {
+    opacity: 0;
+    pointer-events: none;
+  }
   .choice {
     position: relative;
     isolation: isolate;
@@ -278,6 +290,8 @@ const styles = css`
     letter-spacing: ${sys.tracking.bodyMd};
     color: ${t.fg};
     cursor: pointer;
+    transition: background-color ${sys.duration.short4} ${sys.easing.standard},
+                color ${sys.duration.short4} ${sys.easing.standard};
   }
   .choice .layer {
     position: absolute; inset: 0; z-index: -1;
@@ -306,8 +320,21 @@ const styles = css`
     margin-block-start: -108px;
     background: ${t.accent};
     transform-origin: center bottom;
-    transform: rotate(var(--ui-time-hand, 0deg));
     pointer-events: none;
+    z-index: 0;
+    transition: transform ${sys.duration.medium4} ${sys.easing.emphasized};
+  }
+  .hand::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 50%;
+    inset-block-start: 0;
+    inline-size: 40px;
+    block-size: 40px;
+    margin-inline-start: -20px;
+    margin-block-start: -20px;
+    border-radius: 50%;
+    background: ${t.accent};
   }
   .hub {
     position: absolute;
@@ -318,10 +345,12 @@ const styles = css`
     border-radius: 50%;
     background: ${t.accent};
     pointer-events: none;
+    z-index: 2;
   }
   .tick {
     position: absolute;
     inset: 0;
+    z-index: 1;
     margin: auto;
     inline-size: 40px;
     block-size: 40px;
@@ -335,14 +364,42 @@ const styles = css`
     letter-spacing: ${sys.tracking.bodyMd};
     cursor: pointer;
     transform: rotate(var(--a)) translateY(-108px) rotate(calc(-1 * var(--a)));
+    transition: color ${sys.duration.short4} ${sys.easing.standard};
   }
   .tick.inner {
     transform: rotate(var(--a)) translateY(-68px) rotate(calc(-1 * var(--a)));
     font: ${sys.type.bodySm};
     letter-spacing: ${sys.tracking.bodySm};
   }
-  .tick.active { background: ${t.accent}; color: ${t.onAccent}; z-index: 1; }
+  .tick.active { color: ${t.onAccent}; }
   .tick:focus-visible { outline: var(--ui-focus-ring); outline-offset: 2px; }
+  .ticks {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    scale: 0.85;
+    transition: opacity ${sys.duration.short4} ${sys.easing.standard},
+                scale ${sys.duration.medium2} ${sys.easing.emphasizedDecelerate};
+  }
+  .ticks.on {
+    opacity: 1;
+    pointer-events: auto;
+    scale: 1;
+  }
+  .pane { display: grid; }
+  .grids { display: grid; min-inline-size: 100%; }
+  .grids > .grid { grid-area: 1 / 1; }
+  .pane > * { grid-area: 1 / 1; }
+  .pane .dial, .pane .grids {
+    transition: opacity ${sys.duration.medium2} ${sys.easing.emphasizedDecelerate},
+                scale ${sys.duration.medium2} ${sys.easing.emphasizedDecelerate};
+  }
+  .pane .dial.off, .pane .grids.off {
+    opacity: 0;
+    scale: 0.96;
+    pointer-events: none;
+  }
   .switch {
     display: flex;
     justify-content: flex-end;
@@ -368,6 +425,7 @@ define('ui-time-picker', {
     const text = signal('');
     const selecting = signal('hour'); // 'hour' | 'minute'
     const draft = signal(value() || nowValue());
+    const face = signal(view() === 'input' ? 'input' : 'clock');
     let fieldEl = null;
     let stopAuto = null;
 
@@ -401,7 +459,7 @@ define('ui-time-picker', {
     const clockHours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
     const innerHours = computed(() => (is12() ? [] : [0, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]));
     const clockMinutes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
-    const isClock = computed(() => view() !== 'input');
+    const isClock = computed(() => face() !== 'input');
     const handDeg = computed(() => {
       if (selecting() === 'minute') return parsed().m * 6;
       return ((is12() ? hour12() : parsed().h) % 12) * 30;
@@ -443,6 +501,7 @@ define('ui-time-picker', {
       if (disabled() || open()) return;
       draft.set(parseTime(value()) ? value() : nowValue());
       selecting.set('hour');
+      face.set(view() === 'input' ? 'input' : 'clock');
       open.set(true);
     };
     const closePanel = () => open.set(false);
@@ -528,35 +587,40 @@ define('ui-time-picker', {
               </div>`
             : null)}
         </div>
-        ${() => (isClock()
-          ? html`<div class="dial" part="dial" style=${() => ({ '--ui-time-hand': handDeg() + 'deg' })}>
-              <div class="hand" aria-hidden="true"></div>
+        <div class="pane">
+          <div class=${() => `dial${isClock() ? '' : ' off'}`} part="dial">
+              <div class="hand" aria-hidden="true"
+                   style=${() => ({ transform: `rotate(${handDeg()}deg)` })}></div>
               <div class="hub" aria-hidden="true"></div>
-              ${() => (selecting() === 'hour'
-                ? clockHours.map((h) => html`
+              <div class=${() => `ticks${selecting() === 'hour' ? ' on' : ''}`}>
+                ${clockHours.map((h) => html`
                     <button type="button" class=${() => ({ tick: true, active: hourActive(h) })}
                             style=${{ '--a': ((h % 12) * 30) + 'deg' }}
                             data-hour=${h}
                             aria-label=${h + ' hours'}
-                            @click=${() => pickHour(h)}>${h}</button>`)
-                : clockMinutes.map((m) => html`
-                    <button type="button" class=${() => ({ tick: true, active: m === parsed().m })}
-                            style=${{ '--a': (m * 6) + 'deg' }}
-                            data-minute=${m}
-                            aria-label=${m + ' minutes'}
-                            @click=${() => pickMinute(m)}>${pad(m)}</button>`))}
-              ${() => (selecting() === 'hour'
-                ? innerHours().map((h) => html`
+                            tabindex=${() => (isClock() && selecting() === 'hour' ? '0' : '-1')}
+                            @click=${() => pickHour(h)}>${h}</button>`)}
+                ${() => innerHours().map((h) => html`
                     <button type="button" class=${() => ({ tick: true, inner: true, active: hourActive(h) })}
                             style=${{ '--a': ((h % 12) * 30) + 'deg' }}
                             data-hour=${h}
                             aria-label=${h + ' hours'}
-                            @click=${() => pickHour(h)}>${pad(h)}</button>`)
-                : null)}
-            </div>`
-          : html`
-        <div class="grid" role="listbox" aria-label="Hours"
-             hidden=${() => selecting() !== 'hour'}>
+                            tabindex=${() => (isClock() && selecting() === 'hour' ? '0' : '-1')}
+                            @click=${() => pickHour(h)}>${pad(h)}</button>`)}
+              </div>
+              <div class=${() => `ticks${selecting() === 'minute' ? ' on' : ''}`}>
+                ${clockMinutes.map((m) => html`
+                    <button type="button" class=${() => ({ tick: true, active: m === parsed().m })}
+                            style=${{ '--a': (m * 6) + 'deg' }}
+                            data-minute=${m}
+                            aria-label=${m + ' minutes'}
+                            tabindex=${() => (isClock() && selecting() === 'minute' ? '0' : '-1')}
+                            @click=${() => pickMinute(m)}>${pad(m)}</button>`)}
+              </div>
+          </div>
+          <div class=${() => `grids${isClock() ? ' off' : ''}`}>
+        <div class=${() => `grid${selecting() === 'hour' ? '' : ' off'}`}
+             role="listbox" aria-label="Hours">
           ${each(
             () => hourChoices(),
             (h) => html`
@@ -564,7 +628,7 @@ define('ui-time-picker', {
                 choice: true,
                 active: is12() ? h() === hour12() : h() === parsed().h,
               })}
-              data-hour=${h}
+              data-hour=${() => h()}
               aria-selected=${() => String(is12() ? h() === hour12() : h() === parsed().h)}
               @click=${() => pickHour(h())}>
                 <span class="layer" aria-hidden="true"></span>
@@ -573,8 +637,8 @@ define('ui-time-picker', {
             (h) => 'h' + h,
           )}
         </div>
-        <div class="grid" role="listbox" aria-label="Minutes"
-             hidden=${() => selecting() !== 'minute'}>
+        <div class=${() => `grid${selecting() === 'minute' ? '' : ' off'}`}
+             role="listbox" aria-label="Minutes">
           ${each(
             () => minuteChoices(),
             (m) => html`
@@ -582,7 +646,7 @@ define('ui-time-picker', {
                 choice: true,
                 active: m() === parsed().m,
               })}
-              data-minute=${m}
+              data-minute=${() => m()}
               aria-selected=${() => String(m() === parsed().m)}
               @click=${() => pickMinute(m())}>
                 <span class="layer" aria-hidden="true"></span>
@@ -590,12 +654,14 @@ define('ui-time-picker', {
               </button>`,
             (m) => 'm' + m,
           )}
-        </div>`)}
+        </div>
+          </div>
+        </div>
         <div class="switch">
           <ui-icon-button
             icon=${() => (isClock() ? 'keyboard' : 'clock')}
             label=${() => (isClock() ? 'Switch to text input' : 'Switch to clock')}
-            @click=${() => view.set(isClock() ? 'input' : 'clock')}></ui-icon-button>
+            @click=${(e) => { e.stopPropagation(); face.set(isClock() ? 'input' : 'clock'); }}></ui-icon-button>
         </div>
       </div>`;
 

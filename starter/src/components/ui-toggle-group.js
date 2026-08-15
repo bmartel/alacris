@@ -41,7 +41,7 @@ const styles = css`
     border-radius: ${t.radius};
     overflow: hidden;
   }
-  ::slotted(ui-toggle-button) { --ui-toggle-button-radius: 0; }
+  ::slotted(ui-toggle-button) { --ui-toggle-button-radius: 0; flex: 1; }
 `;
 
 define('ui-toggle-group', {

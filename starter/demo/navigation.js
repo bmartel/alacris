@@ -112,7 +112,7 @@ export const section = () => {
       <div style="display:flex; min-block-size: 280px; border: 1px solid var(--ui-color-outline-variant); border-radius: var(--ui-radius-md); overflow: hidden;">
         <ui-nav-rail value=${railDest} @change=${(e) => railDest(e.detail.value)} label="Main">
           <ui-icon-button slot="menu" icon="menu" label="Menu"></ui-icon-button>
-          <ui-fab slot="fab" icon="add" size="sm"></ui-fab>
+          <ui-fab slot="fab" icon="add"></ui-fab>
           <ui-nav-item value="home" icon="home" label="Home"></ui-nav-item>
           <ui-nav-item value="search" icon="search" label="Search"></ui-nav-item>
           <ui-nav-item value="favorites" icon="star-border" active-icon="star" label="Favorites"></ui-nav-item>

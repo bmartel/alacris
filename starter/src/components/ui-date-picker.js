@@ -347,17 +347,25 @@ const styles = css`
   .day:focus-visible { outline: var(--ui-focus-ring); outline-offset: -2px; }
   .day.outside { color: ${t.mutedFg}; }
   .day.today { color: ${t.todayFg}; box-shadow: inset 0 0 0 1px ${t.todayFg}; }
-  .day.in-range {
+  .day.in-range { color: ${t.rangeFg}; }
+  .day.in-range::before {
+    content: '';
+    position: absolute;
+    inset-block: 4px;
+    inset-inline: 0;
     background: ${t.rangeBg};
-    color: ${t.rangeFg};
-    border-radius: 0;
+    z-index: -2;
+    pointer-events: none;
   }
-  .day.range-start { border-start-start-radius: ${t.dayRadius}; border-end-start-radius: ${t.dayRadius}; }
-  .day.range-end { border-start-end-radius: ${t.dayRadius}; border-end-end-radius: ${t.dayRadius}; }
+  .day.in-range.range-start::before { inset-inline-start: 50%; }
+  .day.in-range.range-end::before { inset-inline-end: 50%; }
+  .day.in-range.range-start.range-end::before { display: none; }
   .day.selected, .day.selected.today {
     background: ${t.accent};
     color: ${t.onAccent};
     box-shadow: none;
+    transition: background-color ${sys.duration.short4} ${sys.easing.standard},
+                color ${sys.duration.short4} ${sys.easing.standard};
   }
   .day:disabled { color: color-mix(in srgb, ${sys.color.onSurface} calc(${sys.state.disabledContent} * 100%), transparent); cursor: default; pointer-events: none; }
 
@@ -411,8 +419,8 @@ define('ui-date-picker', {
       ['root', variant(), floating() && 'floating', open() && 'open',
        disabled() && 'disabled', label() && 'has-label'].filter(Boolean).join(' '));
     const selected = computed(() => (presentation() === 'modal' && open() ? draft() : value()));
-    const liveStart = computed(() => (presentation() === 'modal' && open() ? draftStart() : start()));
-    const liveEnd = computed(() => (presentation() === 'modal' && open() ? draftEnd() : end()));
+    const liveStart = computed(() => (range() && open() ? draftStart() : start()));
+    const liveEnd = computed(() => (range() && open() ? draftEnd() : end()));
     const cells = computed(() =>
       monthCells(viewMonth(), selected(), min(), max(), todayISO(),
         range() ? liveStart() : '', range() ? liveEnd() : ''));
@@ -446,23 +454,23 @@ define('ui-date-picker', {
     const pick = (iso) => {
       if (!iso || outOfRange(iso) || iso === lastPicked) return;
       lastPicked = iso;
-      queueMicrotask(() => { lastPicked = null; });
+      setTimeout(() => { lastPicked = null; }, 0);
       if (range()) {
-        const modal = presentation() === 'modal';
         const anchor = rangeAnchor();
-        if (!anchor) {
+        if (!anchor || iso === anchor) {
           rangeAnchor.set(iso);
-          if (modal) { draftStart.set(iso); draftEnd.set(''); return; }
-          start.set(iso);
-          end.set('');
+          draftStart.set(iso);
+          draftEnd.set('');
+          text.set(formatDate(iso, locale()) || iso);
           return;
         }
         let a = anchor;
         let b = iso;
         if (b < a) { a = iso; b = anchor; }
         rangeAnchor.set('');
-        if (modal) { draftStart.set(a); draftEnd.set(b); return; }
-        commitRange(a, b);
+        draftStart.set(a);
+        draftEnd.set(b);
+        if (presentation() !== 'modal') commitRange(a, b);
         return;
       }
       if (presentation() === 'modal') { draft.set(iso); return; }
@@ -552,17 +560,18 @@ define('ui-date-picker', {
     });
     onCleanup(() => { stopAuto?.(); releaseTrap?.(); unlock?.(); });
 
+    const dayClassFrom = (cell) => [
+      'day',
+      !cell.inMonth && 'outside',
+      cell.selected && 'selected',
+      cell.today && 'today',
+      cell.inRange && 'in-range',
+      cell.rangeStart && 'range-start',
+      cell.rangeEnd && 'range-end',
+    ].filter(Boolean).join(' ');
     const dayButtons = () => cells().map((cell) => html`
       <button type="button" part="day" role="gridcell"
-              class=${[
-                'day',
-                !cell.inMonth && 'outside',
-                cell.selected && 'selected',
-                cell.today && 'today',
-                cell.inRange && 'in-range',
-                cell.rangeStart && 'range-start',
-                cell.rangeEnd && 'range-end',
-              ].filter(Boolean).join(' ')}
+              class=${dayClassFrom(cell)}
               data-iso=${cell.iso}
               aria-selected=${cell.selected ? 'true' : 'false'}
               ?disabled=${cell.disabled}
@@ -570,6 +579,34 @@ define('ui-date-picker', {
         <span class="layer" aria-hidden="true"></span>
         ${cell.day}
       </button>`);
+
+    // Presence mounts the grid in a nested owner. A setup-level paint keeps
+    // selected / in-range classes in sync even if a row binding does not.
+    effect(() => {
+      const a = range() ? liveStart() : '';
+      const b = range() ? liveEnd() : '';
+      const sel = selected();
+      const rng = range();
+      if (!open()) return;
+      const paint = () => {
+        const root = host.shadowRoot;
+        if (!root) return;
+        for (const btn of root.querySelectorAll('.day')) {
+          const iso = btn.getAttribute('data-iso');
+          if (!iso) continue;
+          const isStart = !!(rng && a && iso === a);
+          const isEnd = !!(rng && b && iso === b);
+          const isSel = !!(isStart || isEnd || (!rng && iso === sel) || (!a && iso === sel));
+          btn.classList.toggle('selected', isSel);
+          btn.classList.toggle('in-range', !!(a && b && iso >= a && iso <= b));
+          btn.classList.toggle('range-start', isStart);
+          btn.classList.toggle('range-end', isEnd);
+          btn.setAttribute('aria-selected', isSel ? 'true' : 'false');
+        }
+      };
+      paint();
+      queueMicrotask(paint);
+    });
 
     const panelRef = (el) => {
       stopAuto?.();

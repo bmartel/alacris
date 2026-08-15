@@ -9,7 +9,7 @@
 // @event ui-nav-select — activated; detail: { value }
 // @slot  icon — custom icon content when `icon` is empty
 // @part  control — the <button>
-// @part  pill    — the 64×32 icon container
+// @part  pill    — the 56×32 icon container
 // @vars  see `t` below (`themeVars.names`)
 //
 // Focus: the host is the roving tab stop (<ui-bottom-nav> assigns tabindex);
@@ -60,7 +60,7 @@ const styles = css`
     isolation: isolate;
     display: grid;
     place-items: center;
-    inline-size: 64px;
+    inline-size: 56px;
     block-size: 32px;
     border-radius: ${sys.radius.full};
     transition: color ${sys.duration.short4} ${sys.easing.standard};

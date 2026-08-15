@@ -10,10 +10,12 @@
 // input has no extra outline.
 //
 // `presentation="view"` expands into a docked search view: a back control
-// and a suggestions list (the default slot) while open. The bar also shows
-// that list when it has slotted suggestions and the field is focused. The
-// open surface is one extra-large rounded container (not a stretched pill)
-// with a divider between the field and the list.
+// and a suggestions list (the default slot) while open. Typing a query opens
+// the view; clearing the field (keyboard or the clear button) closes it back
+// to the pill bar. Focus on an empty view still shows recents, but a clear
+// while focused stays on the bar. The open surface is one extra-large
+// rounded container (not a stretched pill) with a divider between the field
+// and the list.
 //
 // @prop  {string}  label='Search'   — accessible name (and the floating placeholder)
 // @prop  {string}  value=''
@@ -58,6 +60,14 @@ const t = vars('ui-search', {
 
 const styles = css`
   :host { display: block; position: relative; inline-size: min(100%, 720px); }
+  .shell {
+    overflow: hidden;
+    border-radius: ${t.radius};
+    background: transparent;
+    transition: border-radius ${sys.duration.medium2} ${sys.easing.emphasizedDecelerate},
+                box-shadow ${sys.duration.short4} ${sys.easing.standard},
+                background-color ${sys.duration.short2} ${sys.easing.standard};
+  }
   .bar {
     position: relative;
     isolation: isolate;
@@ -74,7 +84,8 @@ const styles = css`
     cursor: text;
     --ui-icon-size: 1.5rem;
     transition: background-color ${sys.duration.short2} ${sys.easing.standard},
-                border-radius ${sys.duration.short2} ${sys.easing.standard};
+                border-radius ${sys.duration.medium2} ${sys.easing.emphasizedDecelerate},
+                padding-inline ${sys.duration.short4} ${sys.easing.standard};
   }
   .bar::before {
     content: '';
@@ -88,19 +99,33 @@ const styles = css`
   .bar:hover:not(:focus-within)::before { opacity: ${sys.state.hover}; }
   .bar:focus-within { background: ${t.bgActive}; }
   /* Docked search view: one extra-large surface, not a pill stretched over the list. */
-  .open {
+  .shell.open {
     background: ${t.panelBg};
     border-radius: ${t.panelRadius};
     box-shadow: ${sys.elevation[2]};
   }
-  .open .bar {
+  .shell.open .bar {
     border-radius: 0;
     background: transparent;
     padding-inline: ${sys.space(2)};
   }
-  .open .bar::before { opacity: 0; }
-  .open .bar:focus-within { background: transparent; }
+  .shell.open .bar::before { opacity: 0; }
+  .shell.open .bar:focus-within { background: transparent; }
   .lead { color: ${t.placeholderFg}; display: grid; place-items: center; }
+  .leads {
+    display: grid;
+    place-items: center;
+    inline-size: 48px;
+    block-size: 48px;
+  }
+  .leads > * { grid-area: 1 / 1; }
+  .lead-slot {
+    display: grid;
+    place-items: center;
+    transition: opacity ${sys.duration.short4} ${sys.easing.standard},
+                scale ${sys.duration.short4} ${sys.easing.emphasized};
+  }
+  .lead-slot.off { opacity: 0; scale: 0.8; pointer-events: none; }
   input {
     flex: 1;
     min-inline-size: 0;
@@ -121,8 +146,9 @@ const styles = css`
     overflow: auto;
     max-block-size: min(70vh, 360px);
     border-block-start: 1px solid ${t.divider};
+    transform-origin: top center;
   }
-  .open .panel { background: transparent; }
+  .shell.open .panel { background: transparent; }
   .disabled { opacity: ${sys.state.disabledContent}; pointer-events: none; }
 `;
 
@@ -137,14 +163,22 @@ define('ui-search', {
     formBind(host, { name, value, disabled });
     const hasLeading = signal(false);
     let input;
+    let skipFocusOpen = false;
 
     const ph = computed(() => placeholder() || label() || 'Search');
     const isView = computed(() => presentation() === 'view');
     const slotted = () => [...host.children].some((c) => !c.slot);
     const showPanel = computed(() => open() && (isView() || slotted()));
     const rootCls = computed(() =>
-      [isView() ? 'view' : 'bar-mode', open() && 'open', disabled() && 'disabled']
+      ['shell', isView() ? 'view' : 'bar-mode', open() && 'open', disabled() && 'disabled']
         .filter(Boolean).join(' '));
+    const hasQuery = () => (value() ?? '') !== '';
+
+    const openView = () => {
+      if (disabled() || open()) return;
+      if (isView() || slotted()) open.set(true);
+    };
+    const closeView = () => { if (open()) open.set(false); };
 
     const onInput = (e) => {
       // Native `input` is composed; without this, a host @input listener sees
@@ -152,6 +186,8 @@ define('ui-search', {
       e.stopPropagation();
       value.set(e.target.value);
       host.emit('input', { value: value() });
+      if (hasQuery()) openView();
+      else closeView();
     };
     const commit = (e) => {
       e?.stopPropagation();
@@ -161,17 +197,25 @@ define('ui-search', {
       if (e.key !== 'Enter') return;
       host.emit('submit', { value: value() });
     };
-    const clear = () => {
+    const clear = (e) => {
+      e?.stopPropagation();
       value.set('');
       host.emit('clear');
       host.emit('input', { value: '' });
+      closeView();
+      skipFocusOpen = true;
       input?.focus();
+      queueMicrotask(() => { skipFocusOpen = false; });
     };
-    const openView = () => {
-      if (disabled() || open()) return;
-      if (isView() || slotted()) open.set(true);
+    const onFocus = () => {
+      if (skipFocusOpen) return;
+      openView();
     };
-    const closeView = () => open.set(false);
+    const onFocusOut = (e) => {
+      const next = e.relatedTarget;
+      if (next && (host.contains(next) || host.shadowRoot?.contains(next))) return;
+      if (!hasQuery()) closeView();
+    };
     const onKeydown = (e) => {
       submit(e);
       if (e.key === 'Escape' && open()) {
@@ -186,12 +230,20 @@ define('ui-search', {
       </div>`;
 
     return html`
-      <div class=${rootCls}>
+      <div class=${rootCls} @focusout=${onFocusOut}>
         <div class=${() => `bar${disabled() ? ' disabled' : ''}`} part="bar"
              @click=${() => input?.focus()}>
-          ${() => (isView() && open()
-            ? html`<ui-icon-button icon="arrow-back" label="Back"
-                  @click=${(e) => { e.stopPropagation(); closeView(); }}></ui-icon-button>`
+          ${() => (isView()
+            ? html`<span class="leads">
+                <span class=${() => `lead-slot${open() ? ' off' : ''}`}>
+                  <slot name="leading" ref=${(el) => el.addEventListener('slotchange', () => hasLeading.set(el.assignedElements().length > 0))}></slot>
+                  ${() => (hasLeading() ? null : html`<ui-icon name="search"></ui-icon>`)}
+                </span>
+                <span class=${() => `lead-slot${open() ? '' : ' off'}`}>
+                  <ui-icon-button icon="arrow-back" label="Back"
+                    @click=${(e) => { e.stopPropagation(); closeView(); }}></ui-icon-button>
+                </span>
+              </span>`
             : html`<span class="lead">
                 <slot name="leading" ref=${(el) => el.addEventListener('slotchange', () => hasLeading.set(el.assignedElements().length > 0))}></slot>
                 ${() => (hasLeading() ? null : html`<ui-icon name="search"></ui-icon>`)}
@@ -203,17 +255,19 @@ define('ui-search', {
                  aria-expanded=${() => String(open())}
                  ?disabled=${disabled}
                  @input=${onInput} @change=${commit} @keydown=${onKeydown}
-                 @focus=${openView}>
+                 @focus=${onFocus}>
           ${() => ((value() ?? '') !== '' && !disabled()
             ? html`<ui-icon-button icon="close" label="Clear" @click=${clear}></ui-icon-button>`
             : null)}
           <slot name="trailing"></slot>
         </div>
         ${presence(showPanel, panelView, {
-          enter: fx.fadeIn,
-          exit: fx.fadeOut,
-          enterDuration: 'short4',
-          exitDuration: 'short2',
+          enter: fx.expandDown,
+          exit: fx.collapseUp,
+          enterDuration: 'medium2',
+          enterEasing: 'emphasizedDecelerate',
+          exitDuration: 'short4',
+          exitEasing: 'emphasizedAccelerate',
           onEntered: () => host.emit('open'),
           onExited: () => host.emit('close'),
         })}

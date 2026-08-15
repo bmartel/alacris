@@ -296,8 +296,9 @@ test('ui-date-picker range selects start then end', async () => {
   assert.ok(panel);
 
   fire(panel.querySelector('[data-iso="2026-08-14"]'), 'click');
-  assert.equal(el.start, '2026-08-14');
+  assert.equal(el.start, '', 'first click is a draft; parent start is unchanged');
   assert.equal(el.end, '');
+  assert.equal(panel.querySelector('[data-iso="2026-08-14"]').getAttribute('aria-selected'), 'true');
   assert.ok(el.shadowRoot.querySelector('.panel'), 'first click keeps the panel open');
 
   let detail = null;
@@ -375,6 +376,24 @@ test('ui-time-picker input view still uses the hour/minute grids', async () => {
   fire(panel.querySelector('[data-hour="8"]'), 'click');
   fire(panel.querySelector('[data-minute="45"]'), 'click');
   assert.equal(el.value, '08:45');
+  unmountAll();
+  await tick();
+});
+
+test('ui-time-picker keyboard button toggles dial and input faces', async () => {
+  const el = mount('<ui-time-picker label="Alarm" value="07:30"></ui-time-picker>');
+  await tick();
+  fire(el.shadowRoot.querySelector('ui-icon-button').shadowRoot.querySelector('button'), 'click');
+  const panel = el.shadowRoot.querySelector('.panel');
+  assert.ok(panel.querySelector('.dial:not(.off)'), 'opens on the analog dial');
+  const toggle = [...panel.querySelectorAll('ui-icon-button')]
+    .find((b) => (b.label || '').includes('text input') || (b.getAttribute('label') || '').includes('text input'));
+  assert.ok(toggle, 'input-method toggle is present');
+  fire(toggle.shadowRoot.querySelector('button'), 'click');
+  assert.ok(panel.querySelector('.grids:not(.off)'), 'keyboard switches to the digital grid');
+  assert.ok(panel.querySelector('.dial.off'), 'dial is hidden, not destroyed');
+  fire(toggle.shadowRoot.querySelector('button'), 'click');
+  assert.ok(panel.querySelector('.dial:not(.off)'), 'clock icon switches back to the dial');
   unmountAll();
   await tick();
 });

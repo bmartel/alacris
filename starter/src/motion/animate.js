@@ -119,6 +119,14 @@ export const fx = {
   slideOutDown: [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(16px)' }],
   slideInDown: [{ opacity: 0, transform: 'translateY(-16px)' }, { opacity: 1, transform: 'translateY(0)' }],
   slideOutUp: [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-16px)' }],
+  expandDown: [
+    { opacity: 0, transform: 'scaleY(0.8)', transformOrigin: 'top center' },
+    { opacity: 1, transform: 'none', transformOrigin: 'top center' },
+  ],
+  collapseUp: [
+    { opacity: 1, transform: 'none', transformOrigin: 'top center' },
+    { opacity: 0, transform: 'scaleY(0.8)', transformOrigin: 'top center' },
+  ],
   slideInLeft: [{ transform: 'translateX(-100%)' }, { transform: 'translateX(0)' }],
   slideOutLeft: [{ transform: 'translateX(0)' }, { transform: 'translateX(-100%)' }],
   slideInRight: [{ transform: 'translateX(100%)' }, { transform: 'translateX(0)' }],

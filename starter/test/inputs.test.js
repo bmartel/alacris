@@ -85,12 +85,13 @@ test('ui-toggle-button reflects selection and emits ui-toggle', async () => {
   await tick();
   const btn = el.shadowRoot.querySelector('button');
   assert.equal(btn.getAttribute('aria-pressed'), 'false');
-  assert.equal(el.shadowRoot.querySelector('ui-icon'), null, 'no check while unselected');
+  assert.equal(el.shadowRoot.querySelector('.check.on'), null, 'check is visually off while unselected');
+  assert.ok(el.shadowRoot.querySelector('.check ui-icon'), 'check slot is reserved so the group does not shift');
 
   el.selected = true;
   assert.equal(btn.getAttribute('aria-pressed'), 'true', 'selected prop is live');
   await tick();
-  assert.ok(el.shadowRoot.querySelector('ui-icon'), 'check icon appears when selected');
+  assert.ok(el.shadowRoot.querySelector('.check.on'), 'check icon appears when selected');
 
   let detail = null;
   el.addEventListener('ui-toggle', (e) => (detail = e.detail));
@@ -380,6 +381,23 @@ test('ui-search view opens suggestions on focus', async () => {
     || el.shadowRoot.querySelector('ui-icon-button');
   fire(back.shadowRoot.querySelector('button'), 'click');
   assert.equal(el.open, false);
+  unmountAll();
+});
+
+test('ui-search view closes when the query is cleared', async () => {
+  const el = mount('<ui-search presentation="view" label="Search files"><span>Ada</span></ui-search>');
+  await tick();
+  const input = el.shadowRoot.querySelector('input');
+  input.value = 'ada';
+  fire(input, 'input');
+  assert.equal(el.open, true, 'typing opens the view');
+  assert.ok(el.shadowRoot.querySelector('.panel'));
+
+  const clearBtn = [...el.shadowRoot.querySelectorAll('ui-icon-button')]
+    .find((b) => b.label === 'Clear');
+  fire(clearBtn.shadowRoot.querySelector('button'), 'click');
+  assert.equal(el.value, '');
+  assert.equal(el.open, false, 'clear returns to the bar');
   unmountAll();
 });
 
