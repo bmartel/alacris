@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.1](https://github.com/bmartel/alacris/compare/v0.6.0...v0.6.1) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** align search view, carousel, and checkmarks with MD3 ([dd1b8c1](https://github.com/bmartel/alacris/commit/dd1b8c1672c0a1c6c71874c590044cd7737c2de3))
+
 ## [0.6.0](https://github.com/bmartel/alacris/compare/v0.5.0...v0.6.0) (2026-08-15)
 
 ### Features
