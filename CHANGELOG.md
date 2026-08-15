@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.5.0](https://github.com/bmartel/alacris/compare/v0.4.0...v0.5.0) (2026-08-15)
+
+### Features
+
+* **define:** form-associated custom elements ([#5](https://github.com/bmartel/alacris/issues/5)) ([9a4a19a](https://github.com/bmartel/alacris/commit/9a4a19a818d94951cf57ca16d1cbfd672451a1e9))
+
 ## [0.4.0](https://github.com/bmartel/alacris/compare/v0.3.0...v0.4.0) (2026-08-15)
 
 ### Features
