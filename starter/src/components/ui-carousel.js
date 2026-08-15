@@ -57,11 +57,14 @@ const styles = css`
   }
   .track > slot { display: contents; }
   .uncontained { --ui-carousel-item-basis: 56%; }
-  .hero {
-    scroll-snap-type: x proximity;
-    --ui-carousel-item-basis: 28%;
+  .hero { --ui-carousel-item-basis: ${t.heroSize}; }
+  .hero ::slotted(ui-carousel-item) {
+    transition: opacity ${sys.duration.medium2} ${sys.easing.standard};
+    opacity: 0.75;
   }
-  .hero ::slotted(ui-carousel-item[selected]) { --ui-carousel-item-basis: ${t.heroSize}; }
+  .hero ::slotted(ui-carousel-item[selected]) {
+    opacity: 1;
+  }
   .prev, .next {
     position: absolute;
     inset-block-start: 50%;
@@ -126,14 +129,6 @@ define('ui-carousel', {
 
       const track = viewport.querySelector('.track');
       const trackPad = track ? parseFloat(getComputedStyle(track).paddingInlineStart) || 8 : 8;
-
-      if (variant() === 'hero') {
-        const gap = track ? parseFloat(getComputedStyle(track).gap) || 8 : 8;
-        const smallWidth = viewport.clientWidth * 0.28;
-        const dest = idx * (smallWidth + gap);
-        return Math.max(0, Math.min(max, dest));
-      }
-
       const target = items[idx];
       if (!target) return 0;
       const dest = target.offsetLeft - trackPad;
@@ -143,8 +138,34 @@ define('ui-carousel', {
     const go = (n) => {
       const items = itemsOf();
       if (!items.length) return;
-      const targetIdx = clamp(n);
-      if (targetIdx === index.peek()) return;
+      const cur = index.peek();
+      const max = viewport ? Math.max(0, viewport.scrollWidth - viewport.clientWidth) : 0;
+      const hasLayout = viewport && viewport.clientWidth > 0 && max > 0;
+
+      let targetIdx = clamp(n);
+
+      if (hasLayout) {
+        const curScroll = viewport.scrollLeft;
+        if (n < cur) {
+          for (let i = cur - 1; i >= 0; i--) {
+            const dest = targetScrollFor(i);
+            if (dest < curScroll - 5 || i === 0) {
+              targetIdx = i;
+              break;
+            }
+          }
+        } else if (n > cur) {
+          for (let i = cur + 1; i < items.length; i++) {
+            const dest = targetScrollFor(i);
+            if (dest > curScroll + 5 || (i === items.length - 1 && curScroll < max - 5)) {
+              targetIdx = i;
+              break;
+            }
+          }
+        }
+        if (targetIdx === cur && Math.abs(targetScrollFor(targetIdx) - curScroll) < 2) return;
+      }
+
       isProgrammatic = true;
       index.set(targetIdx);
       host.emit('change', { index: targetIdx });
