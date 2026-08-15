@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'starter/**'
+      - 'ui/**'
       - '.github/workflows/release-ui.yml'
       - 'scripts/release-filter-scopes.js'
   workflow_dispatch:
@@ -41,7 +41,7 @@ jobs:
       - run: npm run test:ui
 
       # semantic-release's first tag is 1.0.0. Seed a 0.0.0 so the first
-      # feat(ui) lands at 0.1.0, matching starter/package.json. Checkout
+      # feat(ui) lands at 0.1.0, matching ui/package.json. Checkout
       # drops credentials, so push the seed tag with the job token the same
       # way the git plugin will push ui-v* tags from here on.
       - name: Seed ui-v0.0.0 if this is the first UI release
@@ -57,7 +57,7 @@ jobs:
           git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" ui-v0.0.0
 
       - name: Release
-        working-directory: starter
+        working-directory: ui
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node ../node_modules/semantic-release/bin/semantic-release.js

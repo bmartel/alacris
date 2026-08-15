@@ -6,6 +6,7 @@ on:
     # UI-only commits are released by release-ui.yml. Skipping this job for
     # them is what keeps a feat(ui) from ever publishing a new @alacris/core.
     paths-ignore:
+      - 'ui/**'
       - 'starter/**'
       - '.github/workflows/release-ui.yml'
       - 'scripts/release-filter-scopes.js'

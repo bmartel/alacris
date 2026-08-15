@@ -123,10 +123,10 @@ Component modules have side effects (they call `define()`). Theme, motion and to
 
 ## In this repository
 
-This package lives in `starter/` of the [Alacris repo](https://github.com/bmartel/alacris) so the library and the design system can be developed together. They **publish separately**: `@alacris/ui` has its own version, changelog, and npm release. A commit that only changes this folder does not cut an Alacris library release.
+This package lives in `ui/` of the [Alacris repo](https://github.com/bmartel/alacris) so the library and the design system can be developed together. They **publish separately**: `@alacris/ui` has its own version, changelog, and npm release. A commit that only changes this folder does not cut an Alacris library release. `starter/` in the same repo is a usage example and install guide, not this package.
 
 ```
-starter/
+ui/
   src/           the published modules
   types/         hand-written .d.ts
   demo/          kitchen-sink app (not published)
@@ -139,8 +139,9 @@ From a clone of the repo:
 
 ```bash
 npm install
-npm run demo        # http://localhost:5173/starter/
-cd starter && npm test
+npm run demo        # kitchen sink: http://localhost:5173/ui/
+                    # starter app:  http://localhost:5173/starter/
+cd ui && npm test
 ```
 
 ## License

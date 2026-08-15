@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alacris starter</title>
+  <!--
+    This folder is a usage example, not the design system. The published
+    package lives in ../ui/ (@alacris/ui). `npm run demo` from the repo
+    root serves this page at http://localhost:5173/starter/.
+
+    In your own project, `npm install @alacris/ui` and import from
+    '@alacris/ui', or point an import map at pinned CDN builds. See README.md.
+  -->
+  <script type="importmap">
+  {
+    "imports": {
+      "@alacris/core": "../dist/alacris.js",
+      "@alacris/ui": "../ui/src/index.js",
+      "@alacris/ui/theme": "../ui/src/theme/index.js",
+      "@alacris/ui/components/": "../ui/src/components/"
+    }
+  }
+  </script>
+  <style>
+    html { height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--ui-color-surface);
+      color: var(--ui-color-on-surface);
+      font: var(--ui-type-body-md);
+      letter-spacing: var(--ui-type-body-md-tracking);
+    }
+    main {
+      max-inline-size: 40rem;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+    ui-text-field { inline-size: 100%; }
+    .stack { display: grid; gap: 1rem; }
+    .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    h1 {
+      margin: 0 0 0.35rem;
+      font: var(--ui-type-headline-sm);
+      letter-spacing: var(--ui-type-headline-sm-tracking);
+    }
+    .lede {
+      margin: 0 0 1.25rem;
+      color: var(--ui-color-on-surface-variant);
+    }
+  </style>
+</head>
+<body>
+  <ui-app-bar scroll-elevate>Alacris starter</ui-app-bar>
+  <main>
+    <ui-card>
+      <h1>Use the tags</h1>
+      <p class="lede">
+        This page is a small app built from <code>@alacris/ui</code>.
+        Copy the pattern into any framework — or none.
+      </p>
+      <form class="stack" id="signup">
+        <ui-text-field name="email" type="email" label="Email" required clearable></ui-text-field>
+        <ui-text-field name="name" label="Name" helper="Shown on your profile"></ui-text-field>
+        <ui-switch name="digest" label="Weekly digest" checked></ui-switch>
+        <div class="actions">
+          <ui-button type="submit">Continue</ui-button>
+          <ui-button type="button" variant="text" id="scheme">Toggle scheme</ui-button>
+        </div>
+      </form>
+    </ui-card>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

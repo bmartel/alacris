@@ -64,7 +64,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bmartel/alacris.git",
-    "directory": "starter"
+    "directory": "ui"
   },
   "homepage": "https://bmartel.github.io/alacris/ui/getting-started/",
   "bugs": {
