@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.18](https://github.com/bmartel/alacris/compare/v0.6.17...v0.6.18) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** name overlays, pickers, and menus for accessibility ([5530517](https://github.com/bmartel/alacris/commit/5530517f4306ddfbbd2d4b3308f29f5b98b2ac52))
+
 ## [0.6.17](https://github.com/bmartel/alacris/compare/v0.6.16...v0.6.17) (2026-08-15)
 
 ### Bug Fixes
