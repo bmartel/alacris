@@ -53,7 +53,7 @@ React, Vue, Svelte, Rails, Django — anywhere that renders tags.
 
 ```
 starter/
-  index.html            kitchen-sink demo + live theme playground
+  index.html            kitchen-sink demo — an app shell built from the system
   src/
     index.js            imports/registers every component; public API surface
     tokens/             tier 1+2: palettes (OKLCH engine), type scale, shape,
@@ -63,7 +63,8 @@ starter/
     motion/             animate, fx presets, presence, withFlip, ripple
     util/               positioning, focus trap, roving tabindex, formBind, icons
     components/         one file per component
-  demo/                 the demo app (a worked example of composing the system)
+  demo/                 the demo app — app bar, rail, drawer, search, playground,
+                        all composed from the same components it documents
   docs/
     theming.md          the token architecture and how to make this yours
     motion.md           the animation system

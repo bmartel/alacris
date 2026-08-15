@@ -211,9 +211,9 @@ define('ui-thing', {
 
 Each component family has:
 
-- `demo/<family>.js` — exports `export const section = html\`…\`` demonstrating
-  every variant/state, registered in `demo/main.js`. Use `demoSection(title,
-  blocks)` from `demo/helpers.js`.
+- `demo/<family>.js` — exports `export const section = () => html\`…\`` demonstrating
+  every variant/state, composed into `demo/app.js`. Use `block` / `stackBlock`
+  from `demo/helpers.js` (they wrap examples in `<ui-surface>` + `<ui-stack>`).
 - `test/<family>.test.js` — node smoke tests on the repo's happy-dom setup:
   each element defines, renders, responds to a prop write and an interaction.
   Import `./helpers.js` (starter test helpers) for `mount()`. Note happy-dom

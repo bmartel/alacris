@@ -9,6 +9,9 @@ if (typeof globalThis.matchMedia !== 'function') {
 if (typeof globalThis.ResizeObserver !== 'function') {
   globalThis.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
 }
+if (typeof globalThis.IntersectionObserver !== 'function') {
+  globalThis.IntersectionObserver = class { observe() {} unobserve() {} disconnect() {} };
+}
 if (typeof globalThis.SVGElement === 'undefined') {
   globalThis.SVGElement = globalThis.window.SVGElement;
 }

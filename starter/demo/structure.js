@@ -2,7 +2,7 @@
 // bottom navigation, stack, container, surface.
 
 import { html, signal } from 'alacris';
-import { block, stackBlock } from './helpers.js';
+import { block, stackBlock, row } from './helpers.js';
 import '../src/components/ui-accordion.js';
 import '../src/components/ui-accordion-item.js';
 import '../src/components/ui-breadcrumbs.js';
@@ -63,10 +63,9 @@ export const section = () => html`
       <ui-step label="Payment"></ui-step>
       <ui-step label="Review"></ui-step>
     </ui-stepper>
-    <div class="demo-row">
+    ${row(html`
       <ui-button variant="outlined" @click=${() => step(Math.max(0, step() - 1))}>Back</ui-button>
-      <ui-button @click=${() => step(Math.min(3, step() + 1))}>Next</ui-button>
-    </div>`)}
+      <ui-button @click=${() => step(Math.min(3, step() + 1))}>Next</ui-button>`)}`)}
 
   ${stackBlock('Bottom navigation', html`
     <ui-bottom-nav value=${dest} @change=${(e) => dest(e.detail.value)} label="Demo destinations">

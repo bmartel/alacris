@@ -2,7 +2,7 @@
 // dialog, bottom sheet, typography, icons.
 
 import { html, signal } from 'alacris';
-import { block, stackBlock } from './helpers.js';
+import { block, stackBlock, row } from './helpers.js';
 import { iconNames } from '../src/util/icons.js';
 import '../src/components/ui-button.js';
 import '../src/components/ui-icon-button.js';
@@ -68,23 +68,20 @@ export const section = () => html`
     <ui-switch label="Off limits" disabled></ui-switch>`)}
 
   ${stackBlock('Text fields', html`
-    <div class="demo-row">
+    ${row(html`
       <ui-text-field label="Filled" helper="Supporting text"></ui-text-field>
       <ui-text-field variant="outlined" label="Outlined"></ui-text-field>
-      <ui-text-field label="Password" type="password" value="hunter2"></ui-text-field>
-    </div>
-    <div class="demo-row">
+      <ui-text-field label="Password" type="password" value="hunter2"></ui-text-field>`)}
+    ${row(html`
       <ui-text-field label="Email" value=${email} clearable
                      helper=${() => (email() ? `Hello, ${email()}` : 'We never spam')}>
         <ui-icon slot="leading" name="person"></ui-icon>
       </ui-text-field>
       <ui-text-field variant="outlined" label="Username" error="Already taken"></ui-text-field>
-      <ui-text-field label="Bio" type="textarea" maxlength="80" placeholder="A few words…"></ui-text-field>
-    </div>
-    <div class="demo-row">
+      <ui-text-field label="Bio" type="textarea" maxlength="80" placeholder="A few words…"></ui-text-field>`)}
+    ${row(html`
       <ui-text-field label="Disabled" disabled value="Read only-ish"></ui-text-field>
-      <ui-text-field variant="outlined" label="Required" required></ui-text-field>
-    </div>`)}
+      <ui-text-field variant="outlined" label="Required" required></ui-text-field>`)}`)}
 
   ${block('Dialog', html`
     <ui-button variant="tonal" @click=${() => dialogOpen(true)}>Open dialog</ui-button>

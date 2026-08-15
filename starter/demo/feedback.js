@@ -1,7 +1,7 @@
 // Feedback — alerts, progress, spinners, skeletons, snackbars, backdrop.
 
 import { html, signal } from 'alacris';
-import { block, stackBlock } from './helpers.js';
+import { block, stackBlock, row } from './helpers.js';
 import '../src/components/ui-alert.js';
 import '../src/components/ui-progress.js';
 import '../src/components/ui-spinner.js';
@@ -10,6 +10,7 @@ import '../src/components/ui-skeleton.js';
 import '../src/components/ui-backdrop.js';
 import { showSnackbar } from '../src/components/ui-snackbar.js';
 import '../src/components/ui-button.js';
+import '../src/components/ui-stack.js';
 
 export const title = 'Feedback';
 
@@ -50,11 +51,10 @@ export const section = () => {
       'Linear progress',
       html`
         <ui-progress label="Upload progress" value=${progress}></ui-progress>
-        <div class="demo-row">
+        ${row(html`
           <ui-button variant="tonal" @click=${() => progress((progress() + 10) % 110)}>
             Advance ${() => Math.round(progress())}%
-          </ui-button>
-        </div>
+          </ui-button>`)}
         <ui-progress label="Loading"></ui-progress>`,
     )}
 
@@ -78,15 +78,15 @@ export const section = () => {
     ${block(
       'Skeleton',
       html`
-        <div style="display: flex; gap: 16px; align-items: flex-start; inline-size: 320px;">
+        <ui-stack direction="row" gap="4" align="flex-start" style="inline-size: 320px">
           <ui-skeleton variant="circular" width="40px" height="40px" animation="wave"></ui-skeleton>
-          <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+          <ui-stack gap="2" style="flex: 1">
             <ui-skeleton animation="wave" width="60%"></ui-skeleton>
             <ui-skeleton animation="wave"></ui-skeleton>
             <ui-skeleton variant="rectangular" height="96px"></ui-skeleton>
             <ui-skeleton width="80%"></ui-skeleton>
-          </div>
-        </div>`,
+          </ui-stack>
+        </ui-stack>`,
     )}
 
     ${block(
