@@ -46,15 +46,16 @@ export const easing = (key) => EASINGS[camelToToken(key)] || key;
  * simply lands in its final state.
  */
 export function animate(el, keyframes, opts = {}) {
-  const { duration: d = 'short4', easing: e = 'standard', ...rest } = opts;
+  const { duration: d = 'short4', easing: e = 'standard', fill = 'both', ...rest } = opts;
   // Environments without WAAPI (simulated DOMs in tests) get an
   // already-finished stand-in so `.finished` sequencing still works.
-  if (typeof el.animate !== 'function') {
+  if (typeof el?.animate !== 'function') {
     return { finished: Promise.resolve(), cancel() {}, finish() {}, play() {}, pause() {} };
   }
   const ms = prefersReducedMotion() ? 1 : duration(d);
   const run = () => {
-    const anim = el.animate(keyframes, { duration: ms, easing: easing(e), fill: 'both', ...rest });
+    const frames = typeof keyframes === 'function' ? keyframes(el) : keyframes;
+    const anim = el.animate(frames, { duration: ms, easing: easing(e), fill, ...rest });
     anim.finished.catch(() => {}); // cancellation is normal control flow, not an error
     // Hidden/occluded tabs freeze the animation timeline, which would leave
     // `.finished` chains (presence unmounts, `closed` events, snackbar queues)
@@ -119,14 +120,20 @@ export const fx = {
   slideOutDown: [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(16px)' }],
   slideInDown: [{ opacity: 0, transform: 'translateY(-16px)' }, { opacity: 1, transform: 'translateY(0)' }],
   slideOutUp: [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-16px)' }],
-  expandDown: [
-    { opacity: 0, transform: 'scaleY(0.8)', transformOrigin: 'top center' },
-    { opacity: 1, transform: 'none', transformOrigin: 'top center' },
-  ],
-  collapseUp: [
-    { opacity: 1, transform: 'none', transformOrigin: 'top center' },
-    { opacity: 0, transform: 'scaleY(0.8)', transformOrigin: 'top center' },
-  ],
+  expandDown: (el) => {
+    const h = el?.scrollHeight || 0;
+    return [
+      { blockSize: '0px', opacity: 0, overflow: 'hidden' },
+      { blockSize: `${h}px`, opacity: 1, overflow: 'hidden' },
+    ];
+  },
+  collapseUp: (el) => {
+    const h = el?.offsetHeight || el?.scrollHeight || 0;
+    return [
+      { blockSize: `${h}px`, opacity: 1, overflow: 'hidden' },
+      { blockSize: '0px', opacity: 0, overflow: 'hidden' },
+    ];
+  },
   slideInLeft: [{ transform: 'translateX(-100%)' }, { transform: 'translateX(0)' }],
   slideOutLeft: [{ transform: 'translateX(0)' }, { transform: 'translateX(-100%)' }],
   slideInRight: [{ transform: 'translateX(100%)' }, { transform: 'translateX(0)' }],

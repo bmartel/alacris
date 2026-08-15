@@ -55,6 +55,24 @@ const styles = css`
     cursor: text;
     --ui-icon-size: 1.5rem;
   }
+  /* Resize lives on .grow, not the textarea, so padding on the text
+     does not inset the native grip from the field's corner. */
+  .multiline .field {
+    padding-inline: 0;
+    align-items: stretch;
+  }
+  .grow {
+    flex: 1;
+    min-inline-size: 0;
+    display: flex;
+    align-self: stretch;
+  }
+  .multiline .grow {
+    resize: vertical;
+    overflow: hidden;
+    min-block-size: calc(${t.height} + var(--ui-density, 0) * 4px);
+  }
+  .disabled .grow { resize: none; }
   .filled .field {
     background: ${t.bg};
     border-start-start-radius: ${t.radius};
@@ -74,6 +92,19 @@ const styles = css`
   }
   .filled.focused .field::after { block-size: 2px; background: ${t.accent}; }
   .filled.error .field::after { background: ${t.errorFg}; }
+  /* Opaque band so scrolled lines do not paint over the floating label. */
+  .filled.multiline.floating.has-label .field::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 0;
+    block-size: 24px;
+    background: ${t.bg};
+    pointer-events: none;
+    z-index: 1;
+    border-start-start-radius: inherit;
+    border-start-end-radius: inherit;
+  }
 
   /* Outlined: a fieldset draws the border; its legend opens the label notch. */
   fieldset {
@@ -131,7 +162,7 @@ const styles = css`
   }
   .with-leading .label { inset-inline-start: calc(${sys.space(4)} + 1.5rem + ${sys.space(2)}); }
   /* Multi-line fields anchor the label to the top, not the vertical center. */
-  .multiline .label { inset-block-start: 24px; }
+  .multiline .label { inset-block-start: 24px; z-index: 2; }
   .filled.floating .label { translate: 0 -106%; scale: 0.75; }
   .filled.multiline.floating .label { translate: 0 -85%; scale: 0.75; }
   .outlined.multiline.floating .label { inset-block-start: 8px; }
@@ -156,8 +187,18 @@ const styles = css`
     color: inherit;
     padding: 0;
   }
-  .filled.has-label input, .filled.has-label textarea { padding-block-start: 18px; }
-  textarea { resize: vertical; padding-block: 16px; }
+  .filled.has-label input { padding-block-start: 18px; }
+  textarea {
+    display: block;
+    flex: 1;
+    inline-size: 100%;
+    min-block-size: 0;
+    resize: none;
+    padding: ${sys.space(4)};
+  }
+  .filled.has-label textarea { padding-top: 28px; }
+  .with-leading.multiline .field { padding-inline-start: ${sys.space(4)}; }
+  .with-leading.multiline textarea { padding-inline-start: 0; }
   input::placeholder, textarea::placeholder { color: ${t.labelFg}; opacity: 0; transition: opacity ${sys.duration.short2} linear; }
   .floating input::placeholder, .floating textarea::placeholder { opacity: 1; }
 
@@ -216,14 +257,14 @@ define('ui-text-field', {
     const fieldBody = html`
       <slot name="leading" ref=${(el) => el.addEventListener('slotchange', () => hasLeading.set(el.assignedElements().length > 0))}></slot>
       ${() => (type() === 'textarea'
-        ? html`<textarea part="input" ref=${(el) => (input = el)}
+        ? html`<span class="grow"><textarea part="input" ref=${(el) => (input = el)}
               .value=${value} rows=${rows}
               placeholder=${() => placeholder() || null}
               maxlength=${() => (maxlength() > 0 ? maxlength() : null)}
               ?required=${required} ?disabled=${disabled}
               aria-invalid=${() => (error() ? 'true' : null)}
               @input=${onInput} @change=${commit}
-              @focus=${() => focused.set(true)} @blur=${() => focused.set(false)}></textarea>`
+              @focus=${() => focused.set(true)} @blur=${() => focused.set(false)}></textarea></span>`
         : html`<input part="input" ref=${(el) => (input = el)}
               type=${type} .value=${value}
               placeholder=${() => placeholder() || null}

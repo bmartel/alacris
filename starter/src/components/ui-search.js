@@ -63,10 +63,19 @@ const styles = css`
   .shell {
     overflow: hidden;
     border-radius: ${t.radius};
-    background: transparent;
+    background: ${t.bg};
+    box-shadow: none;
     transition: border-radius ${sys.duration.medium2} ${sys.easing.emphasizedDecelerate},
                 box-shadow ${sys.duration.short4} ${sys.easing.standard},
                 background-color ${sys.duration.short2} ${sys.easing.standard};
+  }
+  .shell:focus-within:not(.open) {
+    background: ${t.bgActive};
+  }
+  .shell.open {
+    background: ${t.panelBg};
+    border-radius: ${t.panelRadius};
+    box-shadow: ${sys.elevation[2]};
   }
   .bar {
     position: relative;
@@ -76,16 +85,14 @@ const styles = css`
     gap: ${sys.space(2)};
     min-block-size: calc(${t.height} + var(--ui-density, 0) * 4px);
     padding-inline: ${sys.space(4)} ${sys.space(2)};
-    border-radius: ${t.radius};
-    background: ${t.bg};
+    border-radius: inherit;
+    background: transparent;
     color: ${t.fg};
     font: ${t.font};
     letter-spacing: ${sys.tracking.bodyLg};
     cursor: text;
     --ui-icon-size: 1.5rem;
-    transition: background-color ${sys.duration.short2} ${sys.easing.standard},
-                border-radius ${sys.duration.medium2} ${sys.easing.emphasizedDecelerate},
-                padding-inline ${sys.duration.short4} ${sys.easing.standard};
+    transition: padding-inline ${sys.duration.short4} ${sys.easing.standard};
   }
   .bar::before {
     content: '';
@@ -97,20 +104,10 @@ const styles = css`
     transition: opacity ${sys.duration.short2} ${sys.easing.standard};
   }
   .bar:hover:not(:focus-within)::before { opacity: ${sys.state.hover}; }
-  .bar:focus-within { background: ${t.bgActive}; }
-  /* Docked search view: one extra-large surface, not a pill stretched over the list. */
-  .shell.open {
-    background: ${t.panelBg};
-    border-radius: ${t.panelRadius};
-    box-shadow: ${sys.elevation[2]};
-  }
   .shell.open .bar {
-    border-radius: 0;
-    background: transparent;
     padding-inline: ${sys.space(2)};
   }
   .shell.open .bar::before { opacity: 0; }
-  .shell.open .bar:focus-within { background: transparent; }
   .lead { color: ${t.placeholderFg}; display: grid; place-items: center; }
   .leads {
     display: grid;
@@ -122,10 +119,11 @@ const styles = css`
   .lead-slot {
     display: grid;
     place-items: center;
+    transform-origin: center;
     transition: opacity ${sys.duration.short4} ${sys.easing.standard},
-                scale ${sys.duration.short4} ${sys.easing.emphasized};
+                transform ${sys.duration.short4} ${sys.easing.emphasized};
   }
-  .lead-slot.off { opacity: 0; scale: 0.8; pointer-events: none; }
+  .lead-slot.off { opacity: 0; transform: scale(0.8); pointer-events: none; }
   input {
     flex: 1;
     min-inline-size: 0;
@@ -142,13 +140,13 @@ const styles = css`
   input::placeholder { color: ${t.placeholderFg}; }
   .panel {
     padding-block: ${sys.space(2)};
-    background: ${t.panelBg};
-    overflow: auto;
+    background: transparent;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
     max-block-size: min(70vh, 360px);
     border-block-start: 1px solid ${t.divider};
-    transform-origin: top center;
   }
-  .shell.open .panel { background: transparent; }
   .disabled { opacity: ${sys.state.disabledContent}; pointer-events: none; }
 `;
 
@@ -169,6 +167,7 @@ define('ui-search', {
     const isView = computed(() => presentation() === 'view');
     const slotted = () => [...host.children].some((c) => !c.slot);
     const showPanel = computed(() => open() && (isView() || slotted()));
+    const hasClear = computed(() => (value() ?? '') !== '' && !disabled());
     const rootCls = computed(() =>
       ['shell', isView() ? 'view' : 'bar-mode', open() && 'open', disabled() && 'disabled']
         .filter(Boolean).join(' '));
@@ -256,9 +255,14 @@ define('ui-search', {
                  ?disabled=${disabled}
                  @input=${onInput} @change=${commit} @keydown=${onKeydown}
                  @focus=${onFocus}>
-          ${() => ((value() ?? '') !== '' && !disabled()
-            ? html`<ui-icon-button icon="close" label="Clear" @click=${clear}></ui-icon-button>`
-            : null)}
+          ${presence(hasClear, () => html`<ui-icon-button icon="close" label="Clear" @click=${clear}></ui-icon-button>`, {
+            enter: fx.scaleIn,
+            exit: fx.scaleOut,
+            enterDuration: 'short2',
+            exitDuration: 'short2',
+            enterEasing: 'emphasizedDecelerate',
+            exitEasing: 'emphasizedAccelerate',
+          })}
           <slot name="trailing"></slot>
         </div>
         ${presence(showPanel, panelView, {

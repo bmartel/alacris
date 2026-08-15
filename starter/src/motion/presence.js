@@ -63,7 +63,10 @@ export function presence(when, view, opts = {}) {
             duration: opts.enterDuration ?? 'medium2',
             easing: opts.enterEasing ?? 'emphasizedDecelerate',
           });
-          if (opts.onEntered) anim.finished.then(() => opts.onEntered(), () => {});
+          anim.finished.then(() => {
+            try { anim.cancel(); } catch {}
+            opts.onEntered?.();
+          }, () => {});
         } else if (opts.onEntered) {
           opts.onEntered();
         }

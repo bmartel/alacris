@@ -115,6 +115,17 @@ test('ui-text-field error state and counter', async () => {
   unmountAll();
 });
 
+test('ui-text-field textarea pads text and resizes the field, not the input', async () => {
+  const el = mount('<ui-text-field label="Bio" type="textarea" maxlength="80"></ui-text-field>');
+  await tick();
+  const area = el.shadowRoot.querySelector('textarea');
+  const grow = el.shadowRoot.querySelector('.grow');
+  assert.ok(grow, 'textarea sits in a resizable wrapper');
+  assert.equal(getComputedStyle(area).resize, 'none');
+  assert.equal(getComputedStyle(grow).resize, 'vertical');
+  unmountAll();
+});
+
 test('ui-dialog mounts on open, emits close on scrim, removes after exit', async () => {
   const el = mount('<ui-dialog label="Confirm"><p>Body</p></ui-dialog>');
   await tick();
