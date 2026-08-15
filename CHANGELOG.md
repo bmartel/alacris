@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.8](https://github.com/bmartel/alacris/compare/v0.6.7...v0.6.8) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** smooth search view container morphing and rotational icon transition ([c4d070b](https://github.com/bmartel/alacris/commit/c4d070bf702a08d91665b8c3dbfdce7da7a27d5c))
+
 ## [0.6.7](https://github.com/bmartel/alacris/compare/v0.6.6...v0.6.7) (2026-08-15)
 
 ### Bug Fixes
