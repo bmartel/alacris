@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.16](https://github.com/bmartel/alacris/compare/v0.6.15...v0.6.16) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** correct switch handle positioning and equidistant spacing with icons ([8212321](https://github.com/bmartel/alacris/commit/8212321c023d4c44420b85f7be61b71360c923d9))
+
 ## [0.6.15](https://github.com/bmartel/alacris/compare/v0.6.14...v0.6.15) (2026-08-15)
 
 ### Bug Fixes
