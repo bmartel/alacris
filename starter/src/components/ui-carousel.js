@@ -143,46 +143,11 @@ define('ui-carousel', {
     const go = (n) => {
       const items = itemsOf();
       if (!items.length) return;
-      const cur = index.peek();
-      const max = viewport ? Math.max(0, viewport.scrollWidth - viewport.clientWidth) : 0;
-      const hasLayout = viewport && viewport.clientWidth > 0 && max > 0;
-
-      let targetIdx = clamp(n);
-      if (hasLayout) {
-        const curScroll = viewport.scrollLeft;
-        targetIdx = cur;
-        if (n > cur) {
-          for (let i = cur + 1; i < items.length; i++) {
-            const dest = targetScrollFor(i);
-            if (dest > curScroll + 1 || (i === items.length - 1 && curScroll < max - 1)) {
-              targetIdx = i;
-              break;
-            }
-          }
-          if (targetIdx === cur && curScroll < max - 1) {
-            targetIdx = Math.min(items.length - 1, cur + 1);
-          }
-        } else if (n < cur) {
-          for (let i = cur - 1; i >= 0; i--) {
-            const dest = targetScrollFor(i);
-            if (dest < curScroll - 1 || (i === 0 && curScroll > 1)) {
-              targetIdx = i;
-              break;
-            }
-          }
-          if (targetIdx === cur && curScroll > 1) {
-            targetIdx = Math.max(0, cur - 1);
-          }
-        }
-      }
-
+      const targetIdx = clamp(n);
+      if (targetIdx === index.peek()) return;
       isProgrammatic = true;
-      if (targetIdx !== index.peek()) {
-        index.set(targetIdx);
-        host.emit('change', { index: targetIdx });
-      } else {
-        scrollToCurrent();
-      }
+      index.set(targetIdx);
+      host.emit('change', { index: targetIdx });
     };
 
     const scrollToCurrent = () => {
@@ -292,7 +257,7 @@ define('ui-carousel', {
       rev();
       const i = index();
       if (i <= 0) return true;
-      if (viewport && viewport.clientWidth > 0) {
+      if (variant() !== 'hero' && viewport && viewport.clientWidth > 0) {
         return scrollPos() <= 1 && i <= 0;
       }
       return i <= 0;
@@ -303,9 +268,9 @@ define('ui-carousel', {
       if (n === 0) return true;
       const i = index();
       if (i >= n - 1) return true;
-      const max = maxScroll();
-      if (viewport && viewport.clientWidth > 0 && max > 1 && scrollPos() >= max - 2) {
-        return true;
+      if (variant() !== 'hero' && viewport && viewport.clientWidth > 0) {
+        const max = maxScroll();
+        if (max > 1 && scrollPos() >= max - 2) return true;
       }
       return false;
     });
