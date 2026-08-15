@@ -15,12 +15,20 @@ define('ui-icon', {
   styles: [base, css`
     :host {
       display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
       inline-size: var(--ui-icon-size, 1.5rem);
       block-size: var(--ui-icon-size, 1.5rem);
       flex: none;
       color: inherit;
     }
-    svg, ::slotted(svg) { inline-size: 100%; block-size: 100%; fill: currentColor; }
+    svg, ::slotted(svg) {
+      display: block;
+      inline-size: 100%;
+      block-size: 100%;
+      fill: currentColor;
+    }
   `],
   setup({ name, label, size }, host) {
     effect(() => {

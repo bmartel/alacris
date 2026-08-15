@@ -9,7 +9,9 @@
 // multi-browse shows several items; uncontained lets slides overflow the
 // frame; hero makes the selected slide dominate. Selection reflects down as
 // `selected` on each <ui-carousel-item>. Prev/next (and arrow keys) scroll
-// the selected slide into view; dragging the track updates `index`.
+// the selected slide into view; dragging the track updates `index`. The last
+// slide snaps to the end of the viewport so a hero (or any oversized) last
+// item can still become selected.
 //
 // @prop  {number} index=0 — the selected slide
 // @prop  {string} variant='multi-browse' — multi-browse | uncontained | hero
@@ -78,7 +80,9 @@ define('ui-carousel', {
     const bump = () => rev.update((n) => n + 1);
     const itemsOf = () => [...host.querySelectorAll('ui-carousel-item')];
     let viewport = null;
-    let ignoreScroll = 0;
+    let ignoreScroll = false;
+    let ignoreTimer = 0;
+    let ignoreGen = 0;
 
     const clamp = (n) => {
       const max = Math.max(0, itemsOf().length - 1);
@@ -91,21 +95,39 @@ define('ui-carousel', {
       host.emit('change', { index: next });
     };
 
+    const beginIgnore = () => {
+      const gen = ++ignoreGen;
+      ignoreScroll = true;
+      if (ignoreTimer) clearTimeout(ignoreTimer);
+      const done = () => {
+        if (gen !== ignoreGen) return;
+        ignoreScroll = false;
+        ignoreTimer = 0;
+      };
+      viewport.addEventListener('scrollend', done, { once: true });
+      ignoreTimer = setTimeout(done, 500);
+    };
+
     const scrollToCurrent = () => {
       const items = itemsOf();
-      const target = items[clamp(index.peek())];
+      const i = clamp(index.peek());
+      const target = items[i];
       if (!target || !viewport) return;
-      const dest = viewport.scrollLeft + (target.getBoundingClientRect().left - viewport.getBoundingClientRect().left);
-      if (Math.abs(dest - viewport.scrollLeft) < 1) return;
       if (typeof viewport.scrollTo !== 'function') return;
-      ignoreScroll++;
+      const vRect = viewport.getBoundingClientRect();
+      const tRect = target.getBoundingClientRect();
+      const last = i === items.length - 1 && items.length > 1;
+      const raw = viewport.scrollLeft + (last
+        ? tRect.right - vRect.right
+        : tRect.left - vRect.left);
+      const max = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+      const dest = Math.max(0, Math.min(max, raw));
+      if (Math.abs(dest - viewport.scrollLeft) < 1) return;
+      beginIgnore();
       viewport.scrollTo({
         left: dest,
         behavior: prefersReducedMotion() ? 'auto' : 'smooth',
       });
-      const done = () => { ignoreScroll = Math.max(0, ignoreScroll - 1); };
-      viewport.addEventListener('scrollend', done, { once: true });
-      setTimeout(done, 500);
     };
 
     const sync = () => {
@@ -120,13 +142,20 @@ define('ui-carousel', {
       if (ignoreScroll) return;
       const items = itemsOf();
       if (!items.length || !viewport) return;
-      const origin = viewport.getBoundingClientRect().left;
+      const max = viewport.scrollWidth - viewport.clientWidth;
       let best = 0;
-      let bestDist = Infinity;
-      items.forEach((el, n) => {
-        const d = Math.abs(el.getBoundingClientRect().left - origin);
-        if (d < bestDist) { bestDist = d; best = n; }
-      });
+      if (max > 1 && viewport.scrollLeft >= max - 2) {
+        best = items.length - 1;
+      } else if (viewport.scrollLeft <= 2) {
+        best = 0;
+      } else {
+        const origin = viewport.getBoundingClientRect().left;
+        let bestDist = Infinity;
+        items.forEach((el, n) => {
+          const d = Math.abs(el.getBoundingClientRect().left - origin);
+          if (d < bestDist) { bestDist = d; best = n; }
+        });
+      }
       if (best !== index.peek()) {
         index.set(best);
         host.emit('change', { index: best });
@@ -146,7 +175,10 @@ define('ui-carousel', {
       el.addEventListener('scrollend', onScrollEnd);
       requestAnimationFrame(scrollToCurrent);
     };
-    onCleanup(() => viewport?.removeEventListener('scrollend', onScrollEnd));
+    onCleanup(() => {
+      if (ignoreTimer) clearTimeout(ignoreTimer);
+      viewport?.removeEventListener('scrollend', onScrollEnd);
+    });
 
     const cls = computed(() => `viewport ${variant()}`);
     const atStart = computed(() => index() <= 0);

@@ -203,3 +203,23 @@ test('ui-carousel next/prev move index and emit change', async () => {
   assert.equal(el.index, 1);
   unmountAll();
 });
+
+test('ui-carousel hero next reaches the last item', async () => {
+  const el = mount(`
+    <ui-carousel label="Hero photos" variant="hero">
+      <ui-carousel-item>Hero</ui-carousel-item>
+      <ui-carousel-item>Next</ui-carousel-item>
+      <ui-carousel-item>After</ui-carousel-item>
+    </ui-carousel>`);
+  await tick();
+  const next = el.shadowRoot.querySelector('[part=next]').shadowRoot.querySelector('button');
+  fire(next, 'click');
+  fire(next, 'click');
+  assert.equal(el.index, 2, 'hero carousel can select the last slide');
+  const items = [...el.querySelectorAll('ui-carousel-item')];
+  assert.equal(items[2].selected, true);
+  assert.equal(items[2].hasAttribute('selected'), true);
+  key(el.shadowRoot.querySelector('.root'), 'End');
+  assert.equal(el.index, 2);
+  unmountAll();
+});

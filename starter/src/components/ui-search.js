@@ -9,9 +9,11 @@
 // Enter emits `submit`. The field chrome is the focus indicator — the inner
 // input has no extra outline.
 //
-// `presentation="view"` expands into a search view: a back control and a
-// suggestions list (the default slot) while open. The bar also shows that
-// list when it has slotted suggestions and the field is focused.
+// `presentation="view"` expands into a docked search view: a back control
+// and a suggestions list (the default slot) while open. The bar also shows
+// that list when it has slotted suggestions and the field is focused. The
+// open surface is one extra-large rounded container (not a stretched pill)
+// with a divider between the field and the list.
 //
 // @prop  {string}  label='Search'   — accessible name (and the floating placeholder)
 // @prop  {string}  value=''
@@ -50,7 +52,8 @@ const t = vars('ui-search', {
   font: sys.type.bodyLg,
   height: '56px',
   panelBg: sys.color.surfaceContainerHigh,
-  panelRadius: sys.radius.lg,
+  panelRadius: sys.radius.xl,
+  divider: sys.color.outlineVariant,
 });
 
 const styles = css`
@@ -71,11 +74,19 @@ const styles = css`
     transition: background-color ${sys.duration.short2} ${sys.easing.standard},
                 border-radius ${sys.duration.short2} ${sys.easing.standard};
   }
-  .bar:focus-within, .open .bar { background: ${t.bgActive}; }
-  .view.open .bar {
-    border-end-start-radius: 0;
-    border-end-end-radius: 0;
+  .bar:focus-within { background: ${t.bgActive}; }
+  /* Docked search view: one extra-large surface, not a pill stretched over the list. */
+  .open {
+    background: ${t.panelBg};
+    border-radius: ${t.panelRadius};
+    box-shadow: ${sys.elevation[2]};
   }
+  .open .bar {
+    border-radius: 0;
+    background: transparent;
+    padding-inline: ${sys.space(2)};
+  }
+  .open .bar:focus-within { background: transparent; }
   .lead { color: ${t.placeholderFg}; display: grid; place-items: center; }
   input {
     flex: 1;
@@ -92,18 +103,13 @@ const styles = css`
   }
   input::placeholder { color: ${t.placeholderFg}; }
   .panel {
-    position: absolute;
-    inset-inline: 0;
-    inset-block-start: 100%;
-    z-index: ${sys.z.modal};
     padding-block: ${sys.space(2)};
     background: ${t.panelBg};
-    border-end-start-radius: ${t.panelRadius};
-    border-end-end-radius: ${t.panelRadius};
-    box-shadow: ${sys.elevation[2]};
     overflow: auto;
     max-block-size: min(70vh, 360px);
+    border-block-start: 1px solid ${t.divider};
   }
+  .open .panel { background: transparent; }
   .disabled { opacity: ${sys.state.disabledContent}; pointer-events: none; }
 `;
 

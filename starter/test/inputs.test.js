@@ -165,13 +165,14 @@ test('ui-checkbox toggles, clears indeterminate, and participates in forms', asy
   assert.equal(el.indeterminate, false);
   assert.equal(control.getAttribute('aria-checked'), 'true');
   await tick();
-  assert.ok(el.shadowRoot.querySelector('ui-icon'), 'check mark rendered');
+  assert.ok(el.shadowRoot.querySelector('.box svg'), 'check mark rendered');
   const hidden = el.querySelector('input[type=hidden]');
   assert.ok(hidden, 'checked mirrors a hidden input');
   assert.equal(hidden.name, 'terms');
 
   el.indeterminate = true;
   assert.equal(control.getAttribute('aria-checked'), 'mixed', 'indeterminate prop is live');
+  assert.equal(el.shadowRoot.querySelector('.box svg path').getAttribute('d'), 'M4 9h10');
   unmountAll();
 });
 
@@ -379,6 +380,17 @@ test('ui-search view opens suggestions on focus', async () => {
     || el.shadowRoot.querySelector('ui-icon-button');
   fire(back.shadowRoot.querySelector('button'), 'click');
   assert.equal(el.open, false);
+  unmountAll();
+});
+
+test('ui-search view uses a single extra-large surface while open', async () => {
+  const el = mount('<ui-search presentation="view" label="Search files" open><span>Ada</span></ui-search>');
+  await tick();
+  const root = el.shadowRoot.querySelector('.open');
+  assert.ok(root, 'open view wraps bar and panel in one surface');
+  assert.ok(root.className.includes('open'));
+  assert.ok(el.shadowRoot.querySelector('.panel'), 'suggestions sit inside the surface');
+  assert.equal(el.shadowRoot.querySelector('.bar').parentElement, root);
   unmountAll();
 });
 

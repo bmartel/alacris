@@ -320,7 +320,10 @@ Source: [`src/components/ui-card.js`](../src/components/ui-card.js)
 one slide inside &lt;ui-carousel&gt;.
 
 `selected` is written by the parent carousel; set the carousel's `index`
-instead of this prop.
+instead of this prop. Width comes from `--ui-carousel-item-basis` on the
+parent (so the carousel variants can size slides without fighting `:host`).
+The last item snaps to the end of the track so it can be scrolled fully into
+view.
 
 | | |
 | --- | --- |
@@ -343,7 +346,10 @@ next controls.
 
 multi-browse shows several items; uncontained lets slides overflow the
 frame; hero makes the selected slide dominate. Selection reflects down as
-`selected` on each &lt;ui-carousel-item&gt;.
+`selected` on each &lt;ui-carousel-item&gt;. Prev/next (and arrow keys) scroll
+the selected slide into view; dragging the track updates `index`. The last
+slide snaps to the end of the viewport so a hero (or any oversized) last
+item can still become selected.
 
 | | |
 | --- | --- |
@@ -363,7 +369,8 @@ the Material checkbox with indeterminate support.
 
 The interactive element is a native &lt;button role="checkbox"&gt; sized to a
 40px touch target; the visible 18px box sits centered inside it. Clicking
-clears `indeterminate` and toggles `checked`.
+clears `indeterminate` and toggles `checked`. The check/dash is the MD3
+2px stroke mark in the 18dp icon, not the generic 24dp `check` glyph.
 
 | | |
 | --- | --- |
@@ -949,9 +956,11 @@ while there is text, and an optional trailing slot (avatar, voice, …).
 Enter emits `submit`. The field chrome is the focus indicator — the inner
 input has no extra outline.
 
-`presentation="view"` expands into a search view: a back control and a
-suggestions list (the default slot) while open. The bar also shows that
-list when it has slotted suggestions and the field is focused.
+`presentation="view"` expands into a docked search view: a back control
+and a suggestions list (the default slot) while open. The bar also shows
+that list when it has slotted suggestions and the field is focused. The
+open surface is one extra-large rounded container (not a stretched pill)
+with a divider between the field and the list.
 
 | | |
 | --- | --- |

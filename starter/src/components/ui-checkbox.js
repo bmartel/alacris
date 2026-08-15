@@ -2,7 +2,8 @@
 //
 // The interactive element is a native <button role="checkbox"> sized to a
 // 40px touch target; the visible 18px box sits centered inside it. Clicking
-// clears `indeterminate` and toggles `checked`.
+// clears `indeterminate` and toggles `checked`. The check/dash is the MD3
+// 2px stroke mark in the 18dp icon, not the generic 24dp `check` glyph.
 //
 // @prop  {boolean} checked=false
 // @prop  {boolean} indeterminate=false — aria-checked="mixed", shows a dash
@@ -15,14 +16,13 @@
 // @part  box     — the visible 18px box
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars, computed } from 'alacris';
+import { define, html, svg, css, vars, computed } from 'alacris';
 import { sys } from '../tokens/sys.js';
 import { base, focusRingOn } from './base.js';
 import { ripple } from '../motion/ripple.js';
 import { presence } from '../motion/presence.js';
 import { fx } from '../motion/animate.js';
 import { formBind } from '../util/form.js';
-import './ui-icon.js';
 
 const t = vars('ui-checkbox', {
   target: '40px',
@@ -77,31 +77,37 @@ const styles = css`
   .control:focus-visible .layer { opacity: ${sys.state.focus}; }
 
   .box {
+    position: relative;
     inline-size: ${t.boxSize};
     block-size: ${t.boxSize};
-    border: 2px solid ${t.outlineColor};
     border-radius: ${t.radius};
     display: grid;
     place-items: center;
+    overflow: hidden;
     color: ${t.markFg};
-    --ui-icon-size: 16px;
+    box-shadow: inset 0 0 0 2px ${t.outlineColor};
     transition: background-color ${sys.duration.short2} ${sys.easing.standard},
-                border-color ${sys.duration.short2} ${sys.easing.standard};
+                box-shadow ${sys.duration.short2} ${sys.easing.standard};
+  }
+  .box svg {
+    display: block;
+    inline-size: ${t.boxSize};
+    block-size: ${t.boxSize};
   }
   .control[aria-checked="true"] .box,
   .control[aria-checked="mixed"] .box {
     background: ${t.bg};
-    border-color: ${t.bg};
+    box-shadow: none;
   }
 
   .control:disabled { cursor: default; pointer-events: none; }
   .control:disabled .box {
-    border-color: color-mix(in srgb, ${sys.color.onSurface} calc(${sys.state.disabledContent} * 100%), transparent);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, ${sys.color.onSurface} calc(${sys.state.disabledContent} * 100%), transparent);
   }
   .control:disabled[aria-checked="true"] .box,
   .control:disabled[aria-checked="mixed"] .box {
     background: color-mix(in srgb, ${sys.color.onSurface} calc(${sys.state.disabledContent} * 100%), transparent);
-    border-color: transparent;
+    box-shadow: none;
     color: ${sys.color.surface};
   }
 `;
@@ -131,8 +137,12 @@ define('ui-checkbox', {
                 ref=${(el) => ripple(el, { disabled, centered: true })}>
           <span class="layer" aria-hidden="true"></span>
           <span part="box" class="box" aria-hidden="true">
-            ${presence(marked, () => html`
-                <ui-icon name=${() => (indeterminate() ? 'remove' : 'check')}></ui-icon>`, {
+            ${presence(marked, () => svg`
+                <svg viewBox="0 0 18 18" aria-hidden="true">
+                  <path fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round"
+                        d=${() => (indeterminate() ? 'M4 9h10' : 'M4 9.8l3.2 3.2 7.2-7.2')}></path>
+                </svg>`, {
               enter: fx.scaleIn,
               exit: fx.scaleOut,
               enterDuration: 'short4',

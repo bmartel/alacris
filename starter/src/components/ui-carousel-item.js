@@ -3,6 +3,8 @@
 // `selected` is written by the parent carousel; set the carousel's `index`
 // instead of this prop. Width comes from `--ui-carousel-item-basis` on the
 // parent (so the carousel variants can size slides without fighting `:host`).
+// The last item snaps to the end of the track so it can be scrolled fully into
+// view.
 //
 // @prop  {boolean} selected=false — managed by the parent <ui-carousel>
 // @slot  (default) — slide content
@@ -26,6 +28,7 @@ const styles = css`
     scroll-snap-align: start;
     min-inline-size: 0;
   }
+  :host(:last-child) { scroll-snap-align: end; }
   .surface {
     block-size: 100%;
     overflow: hidden;
