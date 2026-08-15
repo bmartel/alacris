@@ -12,6 +12,7 @@ import { prefersReducedMotion } from '../src/motion/animate.js';
 import { base } from '../src/components/base.js';
 import { slug } from './helpers.js';
 import { toggleDark } from './theme-controls.js';
+import { bindSearchDock } from './search-dock.js';
 import './theme-controls.js';
 
 import '../src/components/ui-text.js';
@@ -107,7 +108,33 @@ const styles = css`
     gap: ${sys.space(8)};
   }
   .hero-copy { flex: 1.15; min-inline-size: min(100%, 22rem); display: flex; flex-direction: column; gap: ${sys.space(5)}; }
-  .hero-search { inline-size: min(100%, 36rem); }
+  .search-anchor {
+    inline-size: min(100%, 36rem);
+    min-block-size: calc(var(--ui-search-height, 56px) + var(--ui-density, 0) * 4px);
+  }
+  .hero-search { inline-size: 100%; }
+  .hero-search.is-pinned { margin: 0; max-inline-size: none; }
+  .bar-mid {
+    display: grid;
+    grid-template: 1fr / 1fr;
+    align-items: center;
+    min-inline-size: 0;
+    inline-size: 100%;
+    block-size: 48px;
+  }
+  .bar-mid > * { grid-area: 1 / 1; min-inline-size: 0; }
+  .app-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: opacity ${sys.duration.short4} ${sys.easing.standard};
+  }
+  .app-title.away { opacity: 0; pointer-events: none; }
+  .search-dock {
+    min-block-size: 48px;
+    visibility: hidden;
+    pointer-events: none;
+  }
   .pills, .cta, .metrics { display: flex; flex-wrap: wrap; gap: ${sys.space(3)}; }
   .pills { gap: ${sys.space(2)}; }
   .pill {
@@ -132,12 +159,13 @@ const styles = css`
     min-inline-size: min(100%, 22rem);
     display: flex;
     flex-direction: column;
-    gap: ${sys.space(4)};
-    padding: ${sys.space(5)};
+    gap: ${sys.space(6)};
+    padding: ${sys.space(6)};
     background: ${sys.color.surfaceContainerLow};
     border-radius: ${sys.radius.lg};
-    box-shadow: ${sys.elevation[2]};
+    box-shadow: ${sys.elevation[1]};
   }
+  .playground-head { display: flex; flex-direction: column; gap: ${sys.space(1)}; }
   .section { scroll-margin-block-start: 88px; padding-block: ${sys.space(10)} 0; display: flex; flex-direction: column; gap: ${sys.space(5)}; }
   .footer { padding-block: ${sys.space(12)} ${sys.space(16)}; display: flex; flex-direction: column; gap: ${sys.space(3)}; }
   .icon-grid {
@@ -178,6 +206,17 @@ define('demo-app', {
     const query = signal('');
     const active = signal(0);
     const current = signal(FAMILIES[0].id);
+    const searchDocked = signal(false);
+    const dockReady = signal(0);
+    let searchEl;
+    let searchAnchor;
+    let searchDock;
+    const markDock = (which) => (el) => {
+      if (which === 'search') searchEl = el;
+      else if (which === 'anchor') searchAnchor = el;
+      else searchDock = el;
+      dockReady.update((n) => n + 1);
+    };
 
     effect(() => {
       if (typeof matchMedia !== 'function') return;
@@ -225,7 +264,7 @@ define('demo-app', {
       drawerOpen.set(false);
       query.set('');
       active.set(0);
-      const search = host.shadowRoot?.querySelector('ui-search');
+      const search = searchEl || host.shadowRoot?.querySelector('.hero-search');
       if (search) search.open = false;
       host.shadowRoot?.getElementById(id)?.scrollIntoView?.({
         behavior: prefersReducedMotion() ? 'auto' : 'smooth',
@@ -308,6 +347,17 @@ define('demo-app', {
       }
     };
 
+    effect(() => {
+      dockReady();
+      if (!searchEl || !searchAnchor || !searchDock) return;
+      return bindSearchDock({
+        search: searchEl,
+        anchor: searchAnchor,
+        dock: searchDock,
+        docked: searchDocked,
+      });
+    });
+
     const rail = () => html`
       <ui-nav-rail class="rail" value=${current} label="Sections"
                    style="position:sticky;inset-block-start:0;align-self:flex-start;block-size:100vh;overflow:auto;flex:none"
@@ -322,7 +372,10 @@ define('demo-app', {
           ? html`<ui-icon-button slot="navigation" icon="menu" label="Open navigation"
                                  @click.capture=${() => drawerOpen.set(true)}></ui-icon-button>`
           : null}
-        Alacris UI
+        <div class="bar-mid">
+          <span class=${() => `app-title${searchDocked() ? ' away' : ''}`}>Alacris UI</span>
+          <div class="search-dock" ref=${markDock('dock')}></div>
+        </div>
         <ui-icon-button slot="actions" icon="tune" label="Open theme"
                         @click.capture=${() => themeOpen.set(true)}></ui-icon-button>
         <ui-icon-button slot="actions"
@@ -344,30 +397,33 @@ define('demo-app', {
             Pick a seed, shape, and density. Color, type, and motion follow
             through one stylesheet — including every control below.
           </ui-text>
-          <ui-search class="hero-search"
-                     presentation="view"
-                     label="Jump to a section"
-                     placeholder="Buttons, tables, drawers…"
-                     value=${query}
-                     @input=${(e) => {
-                       const v = e.detail?.value;
-                       if (typeof v === 'string') query.set(v);
-                     }}
-                     @keydown.capture=${onSearchKey}>
-            ${() => {
-              const items = matches();
-              if (!items.length) {
-                return keyed('empty', html`<ui-list-item headline="No matches"
-                  supporting="Try buttons, tables, tokens"></ui-list-item>`);
-              }
-              return items.map((item, i) => keyed(item.id, html`
-                <ui-list-item interactive headline=${item.title} supporting=${item.blurb}
-                              selected=${() => active() === i}
-                              @click.capture=${() => jump(item.id)}>
-                  <ui-icon slot="leading" name=${item.icon}></ui-icon>
-                </ui-list-item>`));
-            }}
-          </ui-search>
+          <div class="search-anchor" ref=${markDock('anchor')}>
+            <ui-search class="hero-search"
+                       presentation="view"
+                       label="Jump to a section"
+                       placeholder="Buttons, tables, drawers…"
+                       value=${query}
+                       ref=${markDock('search')}
+                       @input=${(e) => {
+                         const v = e.detail?.value;
+                         if (typeof v === 'string') query.set(v);
+                       }}
+                       @keydown.capture=${onSearchKey}>
+              ${() => {
+                const items = matches();
+                if (!items.length) {
+                  return keyed('empty', html`<ui-list-item headline="No matches"
+                    supporting="Try buttons, tables, tokens"></ui-list-item>`);
+                }
+                return items.map((item, i) => keyed(item.id, html`
+                  <ui-list-item interactive headline=${item.title} supporting=${item.blurb}
+                                selected=${() => active() === i}
+                                @click.capture=${() => jump(item.id)}>
+                    <ui-icon slot="leading" name=${item.icon}></ui-icon>
+                  </ui-list-item>`));
+              }}
+            </ui-search>
+          </div>
           <div class="cta">
             <ui-button href="https://bmartel.github.io/alacris/" target="_blank">
               Docs<ui-icon slot="trailing" name="arrow-forward"></ui-icon>
@@ -388,11 +444,13 @@ define('demo-app', {
           </div>
         </div>
         <div class="playground">
-          <ui-text variant="title-md">Live playground</ui-text>
-          <demo-theme-controls></demo-theme-controls>
-          <ui-button variant="text" @click=${() => jump('theme-tokens')}>
-            Browse tokens<ui-icon slot="trailing" name="arrow-forward"></ui-icon>
-          </ui-button>
+          <div class="playground-head">
+            <ui-text variant="title-lg">Theme</ui-text>
+            <ui-text variant="body-sm" color="onSurfaceVariant">
+              Seed, shape, density, and motion. The page restyles as you go.
+            </ui-text>
+          </div>
+          <demo-theme-controls @browse=${() => jump('theme-tokens')}></demo-theme-controls>
         </div>
       </div>`;
 
@@ -436,7 +494,8 @@ define('demo-app', {
       <ui-side-sheet open=${themeOpen} label="Theme"
                      @close=${() => themeOpen.set(false)}>
         <span slot="headline">Theme</span>
-        <demo-theme-controls></demo-theme-controls>
+        <demo-theme-controls
+          @browse=${() => { themeOpen.set(false); jump('theme-tokens'); }}></demo-theme-controls>
         <ui-button slot="actions" variant="text"
                    @click.capture=${() => themeOpen.set(false)}>Done</ui-button>
       </ui-side-sheet>`;

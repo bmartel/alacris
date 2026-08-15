@@ -68,7 +68,7 @@ and typography primitives with no component tokens (`ui-stack`, `ui-surface`,
 
 ```js
 const theme = createTheme({
-  seed: '#6750a4',            // one color → whole scheme, or:
+  seed: '#e8ad18',            // one color → whole scheme, or:
   colors: {                   // explicit key colors (any subset)
     primary: '#0b57d0', secondary: '#585e71', tertiary: '#00695c',
     neutral: '#5d5e62', error: '#b3261e', success: '#1e8e3e',

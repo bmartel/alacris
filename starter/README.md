@@ -106,7 +106,7 @@ Full guide: [docs/theming.md](docs/theming.md).
 ```js
 import { createTheme, applyTheme, setScheme, toggleScheme } from './src/theme/index.js';
 
-applyTheme({ seed: '#6750a4' });                    // Material baseline (Google Sans Flex)
+applyTheme({ seed: '#e8ad18' });                    // Alacris brand (Google Sans Flex)
 applyTheme({ seed: '#b3261e', density: -1 });       // rebrand + compact, live
 setScheme('dark');                                  // pin dark ('light' | 'auto')
 toggleScheme();                                     // flip

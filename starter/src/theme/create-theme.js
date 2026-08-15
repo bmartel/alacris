@@ -18,7 +18,7 @@ const kebab = (s) => s.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase());
 
 /**
  * createTheme({
- *   seed: '#6750a4',               // one color → a whole scheme, or:
+ *   seed: '#e8ad18',               // one color → a whole scheme, or:
  *   colors: { primary, secondary, tertiary, neutral, neutralVariant,
  *             error, success, warning, info },   // explicit palette seeds
  *   typography: 'google-sans-flex' | 'google-sans' | 'roboto' | 'system'

@@ -127,7 +127,7 @@ export function tonalPalette(hue, chroma) {
 
 // Fixed seeds for the status hues (Material error, plus the MUI-style
 // success/warning/info set). Each can be overridden via createTheme colors.
-export const DEFAULT_SEED = '#6750a4';
+export const DEFAULT_SEED = '#e8ad18';
 const STATUS_SEEDS = { error: '#b3261e', success: '#1e8e3e', warning: '#e37400', info: '#0b57d0' };
 
 // Chroma floors/targets in OKLCH units (roughly HCT chroma / 350).
@@ -136,7 +136,7 @@ const MIN_VIVID = 0.09;
 /**
  * Build the key tonal palettes from a seed (or explicit per-palette seeds).
  *
- *   makePalettes({ seed: '#6750a4' })
+ *   makePalettes({ seed: '#e8ad18' })
  *   makePalettes({ colors: { primary: '#0b57d0', tertiary: '#00695c' } })
  *
  * Returns { primary, secondary, tertiary, neutral, neutralVariant,
