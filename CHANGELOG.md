@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.9](https://github.com/bmartel/alacris/compare/v0.6.8...v0.6.9) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** calibrate input boundaries, floating labels, and chip dismiss spacing ([2cf0423](https://github.com/bmartel/alacris/commit/2cf042376a7a2351d8c9a0b4b571ec4f3304b60c))
+
 ## [0.6.8](https://github.com/bmartel/alacris/compare/v0.6.7...v0.6.8) (2026-08-15)
 
 ### Bug Fixes
