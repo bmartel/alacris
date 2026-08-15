@@ -38,6 +38,7 @@
   "scripts": {
     "build": "node scripts/build.js",
     "test": "node --import ./test/setup.js --test test/*.test.js",
+    "test:starter": "npm test --prefix starter",
     "typecheck": "tsc -p tsconfig.json",
     "size": "node scripts/size.js",
     "sync-docs": "node scripts/sync-docs.mjs",
