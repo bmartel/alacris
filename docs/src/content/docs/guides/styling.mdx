@@ -10,7 +10,7 @@ import { Aside } from '@astrojs/starlight/components';
 Styles are plain CSS in a `css` template.
 
 ```js
-import { define, html, css } from 'alacris';
+import { define, html, css } from '@alacris/core';
 
 define('x-card', {
   styles: css`
@@ -132,5 +132,5 @@ Alacris never emits it, and neither should your components.
 
 - [Theming for consumers](../theming/) — the harder half: letting other people
   restyle what you built
-- [UI starter](../../start/ui-starter/) — a token system and `applyTheme` built
+- [Alacris UI](../../ui/getting-started/) — a token system and `applyTheme` built
   on `vars()`

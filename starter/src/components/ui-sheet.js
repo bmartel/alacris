@@ -25,7 +25,7 @@
 // @part  scrim, surface, handle, headline, body, actions
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars, effect, onCleanup, signal } from 'alacris';
+import { define, html, css, vars, effect, onCleanup, signal } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { presence } from '../motion/presence.js';

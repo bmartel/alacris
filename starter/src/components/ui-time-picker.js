@@ -26,7 +26,7 @@
 // @part  field, input, label, panel, dial
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars, computed, signal, effect, onCleanup, each } from 'alacris';
+import { define, html, css, vars, computed, signal, effect, onCleanup, each } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { formBind } from '../util/form.js';

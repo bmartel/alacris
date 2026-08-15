@@ -6,7 +6,7 @@
 // @slot  (default) — a custom <svg> when no name is given
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, svg, css, vars, effect } from 'alacris';
+import { define, html, svg, css, vars, effect } from '@alacris/core';
 import { base } from './base.js';
 import { iconPath, iconsVersion } from '../util/icons.js';
 

@@ -1,6 +1,6 @@
 # AGENTS.md — building applications with Alacris
 
-You are working in a project that uses **Alacris** (npm: `alacris`) — web components
+You are working in a project that uses **Alacris** (npm: `@alacris/core`) — web components
 with signals and fine-grained DOM updates. ~6.56 kB gzip, ESM-only, zero dependencies,
 no build step required. Docs: https://bmartel.github.io/alacris/
 
@@ -32,9 +32,9 @@ npm path — code stays portable between the two setups:
 <script type="importmap">
 {
   "imports": {
-    "alacris": "https://cdn.jsdelivr.net/npm/alacris@0.9/dist/alacris.js",
-    "alacris/store": "https://cdn.jsdelivr.net/npm/alacris@0.9/dist/store.js",
-    "alacris/context": "https://cdn.jsdelivr.net/npm/alacris@0.9/dist/context.js"
+    "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.9/dist/alacris.js",
+    "@alacris/core/store": "https://cdn.jsdelivr.net/npm/@alacris/core@0.9/dist/store.js",
+    "@alacris/core/context": "https://cdn.jsdelivr.net/npm/@alacris/core@0.9/dist/context.js"
   }
 }
 </script>
@@ -47,18 +47,40 @@ two copies of the module means two reactive graphs that cannot see each other.
 ### With a build system
 
 ```bash
-npm install alacris
+npm install @alacris/core
 ```
 
 ```js
-import { define, html, css, signal, computed, effect, batch, each } from 'alacris';
-import { store, selector, unwrap, update } from 'alacris/store';
-import { createContext, provide, consume } from 'alacris/context';
+import { define, html, css, signal, computed, effect, batch, each } from '@alacris/core';
+import { store, selector, unwrap, update } from '@alacris/core/store';
+import { createContext, provide, consume } from '@alacris/core/context';
 ```
 
 ESM only — no CommonJS. `sideEffects: false` is set, so tree-shaking works.
 The add-on entry points (`/store`, `/context`, `/signal`) share one reactive
 graph with the core; import them freely.
+
+### Alacris UI (design system)
+
+Buttons, fields, navigation, a theme engine. Separate package, same tags
+everywhere — HTML, React, Vue, Svelte, or no framework:
+
+```bash
+npm install @alacris/ui
+```
+
+```js
+import { applyTheme } from '@alacris/ui';
+applyTheme({ seed: '#0b57d0' });
+```
+
+```html
+<ui-button>Hello</ui-button>
+```
+
+`@alacris/ui` depends on `@alacris/core` and must share that one copy. Do not also
+load a CDN build of Alacris on the same page. Docs:
+https://bmartel.github.io/alacris/ui/getting-started/
 
 ## Project organization
 
@@ -95,7 +117,7 @@ src/
 ## Components
 
 ```js
-import { define, html, css, computed } from 'alacris';
+import { define, html, css, computed } from '@alacris/core';
 
 define('user-card', {
   // Prop names + defaults. The default's TYPE drives attribute coercion:
@@ -150,7 +172,7 @@ Shorthand without props/styles: `define('x-hello', () => html`<p>hello</p>`)`.
   `attachInternals`.
 
 ```js
-import { define, html, signal } from 'alacris';
+import { define, html, signal } from '@alacris/core';
 
 define('user-list', {
   setup() {
@@ -171,7 +193,7 @@ into a page, a route handler, or another framework's ref — no element definiti
 involved:
 
 ```js
-import { render, root, html } from 'alacris';
+import { render, root, html } from '@alacris/core';
 
 const stop = render(html`<p>${count}</p>`, document.querySelector('#app'));
 stop(); // removes the nodes and unsubscribes everything
@@ -207,7 +229,7 @@ down with the element.
 ## Lists — always `each` past a few dozen rows
 
 ```js
-import { each } from 'alacris';
+import { each } from '@alacris/core';
 
 html`<ul>
   ${each(
@@ -231,7 +253,7 @@ html`<ul>
 ## State
 
 - **Local component state**: `signal` / `computed` inside `setup`.
-- **Shared or deep state**: `store` from `alacris/store`. Mutate it like a plain
+- **Shared or deep state**: `store` from `@alacris/core/store`. Mutate it like a plain
   object — `state.rows[0].label = 'x'` updates only the binding reading that
   path. Array mutators (`push`, `splice`, `sort`, ...) are atomic.
 - Wrap multi-write mutations in `update(state, s => { ... })` (or `batch`) so

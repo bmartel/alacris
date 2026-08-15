@@ -18,7 +18,7 @@
 // @part  control — the row element (<div> or <a>)
 // @vars  see `t` below
 
-import { define, html, css, vars, computed, effect, signal } from 'alacris';
+import { define, html, css, vars, computed, effect, signal } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base, focusRingOn } from './base.js';
 import { ripple } from '../motion/ripple.js';

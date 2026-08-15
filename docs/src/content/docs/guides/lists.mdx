@@ -16,7 +16,7 @@ difference between them is where the work lands.
 Every row gets its own reactive scope, built **once**:
 
 ```js
-import { html, each } from 'alacris';
+import { html, each } from '@alacris/core';
 
 html`<ul>
   ${each(
@@ -100,7 +100,7 @@ For a short, stable list, a plain `.map` is fine, and `keyed` gives items a
 stable identity:
 
 ```js
-import { keyed } from 'alacris';
+import { keyed } from '@alacris/core';
 
 html`<ul>${() => items().map((i) => keyed(i.id, html`<li>${i.text}</li>`))}</ul>`
 ```

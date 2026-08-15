@@ -16,7 +16,7 @@
 // value; indeterminate is the classic rotate + dash-grow loop as CSS
 // keyframes, its cycle derived from the motion tokens.
 
-import { define, html, svg, css, vars, computed, effect } from 'alacris';
+import { define, html, svg, css, vars, computed, effect } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 

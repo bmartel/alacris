@@ -15,7 +15,7 @@
 // @part  circle  — the visible 20px ring
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars } from 'alacris';
+import { define, html, css, vars } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base, focusRingOn } from './base.js';
 import { ripple } from '../motion/ripple.js';

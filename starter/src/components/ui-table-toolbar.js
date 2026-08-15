@@ -33,7 +33,7 @@
 // @part  bar, titles, tools
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars, computed, signal, effect, each } from 'alacris';
+import { define, html, css, vars, computed, signal, effect, each } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base, focusRingOn } from './base.js';
 import './ui-search.js';

@@ -22,7 +22,7 @@
 // @part  tablist, indicator
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars, signal, effect, onCleanup } from 'alacris';
+import { define, html, css, vars, signal, effect, onCleanup } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { rovingTabindex } from '../util/keys.js';

@@ -11,7 +11,7 @@ import Demo from '../../../components/Demo.astro';
 A signal is a function that holds a value and remembers who read it.
 
 ```js
-import { signal } from 'alacris';
+import { signal } from '@alacris/core';
 
 const count = signal(0);
 
@@ -31,7 +31,7 @@ A derived value. It is **lazy** — it does not recompute until something reads
 it — and **memoised**, so repeated reads are free.
 
 ```js
-import { signal, computed } from 'alacris';
+import { signal, computed } from '@alacris/core';
 
 const width = signal(4);
 const height = signal(3);
@@ -51,7 +51,7 @@ Runs immediately, then again whenever a value it read changes. It returns a
 disposer, and the function can return its own cleanup.
 
 ```js
-import { signal, effect } from 'alacris';
+import { signal, effect } from '@alacris/core';
 
 const query = signal('');
 
@@ -125,7 +125,7 @@ While `enabled()` is false, writing `value` does nothing at all.
 Writes apply synchronously. Group a burst so dependents run once at the end:
 
 ```js
-import { batch } from 'alacris';
+import { batch } from '@alacris/core';
 
 batch(() => {
   first('Ada');
@@ -139,7 +139,7 @@ batch(() => {
 Read without creating a dependency:
 
 ```js
-import { untrack } from 'alacris';
+import { untrack } from '@alacris/core';
 
 effect(() => {
   send(payload(), untrack(() => sessionId())); // re-runs for payload only
@@ -152,7 +152,7 @@ effect(() => {
 inside — which is exactly what a component does when it is removed.
 
 ```js
-import { root, onCleanup } from 'alacris';
+import { root, onCleanup } from '@alacris/core';
 
 const dispose = root(() => {
   effect(() => { /* … */ });
@@ -180,16 +180,16 @@ comparators.
 
 ## Using signals without the DOM
 
-`alacris/signal` is the reactive core on its own, 1.03 kB, with no DOM
+`@alacris/core/signal` is the reactive core on its own, 1.03 kB, with no DOM
 dependency — useful in a worker, on a server, or in tests.
 
 ```js
-import { signal, computed, effect } from 'alacris/signal';
+import { signal, computed, effect } from '@alacris/core/signal';
 ```
 
 <Aside type="caution">
 It is a **separate build with its own graph**. If you are rendering, import your
-signals from `alacris`, not from `alacris/signal`.
+signals from `@alacris/core`, not from `@alacris/core/signal`.
 </Aside>
 
 ## Next

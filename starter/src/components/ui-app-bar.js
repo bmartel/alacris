@@ -20,7 +20,7 @@
 // @part  bar — the header surface
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars, signal, effect, computed } from 'alacris';
+import { define, html, css, vars, signal, effect, computed } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 

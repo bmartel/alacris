@@ -205,7 +205,7 @@ every Alacris UI component opens all of them:
    tracking nudge across the board:
 
    ```js
-   import { adoptGlobal, css } from 'alacris';
+   import { adoptGlobal, css } from '@alacris/core';
    adoptGlobal(css`:host { letter-spacing: 0.01em }`);
    ```
 

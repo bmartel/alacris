@@ -1,6 +1,6 @@
 // Demo — Navigation: tabs, menu, drawer, app bar, navigation rail.
 
-import { html, signal } from 'alacris';
+import { html, signal } from '@alacris/core';
 import { block, stackBlock } from './helpers.js';
 import '../src/components/ui-tabs.js';
 import '../src/components/ui-menu.js';

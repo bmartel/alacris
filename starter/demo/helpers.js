@@ -9,7 +9,7 @@
 // in ui-stack / ui-surface swallows @click, @input, and @change. Captions
 // sit beside the examples, never around them.
 
-import { html } from 'alacris';
+import { html } from '@alacris/core';
 import { sys } from '../src/tokens/sys.js';
 import '../src/components/ui-text.js';
 

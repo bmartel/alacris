@@ -10,7 +10,7 @@
 //     light (`<html data-ui-scheme="light">`)
 //   - dark tokens whenever the app pinned dark (`data-ui-scheme="dark"`)
 
-import { signal, computed } from 'alacris';
+import { signal, computed } from '@alacris/core';
 import { createTheme } from './create-theme.js';
 
 // `color-scheme` is a real CSS property riding along in the token map (it

@@ -21,7 +21,7 @@
 // @part  actions, trigger
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars, effect, onCleanup } from 'alacris';
+import { define, html, css, vars, effect, onCleanup } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { presence } from '../motion/presence.js';

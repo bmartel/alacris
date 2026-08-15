@@ -27,7 +27,7 @@
 // @part  container, icon, title, message, action, close
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars, computed } from 'alacris';
+import { define, html, css, vars, computed } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base, focusRingOn } from './base.js';
 import { animate, settled } from '../motion/animate.js';

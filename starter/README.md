@@ -1,43 +1,25 @@
-# Alacris UI — a design system starter
+# Alacris UI
 
-A complete, production-shaped design system and component library built with
-**[Alacris](https://github.com/bmartel/alacris)** and nothing else. No other
-runtime dependencies, no build step, no CSS framework — ~70 components, a
-three-tier token system, a theme engine that re-skins the whole page with one
-stylesheet write, and a documented motion layer.
+A complete, themeable design system built with **[Alacris](https://github.com/bmartel/alacris)** and nothing else. No other runtime dependencies, no build step, no CSS framework — 68 components, a three-tier token system, a theme engine that re-skins the whole page with one stylesheet write, and a documented motion layer.
 
-**Material Design is the default. Your design system is the point.** Every
-visual decision flows through tokens you can override at three levels — from
-"change the brand color" (one line) to "this is no longer Material at all"
-(edit one directory).
+**Material Design is the default. Your design system is the point.** Every visual decision flows through tokens you can override at three levels — from "change the brand color" (one line) to "this is no longer Material at all".
 
-## Quick start
+The tags are real custom elements, so they work in plain HTML and inside React, Vue, Svelte, Angular, Rails, Django, and [Alacris-Go](https://github.com/bmartel/alacris-go) — anywhere that renders a tag.
 
-This starter lives inside the Alacris repo as a template. To try it here:
+**Docs:** [Getting started](https://bmartel.github.io/alacris/ui/getting-started/)
+
+## Install
 
 ```bash
-# from the repo root
-npm run demo        # builds dist/ and serves — open http://localhost:5173/starter/
+npm install @alacris/ui
 ```
 
-To use it as the starting point for an app, copy `starter/` out, then either
-`npm install alacris` or point the import map in `index.html` at a pinned CDN
-build — the source is identical in both setups:
-
-```html
-<script type="importmap">
-{ "imports": { "alacris": "https://cdn.jsdelivr.net/npm/alacris@0.6/dist/alacris.js" } }
-</script>
-```
-
-Boot a page in three lines:
+That pulls in `@alacris/core` as well. Do not also load a second copy of Alacris from a CDN on the same page — two copies means two reactive graphs, and updates stop crossing the boundary.
 
 ```js
-import { applyTheme } from './src/theme/index.js';
-import './src/index.js';                 // registers every component
+import { applyTheme } from '@alacris/ui';
 
-applyTheme({ seed: '#0b57d0' });          // the entire theme from one color
-                                          // (Google Sans Flex, loaded for you)
+applyTheme({ seed: '#0b57d0' });
 ```
 
 ```html
@@ -46,136 +28,121 @@ applyTheme({ seed: '#0b57d0' });          // the entire theme from one color
 <ui-switch label="Dark mode"></ui-switch>
 ```
 
-Components are real custom elements, so they work in plain HTML and inside
-React, Vue, Svelte, Rails, Django — anywhere that renders tags.
-
-## What's inside
-
-```
-starter/
-  index.html            kitchen-sink demo — an app shell built from the system
-  src/
-    index.js            imports/registers every component; public API surface
-    tokens/             tier 1+2: palettes (OKLCH engine), type scale, shape,
-                        elevation, motion, spacing, state layers — and `sys`,
-                        the accessor components use to reference tokens
-    theme/              createTheme / applyTheme / scheme switching
-    motion/             animate, fx presets, presence, withFlip, ripple
-    util/               positioning, focus trap, roving tabindex, formBind, icons
-    components/         one file per component
-  demo/                 kitchen-sink: app bar, rail, drawer, search, playground
-  docs/
-    theming.md          the token architecture and how to make this yours
-    motion.md           the animation system
-    components.md       full catalog: props, events, slots, parts, vars
-  test/                 node smoke tests (repo's happy-dom harness)
-  CONVENTIONS.md        the rules every component follows — read before adding one
-```
-
-## The architecture in one diagram
-
-```
-createTheme({ seed, colors, typography, shape, motion, density, overrides })
-        │  pure data — palettes generated in OKLCH, mapped to Material roles
-        ▼
-applyTheme(theme)  ──►  ONE document-level stylesheet of custom properties
-        │               --ui-color-*  --ui-type-*  --ui-radius-*  --ui-duration-*
-        │               (light + dark schemes; re-theme = one replaceSync)
-        ▼
-   sys tokens        components consume ONLY these, via the `sys` object
-        ▼
-vars('ui-button', { bg: sys.color.primary, … })
-        │            per-component contract: --ui-button-bg overrides one
-        ▼            component; the system tokens re-theme all of them
-   <ui-button>
-```
-
-Three override levels, from broadest to narrowest:
-
-1. **Re-theme the system** — `applyTheme({ seed: '#00695c', shape: { radius: 0 } })`.
-   Every component follows. Dark mode is included automatically.
-2. **Re-skin one component type** — set its custom properties anywhere in CSS:
-   `ui-button { --ui-button-radius: 4px; --ui-button-filled-bg: black }`.
-3. **Reach inside one instance** — exposed parts:
-   `ui-dialog::part(surface) { backdrop-filter: blur(8px) }`.
-
-Full guide: [docs/theming.md](docs/theming.md).
-
-## Theming in 30 seconds
+Importing `@alacris/ui` registers every component. For a smaller page, import only what you use — each component module is self-contained:
 
 ```js
-import { createTheme, applyTheme, setScheme, toggleScheme } from './src/theme/index.js';
+import { applyTheme } from '@alacris/ui/theme';
+import '@alacris/ui/components/ui-button.js';
+import '@alacris/ui/components/ui-text-field.js';
 
-applyTheme({ seed: '#e8ad18' });                    // Alacris brand (Google Sans Flex)
-applyTheme({ seed: '#b3261e', density: -1 });       // rebrand + compact, live
-setScheme('dark');                                  // pin dark ('light' | 'auto')
-toggleScheme();                                     // flip
+applyTheme({ seed: '#0b57d0' });
+```
+
+### Without a bundler
+
+The published package is plain ESM. Point an import map at a pinned CDN build of Alacris (the only bare specifier the UI source uses) and at this package:
+
+```html
+<script type="importmap">
+{
+  "imports": {
+    "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.9/dist/alacris.js",
+    "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui/src/index.js",
+    "@alacris/ui/theme": "https://cdn.jsdelivr.net/npm/@alacris/ui/src/theme/index.js",
+    "@alacris/ui/components/": "https://cdn.jsdelivr.net/npm/@alacris/ui/src/components/"
+  }
+}
+</script>
+<script type="module">
+  import { applyTheme } from '@alacris/ui';
+  applyTheme({ seed: '#0b57d0' });
+</script>
+
+<ui-button>Hello</ui-button>
+```
+
+Pin both packages in production.
+
+## Theming
+
+```js
+import { createTheme, applyTheme, setScheme, toggleScheme } from '@alacris/ui/theme';
+
+applyTheme({ seed: '#6750a4' });
+applyTheme({ seed: '#b3261e', density: -1 });
+setScheme('dark');
+toggleScheme();
 
 applyTheme(createTheme({
-  colors: { primary: '#0b57d0', tertiary: '#00695c' },  // explicit key colors
-  typography: 'google-sans',                             // or { family: 'Inter' }
-  shape: { radius: 0.5 },                                // tighter corners
-  overrides: { light: { 'color-surface': '#faf7f2' } },  // raw token surgery
+  colors: { primary: '#0b57d0', tertiary: '#00695c' },
+  typography: 'google-sans',
+  shape: { radius: 0.5 },
+  overrides: { light: { 'color-surface': '#faf7f2' } },
 }));
 ```
 
-Scheme switching is pure CSS after that: `data-ui-scheme` on `<html>`, with
-`auto` following the OS. Native form controls follow via `color-scheme`.
+`applyTheme` writes **one** document-level stylesheet of `--ui-*` custom properties and replaces it in place on the next call. Scheme switching after that is `data-ui-scheme` on `<html>` (`light` | `dark` | `auto`).
+
+Three places to intervene, from broadest to narrowest:
+
+1. **Re-theme the system** — `applyTheme({ seed, shape, … })`. Every component follows. Dark mode is generated automatically.
+2. **Re-skin one component type** — `ui-button { --ui-button-radius: 4px; }`.
+3. **Reach inside one instance** — `ui-dialog::part(surface) { backdrop-filter: blur(8px) }`.
+
+Full guide: [docs/theming.md](docs/theming.md).
 
 ## Motion
 
-Durations and easings are tokens, so the theme's `motion.scale` governs CSS
-transitions and JS animation alike — and `prefers-reduced-motion` is honored
-everywhere automatically. The layer on top:
-
 ```js
-import { animate, fx, presence, withFlip, ripple } from './src/motion/index.js';
+import { animate, fx, presence, withFlip } from '@alacris/ui/motion';
 
 animate(el, fx.slideInUp, { duration: 'medium2', easing: 'emphasizedDecelerate' });
 
-// exit animations for conditional DOM — the thing fine-grained rendering
-// normally can't give you:
-${presence(open, () => html`<div class="sheet">…</div>`, {
+html`${presence(open, () => html`<div class="sheet">…</div>`, {
   enter: fx.slideInUp, exit: fx.slideOutDown,
-})}
-
-withFlip(listEl, () => state.rows.sort(byName));   // reorders glide, via each()
+})}`;
 ```
 
-Full guide: [docs/motion.md](docs/motion.md).
+Durations and easings are tokens, so the theme's `motion.scale` governs CSS transitions and JS animation alike, and `prefers-reduced-motion` is honoured automatically. Full guide: [docs/motion.md](docs/motion.md).
 
 ## Forms
 
-Every named control (`ui-text-field`, `ui-switch`, `ui-checkbox`,
-`ui-select`, …) is a **form-associated custom element** (Alacris's
-`formAssociated: true`): the browser treats it as a real field via
-`ElementInternals`, so it submits, resets to its initial value, and follows
-`<fieldset disabled>` natively. Where `ElementInternals` is unavailable,
-`formBind` falls back to mirroring the value into a hidden light-DOM input —
-either way, give a component a `name` and it submits like a native field.
+Named controls (`ui-text-field`, `ui-switch`, `ui-checkbox`, `ui-select`, …) are form-associated custom elements. Give a component a `name` and it submits, resets, and follows `<fieldset disabled>` like a native field.
 
-## Components
+## Entry points
 
-~70 elements across inputs, selection, pickers, data display, feedback, navigation,
-surfaces and layout — the MUI/Material breadth. Every component documents its
-props, events, slots, parts and theme vars in its file header;
-[docs/components.md](docs/components.md) is the assembled catalog.
+| Import | What it is |
+| --- | --- |
+| `@alacris/ui` | registers every component; re-exports theme, motion, tokens, utilities |
+| `@alacris/ui/theme` | `createTheme`, `applyTheme`, scheme switching |
+| `@alacris/ui/motion` | `animate`, `fx`, `presence`, `withFlip`, `ripple` |
+| `@alacris/ui/tokens` | `sys` and the token engines |
+| `@alacris/ui/components/ui-button.js` | one element, registered as a side effect |
 
-## Tests
+Component modules have side effects (they call `define()`). Theme, motion and token modules do not.
 
-```bash
-cd starter && npm test     # node smoke tests on the repo's happy-dom harness
+## In this repository
+
+This package lives in `starter/` of the [Alacris repo](https://github.com/bmartel/alacris) so the library and the design system can be developed together. They **publish separately**: `@alacris/ui` has its own version, changelog, and npm release. A commit that only changes this folder does not cut an Alacris library release.
+
+```
+starter/
+  src/           the published modules
+  types/         hand-written .d.ts
+  demo/          kitchen-sink app (not published)
+  docs/          theming, motion, component catalog
+  test/          node smoke tests
+  CONVENTIONS.md rules every component follows
 ```
 
-Browser-only behavior (layout, animations, focus rings) is exercised by the
-demo page — `npm run demo` from the repo root, then `/starter/`.
+From a clone of the repo:
 
-## Making it not-Material
+```bash
+npm install
+npm run demo        # http://localhost:5173/starter/
+cd starter && npm test
+```
 
-The Material defaults are one file deep at every layer: swap the typeface with
-`typography: 'google-sans'` (or `{ family: 'Inter' }`), the type scale in
-`tokens/typography.js`, the shape ramp in `tokens/system.js`, the role mapping
-in `tokens/color.js` — or leave the machinery alone and override tokens from
-`createTheme(...)`. The components only ever speak `sys.*`, so they follow
-wherever the tokens go. [docs/theming.md](docs/theming.md#building-your-own-design-system)
-walks through a full re-skin.
+## License
+
+MIT

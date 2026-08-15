@@ -18,7 +18,7 @@
 // @part  label   — the visible label span (omit `label` and this is absent)
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, svg, css, vars, computed } from 'alacris';
+import { define, html, svg, css, vars, computed } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base, focusRingOn } from './base.js';
 import { ripple } from '../motion/ripple.js';

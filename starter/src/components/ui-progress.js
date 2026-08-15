@@ -16,7 +16,7 @@
 // CSS keyframes; its cycle length derives from the motion tokens so a theme's
 // motion scale slows or stops it with everything else.
 
-import { define, html, css, vars, computed } from 'alacris';
+import { define, html, css, vars, computed } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 

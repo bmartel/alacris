@@ -1,9 +1,9 @@
 import {
   define, html, css, vars, adoptGlobal,
   signal, computed, effect, batch, each,
-} from 'alacris';
-import { store, selector } from 'alacris/store';
-import { createContext, provide, consume } from 'alacris/context';
+} from '@alacris/core';
+import { store, selector } from '@alacris/core/store';
+import { createContext, provide, consume } from '@alacris/core/context';
 
 const base = css`
   :host { display: block; font: inherit; color: inherit; }

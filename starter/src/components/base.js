@@ -2,7 +2,7 @@
 // this parses exactly once for the whole page no matter how many components
 // include it.
 
-import { css } from 'alacris';
+import { css } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 
 export const base = css`

@@ -42,7 +42,7 @@ for (const [subpath, target] of Object.entries(pkg.exports)) {
   if (NOT_AN_ENTRY.has(subpath)) continue;
   const file = target.default.split('/').pop();
   entries.push({
-    specifier: subpath === '.' ? 'alacris' : subpath.replace('./', 'alacris/'),
+    specifier: subpath === '.' ? pkg.name : pkg.name + subpath.slice(1),
     source: 'src/' + (SOURCE_OF[file] ?? file),
     types: target.types,
   });
@@ -67,9 +67,10 @@ const API = read('docs/src/content/docs/reference/api.md');
 const mentions = (haystack, name) => new RegExp(`\\b${name}\\b`).test(haystack);
 
 test('the package exposes the entry points its build produces', () => {
+  assert.equal(pkg.name, '@alacris/core');
   assert.deepEqual(
     [...surface.keys()].sort(),
-    ['alacris', 'alacris/context', 'alacris/signal', 'alacris/store']
+    [pkg.name, `${pkg.name}/context`, `${pkg.name}/signal`, `${pkg.name}/store`]
   );
 });
 
@@ -109,7 +110,7 @@ test('the UNDOCUMENTED list has not gone stale', () => {
 // The imports in the instructions are copied verbatim into real projects, so a
 // name that no longer exists there is a broken import in someone else's app.
 test('every import in the agent instructions resolves', () => {
-  const IMPORT = /import\s*\{([^}]*)\}\s*from\s*['"](alacris(?:\/\w+)?)['"]/g;
+  const IMPORT = /import\s*\{([^}]*)\}\s*from\s*['"](@alacris\/core(?:\/\w+)?)['"]/g;
   const found = [...AGENTS.matchAll(IMPORT)];
   assert.ok(found.length, 'no import statements found — has the file changed shape?');
 

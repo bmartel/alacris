@@ -12,7 +12,7 @@
 // @slot  (default) — <ui-chip> children
 // @vars  --ui-chip-set-gap
 
-import { define, html, css, vars, signal, effect, onCleanup } from 'alacris';
+import { define, html, css, vars, signal, effect, onCleanup } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { rovingTabindex } from '../util/keys.js';

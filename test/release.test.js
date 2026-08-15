@@ -14,6 +14,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as analyzer from '@semantic-release/commit-analyzer';
 import * as notes from '@semantic-release/release-notes-generator';
+import { filterCommits } from '../scripts/release-filter-scopes.js';
 
 const config = JSON.parse(readFileSync(new URL('../.releaserc.json', import.meta.url), 'utf8'));
 const named = (name) => {
@@ -51,6 +52,31 @@ test('commit types map to the documented version bumps', async () => {
   assert.equal(await bump('perf(html): share attribute setters'), 'patch');
   assert.equal(await bump('refactor(store): tidy the proxy'), 'patch');
   assert.equal(await bump('revert: undo the thing'), 'patch');
+});
+
+test('ui and starter scopes never cut an @alacris/core release', async () => {
+  for (const scope of ['ui', 'starter']) {
+    assert.equal(await bump(`feat(${scope}): add a combobox`), null, `feat(${scope})`);
+    assert.equal(await bump(`fix(${scope}): overlay focus`), null, `fix(${scope})`);
+    assert.equal(await bump(`feat(${scope})!: rename a token`), null, `feat(${scope})!`);
+    assert.equal(
+      await bump(`fix(${scope}): token rename\n\nBREAKING CHANGE: the token moved`),
+      null,
+      `BREAKING ${scope}`
+    );
+  }
+});
+
+test('the commit filter drops ui and starter scopes before notes run', () => {
+  const kept = filterCommits(
+    [
+      commit('feat(html): each()'),
+      commit('feat(ui): combobox'),
+      commit('fix(starter): overlay'),
+    ],
+    { exclude: ['ui', 'starter'] }
+  );
+  assert.deepEqual(kept.map((c) => c.message), ['feat(html): each()']);
 });
 
 test('housekeeping types do not cut a release', async () => {
@@ -109,6 +135,8 @@ test('notes link the compare range and each commit', async () => {
 
 test('the release config still declares the plugins the workflow relies on', () => {
   const names = config.plugins.map((p) => (Array.isArray(p) ? p[0] : p));
+  assert.equal(names[0], './scripts/release-filter-scopes.js');
+  assert.deepEqual(config.plugins[0][1], { exclude: ['ui', 'starter'] });
   for (const required of [
     '@semantic-release/commit-analyzer',
     '@semantic-release/release-notes-generator',

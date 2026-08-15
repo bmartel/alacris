@@ -7,7 +7,7 @@
  * Imported rather than read through `import.meta.url`: Astro rewrites that URL
  * to the built chunk's location, and a relative walk from there quietly lands
  * on the *docs* package.json — whose version is 0.0.0. The playground then
- * asks npm for `alacris@^0.0.0` and fails to install, so the assertion below
+ * asks npm for `@alacris/core@^0.0.0` and fails to install, so the assertion below
  * makes that failure loud at build time instead of silent in the browser.
  */
 import pkg from '../../../package.json';

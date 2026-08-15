@@ -25,7 +25,7 @@ the natural channel. `vars` declares the ones your component honours, with
 defaults baked into each declaration:
 
 ```js
-import { define, html, css, vars } from 'alacris';
+import { define, html, css, vars } from '@alacris/core';
 
 const t = vars('btn', { bg: '#111', fg: '#fff', radius: '8px' });
 // t.bg === 'var(--btn-bg, #111)'
@@ -105,7 +105,7 @@ Sometimes you need to theme a component set whose source you cannot edit.
 already on the page, and every one created afterwards:
 
 ```js
-import { adoptGlobal, css } from 'alacris';
+import { adoptGlobal, css } from '@alacris/core';
 
 const remove = adoptGlobal(css`
   :host  { font-family: Inter, system-ui }
@@ -161,6 +161,6 @@ custom properties. Listing them is what makes a component adoptable:
 ## Next
 
 - [Styling](../styling/) — the author's side
-- [UI starter](../../start/ui-starter/) — a design system that uses this
+- [Alacris UI](../../ui/getting-started/) — a design system that uses this
   contract end to end, plus a generated palette and `applyTheme`
 - [API reference](../../reference/api/) — `css`, `vars`, `adoptGlobal`

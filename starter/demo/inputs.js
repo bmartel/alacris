@@ -1,7 +1,7 @@
 // Demo — Inputs & actions: FAB, button groups, segmented buttons, checkbox,
 // radio, slider, rating, search.
 
-import { html, signal } from 'alacris';
+import { html, signal } from '@alacris/core';
 import { block, stackBlock } from './helpers.js';
 import '../src/components/ui-button.js';
 import '../src/components/ui-fab.js';

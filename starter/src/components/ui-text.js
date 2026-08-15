@@ -11,7 +11,7 @@
 // (`<h2><ui-text variant="headline-md">…</ui-text></h2>`) or set an ARIA role
 // on the host when the document outline needs one.
 
-import { define, html, css, effect } from 'alacris';
+import { define, html, css, effect } from '@alacris/core';
 import { base } from './base.js';
 
 const kebab = (s) => s.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase());

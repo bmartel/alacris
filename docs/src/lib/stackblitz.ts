@@ -7,7 +7,7 @@
  *   (`template: 'node'`) refuse to run in an iframe unless the embedding page
  *   is cross-origin isolated, and GitHub Pages cannot send the COOP/COEP
  *   headers that would make it so. The classic template has no such
- *   requirement, boots in a couple of seconds, and still installs `alacris`
+ *   requirement, boots in a couple of seconds, and still installs `@alacris/core`
  *   from npm — which is all the embed needs to be.
  *
  * - `openProjectFor` runs on stackblitz.com, where isolation is a given. That
@@ -29,7 +29,7 @@ export interface PlaygroundDemo {
 }
 
 export interface PlaygroundConfig {
-  /** Semver range for the `alacris` dependency, e.g. `^0.2.2`. */
+  /** Semver range for the `@alacris/core` dependency, e.g. `^0.2.2`. */
   range: string;
   demos: PlaygroundDemo[];
 }
@@ -97,13 +97,13 @@ ${demo.blurb}
 - \`${VITE_ENTRY}\` defines the component. Edit it and the preview reloads.
 - \`index.html\` is where the tag is used.
 
-Alacris needs no build step. Vite is here only so that \`import 'alacris'\`
+Alacris needs no build step. Vite is here only so that \`import '@alacris/core'\`
 resolves from \`node_modules\`; in a plain HTML page an import map does the same
 job:
 
 \`\`\`html
 <script type="importmap">
-  { "imports": { "alacris": "https://esm.sh/alacris" } }
+  { "imports": { "@alacris/core": "https://esm.sh/@alacris/core" } }
 </script>
 <script type="module" src="./${VITE_ENTRY}"></script>
 \`\`\`
@@ -120,7 +120,7 @@ export function embedProjectFor(demo: PlaygroundDemo, range: string): Project {
     title: `Alacris — ${demo.title}`,
     description: demo.blurb,
     template: 'javascript',
-    dependencies: { alacris: range },
+    dependencies: { '@alacris/core': range },
     // Reload rather than hot-replace. `customElements.define` throws if the
     // same tag name is registered twice, so re-evaluating the module in a page
     // that already ran it fails — on every save, and on every example switch.
@@ -166,7 +166,7 @@ export function openProjectFor(demo: PlaygroundDemo, range: string): Project {
               build: 'vite build',
               preview: 'vite preview',
             },
-            dependencies: { alacris: range },
+            dependencies: { '@alacris/core': range },
             devDependencies: { vite: '^8.0.0' },
           },
           null,

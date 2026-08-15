@@ -1,5 +1,5 @@
 {
-  "name": "alacris",
+  "name": "@alacris/core",
   "version": "0.9.2",
   "description": "Fast web components with signals and fine-grained DOM updates. 6.5 kB, ESM-only, zero dependencies, no build step.",
   "type": "module",
@@ -38,8 +38,8 @@
   "scripts": {
     "build": "node scripts/build.js",
     "test": "node --import ./test/setup.js --test test/*.test.js",
-    "pretest:starter": "node -e \"if(!require('fs').existsSync('dist/alacris.js'))require('child_process').execSync('npm run build',{stdio:'inherit'})\"",
-    "test:starter": "npm test --prefix starter",
+    "pretest:ui": "node -e \"if(!require('fs').existsSync('dist/alacris.js'))require('child_process').execSync('npm run build',{stdio:'inherit'})\"",
+    "test:ui": "npm test --prefix starter",
     "typecheck": "tsc -p tsconfig.json",
     "size": "node scripts/size.js",
     "sync-docs": "node scripts/sync-docs.mjs",
@@ -68,6 +68,9 @@
     "url": "git+https://github.com/bmartel/alacris.git"
   },
   "homepage": "https://github.com/bmartel/alacris#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=18"
   },

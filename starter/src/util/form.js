@@ -10,7 +10,7 @@
 // tests), it falls back to mirroring the value into a hidden light-DOM
 // `<input>` on the host — the form sees an ordinary field either way.
 
-import { effect, onCleanup, untrack } from 'alacris';
+import { effect, onCleanup, untrack } from '@alacris/core';
 
 /**
  * Call inside `setup`, passing the prop signals themselves:

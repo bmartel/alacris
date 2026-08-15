@@ -5,7 +5,7 @@
 // is the everyday MD3 filled set so an app can start without a custom registry. Apps add their own with `registerIcons` — any 24×24
 // path data works — or slot a whole `<svg>` into `<ui-icon>` for one-offs.
 
-import { signal } from 'alacris';
+import { signal } from '@alacris/core';
 
 const registry = new Map();
 

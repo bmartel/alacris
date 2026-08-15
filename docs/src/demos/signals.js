@@ -1,4 +1,4 @@
-import { define, html, signal, computed } from 'alacris';
+import { define, html, signal, computed } from '@alacris/core';
 
 define('demo-signals', {
   styles: `

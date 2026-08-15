@@ -30,7 +30,7 @@
 // host's light DOM; the options also carry aria-selected for AT that walks
 // the composed tree.
 
-import { define, html, css, vars, computed, signal, effect, onCleanup } from 'alacris';
+import { define, html, css, vars, computed, signal, effect, onCleanup } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { formBind } from '../util/form.js';

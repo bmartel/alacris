@@ -1,0 +1,69 @@
+{
+  "tagFormat": "ui-v${version}",
+  "branches": ["main"],
+  "plugins": [
+    [
+      "../scripts/release-filter-scopes.js",
+      { "include": ["ui", "starter"] }
+    ],
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "conventionalcommits",
+        "releaseRules": [
+          { "type": "perf", "release": "patch" },
+          { "type": "refactor", "release": "patch" },
+          { "type": "revert", "release": "patch" },
+          { "type": "docs", "release": false },
+          { "type": "test", "release": false },
+          { "type": "build", "release": false },
+          { "type": "ci", "release": false },
+          { "type": "chore", "release": false }
+        ]
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits",
+        "presetConfig": {
+          "types": [
+            { "type": "feat", "section": "Features" },
+            { "type": "fix", "section": "Bug Fixes" },
+            { "type": "perf", "section": "Performance" },
+            { "type": "refactor", "section": "Refactoring" },
+            { "type": "revert", "section": "Reverts" },
+            { "type": "docs", "section": "Documentation", "hidden": true },
+            { "type": "test", "section": "Tests", "hidden": true },
+            { "type": "build", "section": "Build", "hidden": true },
+            { "type": "ci", "section": "CI", "hidden": true },
+            { "type": "chore", "section": "Chores", "hidden": true }
+          ]
+        }
+      }
+    ],
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "CHANGELOG.md",
+        "changelogTitle": "# Changelog\n\nAll notable changes to **@alacris/ui** are documented here. Releases are cut\nindependently of the Alacris library by semantic-release, from Conventional\nCommits scoped `ui` (or the legacy `starter`)."
+      }
+    ],
+    "@semantic-release/npm",
+    [
+      "@semantic-release/github",
+      {
+        "successCommentCondition": false,
+        "failCommentCondition": false,
+        "releaseNameTemplate": "@alacris/ui ${nextRelease.version}"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["package.json", "CHANGELOG.md"],
+        "message": "chore(ui-release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+      }
+    ]
+  ]
+}

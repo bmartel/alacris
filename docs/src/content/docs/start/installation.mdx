@@ -16,7 +16,7 @@ install:
 
 ```html
 <script type="module">
-  import { define, html, signal } from 'https://unpkg.com/alacris';
+  import { define, html, signal } from 'https://unpkg.com/@alacris/core';
 
   define('hello-world', () => html`<p>hello</p>`);
 </script>
@@ -25,25 +25,25 @@ install:
 ```
 
 <Aside type="tip" title="Pin the version in production">
-`https://unpkg.com/alacris` always resolves to the newest release. For anything
+`https://unpkg.com/@alacris/core` always resolves to the newest release. For anything
 you ship, pin it so an upgrade cannot surprise you:
 
 ```js
-import { define } from 'https://unpkg.com/alacris@0.9.2/dist/alacris.js';
+import { define } from 'https://unpkg.com/@alacris/core@0.9.2/dist/alacris.js';
 ```
 </Aside>
 
 <Tabs>
   <TabItem label="unpkg">
     ```js
-    import { define, html, signal } from 'https://unpkg.com/alacris';
-    import { store } from 'https://unpkg.com/alacris/dist/store.js';
-    import { createContext } from 'https://unpkg.com/alacris/dist/context.js';
+    import { define, html, signal } from 'https://unpkg.com/@alacris/core';
+    import { store } from 'https://unpkg.com/@alacris/core/dist/store.js';
+    import { createContext } from 'https://unpkg.com/@alacris/core/dist/context.js';
     ```
   </TabItem>
   <TabItem label="jsDelivr">
     ```js
-    import { define, html, signal } from 'https://cdn.jsdelivr.net/npm/alacris/+esm';
+    import { define, html, signal } from 'https://cdn.jsdelivr.net/npm/@alacris/core/+esm';
     ```
   </TabItem>
   <TabItem label="import map">
@@ -54,14 +54,14 @@ import { define } from 'https://unpkg.com/alacris@0.9.2/dist/alacris.js';
     <script type="importmap">
       {
         "imports": {
-          "alacris": "https://unpkg.com/alacris@0.9.2/dist/alacris.js",
-          "alacris/store": "https://unpkg.com/alacris@0.9.2/dist/store.js",
-          "alacris/context": "https://unpkg.com/alacris@0.9.2/dist/context.js"
+          "@alacris/core": "https://unpkg.com/@alacris/core@0.9.2/dist/alacris.js",
+          "@alacris/core/store": "https://unpkg.com/@alacris/core@0.9.2/dist/store.js",
+          "@alacris/core/context": "https://unpkg.com/@alacris/core@0.9.2/dist/context.js"
         }
       }
     </script>
     <script type="module">
-      import { define, html, signal } from 'alacris';
+      import { define, html, signal } from '@alacris/core';
     </script>
     ```
   </TabItem>
@@ -70,23 +70,27 @@ import { define } from 'https://unpkg.com/alacris@0.9.2/dist/alacris.js';
 ## From npm
 
 ```sh
-npm install alacris
+npm install @alacris/core
 ```
 
 ```js
-import { define, html, signal, computed, effect } from 'alacris';
-import { store, selector } from 'alacris/store';
-import { createContext, provide, consume } from 'alacris/context';
+import { define, html, signal, computed, effect } from '@alacris/core';
+import { store, selector } from '@alacris/core/store';
+import { createContext, provide, consume } from '@alacris/core/context';
 ```
 
 TypeScript declarations ship with the package. There is nothing to add.
 
+<Aside type="note" title="Renamed from `alacris`">
+The runtime used to be the unscoped `alacris` package. It is now `@alacris/core` — same API, new specifier. The design system is a separate package, [`@alacris/ui`](../../ui/getting-started/).
+</Aside>
+
 ## A component library, not a blank runtime
 
 If you want buttons, fields, and a theme rather than starting from
-`define(...)`, copy the [UI starter](../ui-starter/) out of the repo. It is a
-template — sixty-odd custom elements and a theme engine — not a second npm
-package.
+`define(...)`, install [Alacris UI](../../ui/getting-started/) (`@alacris/ui`
+on npm). It is sixty-eight custom elements and a theme engine, and it works
+in any framework that can render a tag.
 
 ## The entry points
 
@@ -98,21 +102,21 @@ reactive graph at runtime however many you use.
     <tr><th>Import</th><th>What it is</th><th>gzip</th></tr>
   </thead>
   <tbody>
-    <tr><td>`alacris`</td><td>signals, templates, styling, custom elements</td><td>6.56 kB</td></tr>
-    <tr><td>`alacris/store`</td><td>deep reactive state, `selector`</td><td>1.03 kB</td></tr>
-    <tr><td>`alacris/context`</td><td>the context protocol</td><td>0.54 kB</td></tr>
-    <tr><td>`alacris/signal`</td><td>reactivity alone, no DOM</td><td>1.03 kB</td></tr>
+    <tr><td>`@alacris/core`</td><td>signals, templates, styling, custom elements</td><td>6.56 kB</td></tr>
+    <tr><td>`@alacris/core/store`</td><td>deep reactive state, `selector`</td><td>1.03 kB</td></tr>
+    <tr><td>`@alacris/core/context`</td><td>the context protocol</td><td>0.54 kB</td></tr>
+    <tr><td>`@alacris/core/signal`</td><td>reactivity alone, no DOM</td><td>1.03 kB</td></tr>
   </tbody>
 </table>
 
 If you use a bundler, anything you do not import is tree-shaken away — the
 package is marked `sideEffects: false`.
 
-<Aside type="caution" title="Do not mix `alacris` and `alacris/signal`">
-`alacris/signal` is a standalone build for non-DOM use, such as a worker or a
+<Aside type="caution" title="Do not mix `@alacris/core` and `@alacris/core/signal`">
+`@alacris/core/signal` is a standalone build for non-DOM use, such as a worker or a
 server. It carries its own copy of the reactive core, so signals created with it
-are in a *different* dependency graph from anything rendered by `alacris`. If
-you are rendering, import your signals from `alacris`.
+are in a *different* dependency graph from anything rendered by `@alacris/core`. If
+you are rendering, import your signals from `@alacris/core`.
 </Aside>
 
 ## Browser support
@@ -126,4 +130,4 @@ polyfills and no transpiled build; the published code is modern ESM.
 ## Next
 
 - [Your first component](../first-component/) — the whole model in one file
-- [UI starter](../ui-starter/) — a copy-out design system built with Alacris
+- [Alacris UI](../../ui/getting-started/) — buttons, fields, and a theme, from npm

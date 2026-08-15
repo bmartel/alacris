@@ -9,7 +9,7 @@
 // @part  body      — padded wrapper around the default slot
 // @vars  see `t` below
 
-import { define, html, css, vars, computed } from 'alacris';
+import { define, html, css, vars, computed } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base, focusRingOn } from './base.js';
 import { ripple } from '../motion/ripple.js';

@@ -1,4 +1,4 @@
-import { define, html, each, signal, computed } from 'alacris';
+import { define, html, each, signal, computed } from '@alacris/core';
 
 let nextId = 4;
 

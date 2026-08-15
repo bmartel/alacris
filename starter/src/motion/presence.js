@@ -19,7 +19,7 @@
 // layout. Call `presence` in a child position during `setup` (or under an
 // active `root()`), because it creates an effect that must be owned.
 
-import { effect, onCleanup, render } from 'alacris';
+import { effect, onCleanup, render } from '@alacris/core';
 import { animate, fx } from './animate.js';
 
 /**

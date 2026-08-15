@@ -1,6 +1,6 @@
 # Alacris UI — component authoring conventions
 
-This starter is a complete design system built on **Alacris** and nothing else.
+Alacris UI is a complete design system built on **Alacris** and nothing else.
 Every component in `src/components/` follows the rules in this file exactly.
 Read the exemplars first — `ui-button.js`, `ui-switch.js`, `ui-text-field.js`,
 `ui-dialog.js` — they are the reference implementations of everything below.
@@ -15,7 +15,7 @@ Read the exemplars first — `ui-button.js`, `ui-switch.js`, `ui-text-field.js`,
   single component can still be overridden independently.
 
 ```js
-import { vars, css } from 'alacris';
+import { vars, css } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 
 const t = vars('ui-button', {
@@ -57,7 +57,7 @@ text follows the theme even when a component does not set a type-role shorthand.
 // @part  control — the interactive element
 // @vars  --ui-thing-bg, --ui-thing-fg, … (see `t` below)
 
-import { define, html, css, computed } from 'alacris';
+import { define, html, css, computed } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 

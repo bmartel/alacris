@@ -1,7 +1,7 @@
 // Alacris UI kitchen sink — every component, one page, live theme playground.
 // The page is itself a composition of the design system: see demo/app.js.
 
-import { html, render } from 'alacris';
+import { html, render } from '@alacris/core';
 import { applyCurrentTheme } from './theme-controls.js';
 import './app.js';
 

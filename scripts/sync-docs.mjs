@@ -3,7 +3,7 @@
 // Two kinds of fact go stale on their own, and both had:
 //
 // - **Pinned versions.** Most examples are deliberately unpinned —
-//   `unpkg.com/alacris` always resolves to the newest release. The pinned ones
+//   `unpkg.com/@alacris/core` always resolves to the newest release. The pinned ones
 //   exist to *show* how to pin, so the number in them is illustrative. The
 //   README pinned 0.1.0 and the docs pinned 0.2.1 while npm served 0.2.2.
 //
@@ -12,8 +12,9 @@
 //   half a dozen sentences — about thirty five of them, all of which move
 //   together the moment the bundle does.
 //
-// SIZE.md is the one place a size is measured; package.json is the one place a
-// version is set. Everything below is derived from those two.
+// SIZE.md is the one place a size is measured; the two package.json files are
+// the places versions are set (`@alacris/core` at the root, `@alacris/ui` in
+// starter/). Everything below is derived from those.
 //
 // Run by hand with `npm run sync-docs`, from semantic-release's prepare step so
 // the release commit carries the update, and with `--check` in CI so a pull
@@ -43,7 +44,7 @@ const SCANNED = new Set(['.md', '.mdx', '.html', '.txt', '.astro', '.ts', '.js']
 // CHANGELOG.md is a record of what *was* true at each release; rewriting a
 // version or a size into it would be falsifying history. SIZE.md belongs to
 // scripts/size.js, which measures rather than copies.
-const OWNED_ELSEWHERE = new Set(['CHANGELOG.md', 'SIZE.md']);
+const OWNED_ELSEWHERE = new Set(['CHANGELOG.md', 'starter/CHANGELOG.md', 'SIZE.md']);
 
 // A file that documents *how* any of this works needs to name a version or a
 // size without having it rewritten out from under the sentence. It says so.
@@ -51,17 +52,27 @@ const IGNORE = 'sync-docs:ignore';
 
 // ------------------------------------------------------------------ versions
 
-const PIN = /\balacris@(\d+(?:\.\d+){0,2})\b/g;
+const PIN = /@alacris\/core@(\d+(?:\.\d+){0,2})\b/g;
+const UI_PIN = /@alacris\/ui@(\d+(?:\.\d+){0,2})\b/g;
 
 const parts = version.split('.');
 /** Rewrite a pin to the current version, keeping however precise it was. */
 const reshape = (pin) => parts.slice(0, pin.split('.').length).join('.');
 
+const uiVersion = JSON.parse(readFileSync(join(root, 'starter/package.json'), 'utf8')).version;
+const uiParts = uiVersion.split('.');
+const reshapeUi = (pin) => uiParts.slice(0, pin.split('.').length).join('.');
+
 function syncPins(text, note) {
-  return text.replace(PIN, (match, pin) => {
+  text = text.replace(PIN, (match, pin) => {
     const next = reshape(pin);
-    if (next !== pin) note(`${pin} -> ${next}`);
-    return `alacris@${next}`;
+    if (next !== pin) note(`core ${pin} -> ${next}`);
+    return `@alacris/core@${next}`;
+  });
+  return text.replace(UI_PIN, (match, pin) => {
+    const next = reshapeUi(pin);
+    if (next !== pin) note(`ui ${pin} -> ${next}`);
+    return `@alacris/ui@${next}`;
   });
 }
 
@@ -99,7 +110,7 @@ const current = (was, now, metric) => (metric === 'raw' ? was === now : close(wa
 /** Which bundle a table row is about, read from its first cell. */
 function bundleOf(cell) {
   const text = cell.replace(/`/g, '');
-  const subpath = text.match(/\balacris\/(\w+)/); // `alacris/store`
+  const subpath = text.match(/@alacris\/core\/(\w+)/); // `@alacris/core/store`
   if (subpath) return `${subpath[1]}.js`;
   const named = text.match(/([\w.]+\.js)\b/); // `dist/alacris.js`, `store.js`
   if (named) return named[1];

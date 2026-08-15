@@ -19,7 +19,7 @@
 // @part  root — the slider container
 // @vars  see `t` below (`themeVars.names`); the fill color defaults to primary
 
-import { define, html, css, vars, computed, signal } from 'alacris';
+import { define, html, css, vars, computed, signal } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base, focusRingOn } from './base.js';
 import './ui-icon.js';

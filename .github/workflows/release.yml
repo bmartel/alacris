@@ -3,6 +3,12 @@ name: Release
 on:
   push:
     branches: [main]
+    # UI-only commits are released by release-ui.yml. Skipping this job for
+    # them is what keeps a feat(ui) from ever publishing a new @alacris/core.
+    paths-ignore:
+      - 'starter/**'
+      - '.github/workflows/release-ui.yml'
+      - 'scripts/release-filter-scopes.js'
   workflow_dispatch:
 
 # One release at a time. A second push while a release is mid-flight would race

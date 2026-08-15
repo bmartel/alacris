@@ -1,7 +1,7 @@
 // Demo — structure & layout: accordion, breadcrumbs, pagination, stepper,
 // bottom navigation, stack, container, surface.
 
-import { html, signal } from 'alacris';
+import { html, signal } from '@alacris/core';
 import { block, stackBlock, row } from './helpers.js';
 import '../src/components/ui-accordion.js';
 import '../src/components/ui-accordion-item.js';

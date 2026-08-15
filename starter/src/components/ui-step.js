@@ -12,7 +12,7 @@
 // Presentation only: the circle shows the 1-based number (or a check when
 // completed); <ui-stepper> owns index/state assignment and the connectors.
 
-import { define, html, css, vars } from 'alacris';
+import { define, html, css, vars } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import './ui-icon.js';

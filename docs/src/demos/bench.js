@@ -1,5 +1,5 @@
-import { define, html, each, signal, batch } from 'alacris';
-import { selector } from 'alacris/store';
+import { define, html, each, signal, batch } from '@alacris/core';
+import { selector } from '@alacris/core/store';
 
 const A = ['pretty', 'large', 'big', 'small', 'tall', 'short', 'long', 'plain'];
 const C = ['red', 'yellow', 'blue', 'green', 'pink', 'brown'];

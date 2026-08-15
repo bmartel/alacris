@@ -1,6 +1,6 @@
 // Feedback — alerts, progress, spinners, skeletons, snackbars, backdrop.
 
-import { html, signal } from 'alacris';
+import { html, signal } from '@alacris/core';
 import { block, stackBlock, row } from './helpers.js';
 import '../src/components/ui-alert.js';
 import '../src/components/ui-progress.js';

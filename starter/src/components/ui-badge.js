@@ -15,7 +15,7 @@
 // @vars  --ui-badge-bg, --ui-badge-fg, --ui-badge-size, --ui-badge-dot-size,
 //        --ui-badge-font
 
-import { define, html, css, vars, computed } from 'alacris';
+import { define, html, css, vars, computed } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { presence } from '../motion/presence.js';

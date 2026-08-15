@@ -12,6 +12,10 @@ export default defineConfig({
   site: 'https://bmartel.github.io',
   base: BASE,
 
+  redirects: {
+    '/start/ui-starter': '/ui/getting-started/',
+  },
+
   // src/lib/version.ts imports the repo's package.json, which sits above the
   // docs root. Vite refuses to serve outside its root in dev without this.
   vite: { server: { fs: { allow: ['..'] } } },
@@ -37,10 +41,10 @@ export default defineConfig({
           attrs: { type: 'importmap' },
           content: JSON.stringify({
             imports: {
-              alacris: `${BASE}/lib/alacris.js`,
-              'alacris/store': `${BASE}/lib/store.js`,
-              'alacris/context': `${BASE}/lib/context.js`,
-              'alacris/signal': `${BASE}/lib/signal.js`,
+              '@alacris/core': `${BASE}/lib/alacris.js`,
+              '@alacris/core/store': `${BASE}/lib/store.js`,
+              '@alacris/core/context': `${BASE}/lib/context.js`,
+              '@alacris/core/signal': `${BASE}/lib/signal.js`,
             },
           }),
         },
@@ -53,8 +57,13 @@ export default defineConfig({
             { label: 'What is Alacris?', slug: 'start/what-is-alacris' },
             { label: 'Installation', slug: 'start/installation' },
             { label: 'Your first component', slug: 'start/first-component' },
-            { label: 'UI starter', slug: 'start/ui-starter' },
             { label: 'Playground', slug: 'playground', badge: 'Live' },
+          ],
+        },
+        {
+          label: 'Alacris UI',
+          items: [
+            { label: 'Getting started', slug: 'ui/getting-started' },
           ],
         },
         {

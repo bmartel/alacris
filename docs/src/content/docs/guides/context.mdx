@@ -16,7 +16,7 @@ Alacris implements the **W3C community context protocol** — the same
 not just inside Alacris.
 
 ```js
-import { createContext, provide, consume } from 'alacris/context';
+import { createContext, provide, consume } from '@alacris/core/context';
 
 export const ThemeCtx = createContext('theme');
 ```
@@ -87,7 +87,7 @@ component library, or shipping components into an app you do not control.
 element is removed:
 
 ```js
-import { provideTo } from 'alacris/context';
+import { provideTo } from '@alacris/core/context';
 
 setup(_props, host) {
   provideTo(host, ThemeCtx, theme);   // released automatically

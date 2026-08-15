@@ -1,6 +1,6 @@
 // Demo — selects, autocomplete, chips, date and time pickers.
 
-import { html, signal } from 'alacris';
+import { html, signal } from '@alacris/core';
 import { block, stackBlock } from './helpers.js';
 import '../src/components/ui-select.js';
 import '../src/components/ui-option.js';
