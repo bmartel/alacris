@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.15](https://github.com/bmartel/alacris/compare/v0.6.14...v0.6.15) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** resolve multi-browse back click and unify hero carousel navigation ([79ef79a](https://github.com/bmartel/alacris/commit/79ef79af83f3e1a5a47fb9546e54a85f29205fd4))
+
 ## [0.6.14](https://github.com/bmartel/alacris/compare/v0.6.13...v0.6.14) (2026-08-15)
 
 ### Bug Fixes
