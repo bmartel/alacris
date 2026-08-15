@@ -352,43 +352,89 @@ const styles = css`
     outline: none;
     appearance: none;
     background: transparent;
-    border-radius: ${t.dayRadius};
     font: ${sys.type.bodySm};
     letter-spacing: ${sys.tracking.bodySm};
     color: ${t.fg};
     cursor: pointer;
   }
+  .day .text {
+    position: relative;
+    z-index: 2;
+  }
   .day .layer {
-    position: absolute; inset: 0; z-index: -1;
-    border-radius: inherit; background: currentColor; opacity: 0;
+    position: absolute; inset: 0; z-index: 3;
+    border-radius: ${t.dayRadius}; background: currentColor; opacity: 0;
     transition: opacity ${sys.duration.short2} ${sys.easing.standard};
   }
   .day:hover .layer { opacity: ${sys.state.hover}; }
   .day:active .layer { opacity: ${sys.state.pressed}; }
   .day:focus-visible { outline: ${sys.focus.ring}; outline-offset: -2px; }
   .day.outside { color: ${t.mutedFg}; }
-  .day.today { color: ${t.todayFg}; box-shadow: inset 0 0 0 1px ${t.todayFg}; }
+
+  /* In-range connector track */
   .day.in-range { color: ${t.rangeFg}; }
   .day.in-range::before {
     content: '';
     position: absolute;
-    inset-block: 4px;
-    inset-inline: 0;
+    inset: 0;
     background: ${t.rangeBg};
-    z-index: -2;
+    z-index: 0;
     pointer-events: none;
   }
-  .day.in-range.range-start::before { inset-inline-start: 50%; }
-  .day.in-range.range-end::before { inset-inline-end: 50%; }
-  .day.in-range.range-start.range-end::before { display: none; }
-  .day.selected, .day.selected.today {
-    background: ${t.accent};
-    color: ${t.onAccent};
-    box-shadow: none;
-    transition: background-color ${sys.duration.short4} ${sys.easing.standard},
-                color ${sys.duration.short4} ${sys.easing.standard};
+  .day.in-range.range-start::before {
+    inset-inline-start: 50%;
+    inset-inline-end: 0;
   }
-  .day:disabled { color: color-mix(in srgb, ${sys.color.onSurface} calc(${sys.state.disabledContent} * 100%), transparent); cursor: default; pointer-events: none; }
+  .day.in-range.range-end::before {
+    inset-inline-start: 0;
+    inset-inline-end: 50%;
+  }
+  .day.in-range:nth-child(7n + 1)::before {
+    border-start-start-radius: ${t.dayRadius};
+    border-end-start-radius: ${t.dayRadius};
+  }
+  .day.in-range:nth-child(7n)::before {
+    border-start-end-radius: ${t.dayRadius};
+    border-end-end-radius: ${t.dayRadius};
+  }
+  .day.in-range.range-start.range-end::before { display: none; }
+
+  /* Selected circular badge */
+  .day.selected {
+    color: ${t.onAccent};
+    font-weight: 500;
+  }
+  .day.selected::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: ${t.dayRadius};
+    background: ${t.accent};
+    z-index: 1;
+    pointer-events: none;
+    transition: background-color ${sys.duration.short4} ${sys.easing.standard};
+  }
+
+  /* Today outline indicator */
+  .day.today:not(.selected) {
+    color: ${t.todayFg};
+  }
+  .day.today:not(.selected)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: ${t.dayRadius};
+    border: 1px solid ${t.todayFg};
+    box-sizing: border-box;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .day:disabled {
+    color: color-mix(in srgb, ${sys.color.onSurface} calc(${sys.state.disabledContent} * 100%), transparent);
+    cursor: default;
+    pointer-events: none;
+  }
 
   .disabled { opacity: ${sys.state.disabledContent}; pointer-events: none; }
 `;
@@ -598,7 +644,7 @@ define('ui-date-picker', {
               ?disabled=${cell.disabled}
               @click=${() => pick(cell.iso)}>
         <span class="layer" aria-hidden="true"></span>
-        ${cell.day}
+        <span class="text">${cell.day}</span>
       </button>`);
 
     // Presence mounts the grid in a nested owner. A setup-level paint keeps
