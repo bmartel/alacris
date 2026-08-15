@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.6](https://github.com/bmartel/alacris/compare/v0.6.5...v0.6.6) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** eliminate dead space in toggle buttons and animate checkmark selection ([a377ac8](https://github.com/bmartel/alacris/commit/a377ac89ab02e795a7b56d98bda2c1dd2eb6f5bc))
+
 ## [0.6.5](https://github.com/bmartel/alacris/compare/v0.6.4...v0.6.5) (2026-08-15)
 
 ### Bug Fixes
