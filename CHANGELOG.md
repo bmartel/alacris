@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.4](https://github.com/bmartel/alacris/compare/v0.6.3...v0.6.4) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** animate pickers, search, and chips to match MD3 ([914f0d9](https://github.com/bmartel/alacris/commit/914f0d9aadfa043dd92eef2870f2620dee3a3a7d))
+
 ## [0.6.3](https://github.com/bmartel/alacris/compare/v0.6.2...v0.6.3) (2026-08-15)
 
 ### Bug Fixes
