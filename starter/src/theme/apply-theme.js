@@ -23,10 +23,14 @@ const block = (tokens) => {
   return s;
 };
 
+// Face on `:root` so native text and un-typed markup inherit the system
+// plain typeface. Components then set a type-role shorthand on top.
+const FACE = 'font-family:var(--ui-font-plain);font-optical-sizing:auto;font-synthesis:none;';
+
 export function themeCss(theme) {
   const { common, schemes } = theme;
   return [
-    `:root{${block(common)}${block(schemes.light)}}`,
+    `:root{${FACE}${block(common)}${block(schemes.light)}}`,
     `:root[data-ui-scheme="dark"]{${block(schemes.dark)}}`,
     `@media (prefers-color-scheme: dark){:root:not([data-ui-scheme="light"]){${block(schemes.dark)}}}`,
   ].join('\n');
@@ -42,6 +46,10 @@ export const activeTheme = signal(null);
  * Apply a theme to the document. Accepts a theme from `createTheme` or a
  * config object (which is passed through `createTheme` for you). Calling it
  * again rewrites the same stylesheet in place.
+ *
+ * Faces referenced by the theme are loaded automatically (a Google Fonts
+ * stylesheet for presets and `family` names). Pass `loadFonts: false` to
+ * skip — useful when the files are self-hosted or already on the page.
  */
 export function applyTheme(themeOrConfig = {}) {
   const theme = themeOrConfig.schemes ? themeOrConfig : createTheme(themeOrConfig);
@@ -57,8 +65,51 @@ export function applyTheme(themeOrConfig = {}) {
   }
   if (sheet) sheet.replaceSync(text);
   else styleEl.textContent = text;
+  loadThemeFonts(themeOrConfig.loadFonts === false ? { fonts: { href: null } } : theme);
   activeTheme.set(theme);
   return theme;
+}
+
+const FONT_ATTR = 'data-ui-font';
+const PRECONNECT_ATTR = 'data-ui-font-preconnect';
+
+/**
+ * Sync the document's typeface stylesheet to `theme.fonts.href`. A null href
+ * removes a previously injected link. Safe to call repeatedly; one `<link>`
+ * is reused in place. Constructed stylesheets cannot `@import`, so this is a
+ * real element — the same one `themeCss` consumers add by hand for static CSS.
+ */
+export function loadThemeFonts(theme, doc = document) {
+  const head = doc?.head;
+  if (!head) return;
+  const href = theme?.fonts?.href || null;
+  const existing = head.querySelector(`link[${FONT_ATTR}]`);
+  if (!href) {
+    existing?.remove();
+    return;
+  }
+  if (/fonts\.googleapis\.com|fonts\.gstatic\.com/.test(href)) ensurePreconnect(head);
+  if (existing) {
+    if (existing.getAttribute('href') !== href) existing.setAttribute('href', href);
+    return;
+  }
+  const link = doc.createElement('link');
+  link.rel = 'stylesheet';
+  link.setAttribute('href', href);
+  link.setAttribute(FONT_ATTR, '');
+  head.append(link);
+}
+
+function ensurePreconnect(head) {
+  if (head.querySelector(`link[${PRECONNECT_ATTR}]`)) return;
+  for (const href of ['https://fonts.googleapis.com', 'https://fonts.gstatic.com']) {
+    const l = head.ownerDocument.createElement('link');
+    l.rel = 'preconnect';
+    l.href = href;
+    if (href.includes('gstatic')) l.crossOrigin = 'anonymous';
+    l.setAttribute(PRECONNECT_ATTR, '');
+    head.append(l);
+  }
 }
 
 // ------------------------------------------------------------------ scheme

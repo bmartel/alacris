@@ -14,18 +14,30 @@ const seed = signal(localStorage.getItem('ui-seed') || '#6750a4');
 const radius = signal(+(localStorage.getItem('ui-radius') || 1));
 const density = signal(+(localStorage.getItem('ui-density') || 0));
 const motionScale = signal(+(localStorage.getItem('ui-motion') || 1));
+const font = signal(localStorage.getItem('ui-font') || 'google-sans-flex');
+
+const FONT_OPTIONS = [
+  { id: 'google-sans-flex', label: 'Google Sans Flex', typography: 'google-sans-flex' },
+  { id: 'google-sans', label: 'Google Sans', typography: 'google-sans' },
+  { id: 'roboto', label: 'Roboto', typography: 'roboto' },
+  { id: 'inter', label: 'Inter', typography: { family: 'Inter' } },
+  { id: 'system', label: 'System', typography: 'system' },
+];
 
 export function applyCurrentTheme() {
+  const opt = FONT_OPTIONS.find((o) => o.id === font()) || FONT_OPTIONS[0];
   applyTheme(createTheme({
     seed: seed(),
     shape: { radius: radius() },
     density: density(),
     motion: { scale: motionScale() },
+    typography: opt.typography,
   }));
   localStorage.setItem('ui-seed', seed());
   localStorage.setItem('ui-radius', String(radius()));
   localStorage.setItem('ui-density', String(density()));
   localStorage.setItem('ui-motion', String(motionScale()));
+  localStorage.setItem('ui-font', opt.id);
 }
 
 const savedScheme = localStorage.getItem('ui-scheme');
@@ -105,6 +117,13 @@ define('demo-theme-controls', {
           <option value="1" selected=${() => motionScale() === 1 || null}>Full</option>
           <option value="1.8" selected=${() => motionScale() === 1.8 || null}>Slow (see it)</option>
           <option value="0" selected=${() => motionScale() === 0 || null}>Off</option>
+        </select>
+      </div>
+      <div class="group">
+        <label for="font">Font</label>
+        <select id="font" @change=${(e) => set(font, e.target.value)}>
+          ${FONT_OPTIONS.map((o) => html`
+            <option value=${o.id} selected=${() => font() === o.id || null}>${o.label}</option>`)}
         </select>
       </div>
       <div class="group">
