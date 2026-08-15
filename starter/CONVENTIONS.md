@@ -38,7 +38,9 @@ const t = vars('ui-button', {
 
 Hardcoded colors, font sizes, radii, shadows, durations, or easings inside a
 component are **bugs**. Structural values (1px borders, small fixed paddings)
-may be literal.
+may be literal. Typefaces flow from `--ui-font-brand/plain/code`; `base`
+sets `:host { font-family }` from `sys.font.plain` so slotted and inherited
+text follows the theme even when a component does not set a type-role shorthand.
 
 ## File anatomy
 

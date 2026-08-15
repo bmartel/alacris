@@ -1,13 +1,14 @@
 // createTheme — one config object in, complete token maps out.
 //
-// A theme is data: `{ config, palettes, common, schemes: { light, dark } }`
+// A theme is data: `{ config, palettes, common, schemes, fonts }`
 // where `common` and each scheme are flat maps of token name (without the
-// `--ui-` prefix) → CSS value. `applyTheme` turns that into one document-level
-// stylesheet; nothing here touches the DOM, so themes can be built, diffed,
-// serialized, or generated ahead of time.
+// `--ui-` prefix) → CSS value, and `fonts` is `{ href, preset }` for the
+// typeface stylesheet `applyTheme` injects. `applyTheme` turns that into one
+// document-level stylesheet; nothing here touches the DOM, so themes can be
+// built, diffed, serialized, or generated ahead of time.
 
 import { makePalettes, makeScheme, COLOR_ROLES } from '../tokens/color.js';
-import { typographyTokens } from '../tokens/typography.js';
+import { typographyTokens, resolveTypography } from '../tokens/typography.js';
 import {
   shapeTokens, elevationTokens, motionTokens, spacingTokens,
   stateTokens, focusTokens, zTokens, densityTokens,
@@ -20,7 +21,8 @@ const kebab = (s) => s.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase());
  *   seed: '#6750a4',               // one color → a whole scheme, or:
  *   colors: { primary, secondary, tertiary, neutral, neutralVariant,
  *             error, success, warning, info },   // explicit palette seeds
- *   typography: { brand, plain, code, scale },
+ *   typography: 'google-sans-flex' | 'google-sans' | 'roboto' | 'system'
+ *               | { preset, family, brand, plain, code, scale, load },
  *   shape: { radius },             // multiplier: 0 = square, 2 = extra round
  *   motion: { scale },             // 0 = instant, 1 = default
  *   density: 0,                    // 0 … -2 (each step: -4px control height)
@@ -33,9 +35,10 @@ const kebab = (s) => s.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase());
  */
 export function createTheme(config = {}) {
   const palettes = makePalettes(config);
+  const type = resolveTypography(config.typography);
 
   const common = {
-    ...typographyTokens(config.typography),
+    ...typographyTokens(type),
     ...shapeTokens(config.shape),
     ...elevationTokens(),
     ...motionTokens(config.motion),
@@ -62,5 +65,6 @@ export function createTheme(config = {}) {
     palettes,
     common,
     schemes: { light: schemeTokens('light'), dark: schemeTokens('dark') },
+    fonts: { href: type.href, preset: type.preset },
   };
 }

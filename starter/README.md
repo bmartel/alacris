@@ -37,6 +37,7 @@ import { applyTheme } from './src/theme/index.js';
 import './src/index.js';                 // registers every component
 
 applyTheme({ seed: '#0b57d0' });          // the entire theme from one color
+                                          // (Google Sans Flex, loaded for you)
 ```
 
 ```html
@@ -105,14 +106,14 @@ Full guide: [docs/theming.md](docs/theming.md).
 ```js
 import { createTheme, applyTheme, setScheme, toggleScheme } from './src/theme/index.js';
 
-applyTheme({ seed: '#6750a4' });                    // Material baseline
+applyTheme({ seed: '#6750a4' });                    // Material baseline (Google Sans Flex)
 applyTheme({ seed: '#b3261e', density: -1 });       // rebrand + compact, live
 setScheme('dark');                                  // pin dark ('light' | 'auto')
 toggleScheme();                                     // flip
 
 applyTheme(createTheme({
   colors: { primary: '#0b57d0', tertiary: '#00695c' },  // explicit key colors
-  typography: { brand: 'Inter, sans-serif', scale: 1.05 },
+  typography: 'google-sans',                             // or { family: 'Inter' }
   shape: { radius: 0.5 },                                // tighter corners
   overrides: { light: { 'color-surface': '#faf7f2' } },  // raw token surgery
 }));
@@ -171,7 +172,8 @@ demo page — `npm run demo` from the repo root, then `/starter/`.
 
 ## Making it not-Material
 
-The Material defaults are one file deep at every layer: swap the type scale in
+The Material defaults are one file deep at every layer: swap the typeface with
+`typography: 'google-sans'` (or `{ family: 'Inter' }`), the type scale in
 `tokens/typography.js`, the shape ramp in `tokens/system.js`, the role mapping
 in `tokens/color.js` — or leave the machinery alone and override tokens from
 `createTheme(...)`. The components only ever speak `sys.*`, so they follow

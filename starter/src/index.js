@@ -7,12 +7,16 @@
 
 // Theme
 export {
-  createTheme, applyTheme, themeCss, activeTheme,
+  createTheme, applyTheme, themeCss, activeTheme, loadThemeFonts,
   scheme, schemePreference, setScheme, toggleScheme,
 } from './theme/index.js';
 
 // Tokens
 export { sys, typeRule } from './tokens/sys.js';
+export {
+  FONT_PRESETS, FONT_STACKS, DEFAULT_FONT_PRESET, TYPE_ROLES,
+  resolveTypography, googleFontsHref,
+} from './tokens/typography.js';
 
 // Motion
 export { animate, settled, duration, easing, fx, prefersReducedMotion } from './motion/animate.js';

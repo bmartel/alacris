@@ -23,7 +23,7 @@ Semantic roles on `:root`, inheriting through every shadow boundary:
 | Group | Tokens (prefix `--ui-`) |
 | --- | --- |
 | Color | `color-primary`, `color-on-primary`, `color-primary-container`, `color-on-primary-container` — same quartet for secondary/tertiary/error/success/warning/info; `color-surface`, `color-surface-dim/bright`, `color-surface-container-lowest/low/…/highest`, `color-on-surface`, `color-on-surface-variant`, `color-outline`, `color-outline-variant`, `color-inverse-*`, `color-scrim`, `color-shadow` |
-| Type | `type-<role>` shorthand + `-size/-line/-weight/-tracking/-font` for the 15 roles `display|headline|title|body|label` × `lg|md|sm`; `font-brand`, `font-plain`, `font-code` |
+| Type | `type-<role>` shorthand + `-size/-line/-weight/-tracking/-font` for the 15 roles `display|headline|title|body|label` × `lg|md|sm`; `font-brand`, `font-plain`, `font-code`. Default face is Google Sans Flex. |
 | Shape | `radius-none/xs/sm/md/lg/xl/full` |
 | Elevation | `elevation-0…5` (key+ambient shadow pairs on `shadow-rgb`) |
 | Motion | `duration-short-1…extra-long-4`, `easing-standard/emphasized(+-accelerate/-decelerate)/linear` |
@@ -34,8 +34,8 @@ Semantic roles on `:root`, inheriting through every shadow boundary:
 
 Components never write these names as strings — they go through the `sys`
 accessor (`src/tokens/sys.js`): `sys.color.primary`, `sys.radius.md`,
-`sys.duration.short4`, `sys.space(4)`, `sys.type.bodyMd`. A typo becomes a
-visible `undefined` instead of a silently inert custom property.
+`sys.duration.short4`, `sys.space(4)`, `sys.type.bodyMd`, `sys.font.plain`. A
+typo becomes a visible `undefined` instead of a silently inert custom property.
 
 ### Tier 3 — component tokens (the per-component contract)
 
@@ -74,12 +74,8 @@ const theme = createTheme({
     neutral: '#5d5e62', error: '#b3261e', success: '#1e8e3e',
     warning: '#e37400', info: '#0b57d0',
   },
-  typography: {
-    brand: 'Inter, system-ui, sans-serif',   // display/headline/title-lg
-    plain: 'Inter, system-ui, sans-serif',   // everything else
-    code:  'ui-monospace, monospace',
-    scale: 1,                                // multiply every size
-  },
+  typography: 'google-sans-flex', // or 'google-sans' | 'roboto' | 'system'
+                                  // or { family: 'Inter' } / { brand, plain, code, scale }
   shape: { radius: 1 },       // 0 = square corners, 2 = extra round
   motion: { scale: 1 },       // 0 = instant UI, 2 = slow-motion debugging
   density: 0,                 // 0 … -2; each step removes 4px of control height
@@ -91,8 +87,9 @@ const theme = createTheme({
 });
 ```
 
-Returns `{ config, palettes, common, schemes: { light, dark } }` — flat maps of
-token name → value. It touches no DOM: build themes ahead of time, diff them,
+Returns `{ config, palettes, common, schemes: { light, dark }, fonts }` — flat
+maps of token name → value, plus `{ href, preset }` for the typeface
+stylesheet. It touches no DOM: build themes ahead of time, diff them,
 serialize them, unit-test them.
 
 ### `applyTheme(themeOrConfig)` — one stylesheet
@@ -108,6 +105,61 @@ Calling `applyTheme` again **rewrites the same sheet in place** — one
 `replaceSync`, every component on the page re-themes, nothing re-renders. This
 is what the demo's theme playground does on every slider input; it is cheap
 enough to wire to a color picker's `input` event.
+
+`applyTheme` also loads the theme's typeface (a Google Fonts `<link>` for
+presets and `family` names). Constructed stylesheets cannot `@import`, so the
+face is a real element, reused on the next call. Pass `loadFonts: false` — or
+`typography: { load: false }` — when the files are self-hosted or already on
+the page. `theme.fonts.href` is the URL `themeCss` consumers add by hand:
+
+```html
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,400..700&display=swap">
+```
+
+### Fonts
+
+The type scale is 15 roles. The *faces* those roles point at are three system
+tokens: `--ui-font-brand` (display, headline, title-lg), `--ui-font-plain`
+(everything else), `--ui-font-code`. Change those and every component follows
+— each type-role shorthand ends in `var(--ui-font-brand)` or
+`var(--ui-font-plain)`, and `base` sets `:host { font-family }` from the plain
+face so slotted text inherits it too. `applyTheme` also sets `font-family` on
+`:root`, so native markup on the page matches.
+
+The Material baseline is **Google Sans Flex**, with Google Sans next in the
+stack (often already installed on ChromeOS / Android). That is what Google's
+own Material 3 surfaces ship. Switching the whole product is one argument:
+
+```js
+applyTheme();                              // Google Sans Flex, loaded for you
+applyTheme({ typography: 'google-sans' }); // Google Sans
+applyTheme({ typography: 'roboto' });      // classic MD3
+applyTheme({ typography: 'system' });      // no webfont
+
+applyTheme({ typography: { family: 'Inter' } });           // brand + plain
+applyTheme({ typography: {                                // split faces
+  brand: 'Playfair Display, serif',
+  plain: 'Source Sans 3, sans-serif',
+  code:  'Google Sans Code, ui-monospace, monospace',
+  scale: 1.05,
+}});
+```
+
+`family` is the simple knob: one name (or a full CSS stack) for brand and
+plain. `brand` / `plain` / `code` override individually. A family name is
+quoted and given a system-ui fallback; a comma-separated stack is used as-is.
+Named presets live in `FONT_PRESETS`.
+
+Google Fonts is loaded automatically for presets and for the first
+non-generic family in a custom stack. Self-host instead:
+
+```js
+applyTheme({
+  typography: { family: 'GT America', load: false },
+});
+// or keep the derived URL and skip the network:
+applyTheme({ typography: { family: 'Inter' }, loadFonts: false });
+```
 
 ### Scheme switching
 
@@ -130,7 +182,9 @@ from `${() => scheme() === 'dark' ? 'light-mode' : 'dark-mode'}`.
 
 `themeCss(theme)` returns the stylesheet text. Generate once, save as a `.css`
 file, ship it in a `<link>` — the components require only that the custom
-properties exist, not that the engine runs.
+properties exist, not that the engine runs. Add a second `<link>` for
+`theme.fonts.href` so the typeface files load; constructed CSS cannot
+`@import`.
 
 ## Consumer styling — the full toolbox
 
@@ -148,11 +202,11 @@ every Alacris UI component opens all of them:
    ```
 
 3. **`adoptGlobal`** — push a whole stylesheet into *every* component, e.g. a
-   typography nudge across the board:
+   tracking nudge across the board:
 
    ```js
    import { adoptGlobal, css } from 'alacris';
-   adoptGlobal(css`:host { font-synthesis: none }`);
+   adoptGlobal(css`:host { letter-spacing: 0.01em }`);
    ```
 
 None of the components use `!important`, so nothing here can be locked against
@@ -163,7 +217,7 @@ you.
 **Brand re-skin (keep Material bones):**
 
 ```js
-applyTheme({ colors: { primary: '#e4002b' }, typography: { brand: 'GT America, sans-serif' } });
+applyTheme({ colors: { primary: '#e4002b' }, typography: { family: 'GT America' } });
 ```
 
 **Dark-only product:** `setScheme('dark')` at boot; done. Or serve only the
@@ -192,9 +246,10 @@ The Material defaults are deliberately shallow. A full departure:
    `tokens/color.js` (`ROLES` — which tone each role takes per scheme), or
    bypass generation entirely with `overrides.light/dark` maps of final hex
    values.
-2. **Type**: edit `SCALE` in `tokens/typography.js` — your roles, your ramp.
-   Keep the role *names* and every component follows; rename them and update
-   `sys.type` accordingly.
+2. **Type**: change the faces with `typography: 'google-sans'` / `{ family }`
+   (see [Fonts](#fonts)), or edit `SCALE` in `tokens/typography.js` for a
+   different ramp. Keep the role *names* and every component follows; rename
+   them and update `sys.type` accordingly.
 3. **Shape/elevation/motion**: `tokens/system.js` — flat shadows? one-liner.
    Snappier easing language? replace the `EASINGS` map.
 4. **Component contracts**: each component's `vars()` block is its skin. The

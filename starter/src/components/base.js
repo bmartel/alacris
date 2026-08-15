@@ -3,10 +3,16 @@
 // include it.
 
 import { css } from 'alacris';
+import { sys } from '../tokens/sys.js';
 
 export const base = css`
   *, *::before, *::after { box-sizing: border-box; }
-  :host { -webkit-tap-highlight-color: transparent; }
+  :host {
+    font-family: ${sys.font.plain};
+    font-optical-sizing: auto;
+    font-synthesis: none;
+    -webkit-tap-highlight-color: transparent;
+  }
   :host([hidden]) { display: none; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {

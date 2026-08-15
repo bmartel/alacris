@@ -3,7 +3,10 @@ export {
   makePalettes, makeScheme, tonalPalette, oklchFromHex, hexFromOklch,
   COLOR_ROLES, TONES, DEFAULT_SEED,
 } from './color.js';
-export { typographyTokens, TYPE_ROLES, FONT_STACKS } from './typography.js';
+export {
+  typographyTokens, resolveTypography, googleFontsHref, firstFamily,
+  TYPE_ROLES, FONT_STACKS, FONT_PRESETS, DEFAULT_FONT_PRESET,
+} from './typography.js';
 export {
   shapeTokens, elevationTokens, motionTokens, spacingTokens, stateTokens,
   focusTokens, zTokens, densityTokens, RADIUS_KEYS, ELEVATION_LEVELS,
