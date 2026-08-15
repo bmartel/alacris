@@ -74,7 +74,7 @@ const styles = css`
     flex-direction: column;
     flex: 1;
     min-inline-size: 0;
-    gap: 2px;
+    gap: calc(${sys.space(1)} / 2);
   }
   .headline {
     font: ${t.headlineFont};

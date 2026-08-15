@@ -1489,8 +1489,9 @@ one Material segmented button, used inside
 &lt;ui-toggle-group&gt; (the group draws the outlined container and dividers;
 standalone the segment is a flat pill).
 
-Selecting shows a leading check icon. The check slot is always reserved so
-selecting a segment does not shift its neighbors; the glyph scales in.
+Selecting animates a leading check icon in smoothly via width and scale transitions,
+adhering to Material Design 3. When an icon is already present, selecting smoothly
+crossfades and morphs between the custom icon and the checkmark in both directions.
 The button does not own its selection: it emits `ui-toggle` and the group
 (or any parent) sets `selected` back down.
 

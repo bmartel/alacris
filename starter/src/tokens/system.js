@@ -68,7 +68,7 @@ export function motionTokens({ scale = 1 } = {}) {
 
 // ----------------------------------------------------------------- spacing
 
-export const SPACE_STEPS = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 20, 24];
+export const SPACE_STEPS = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 24];
 
 export function spacingTokens() {
   const out = {};

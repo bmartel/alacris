@@ -25,7 +25,7 @@
 
 import { define, html, css, vars, computed, effect } from 'alacris';
 import { sys } from '../tokens/sys.js';
-import { base } from './base.js';
+import { base, focusRingOn } from './base.js';
 import { ripple } from '../motion/ripple.js';
 import { animate, settled, fx } from '../motion/animate.js';
 import { presence } from '../motion/presence.js';
@@ -50,10 +50,7 @@ const styles = css`
     border-radius: ${t.radius};
     outline: none;
   }
-  :host(:focus-visible) {
-    outline: var(--ui-focus-ring);
-    outline-offset: var(--ui-focus-ring-offset);
-  }
+  ${focusRingOn(':host')}
   .control {
     position: relative;
     isolation: isolate;
@@ -61,7 +58,7 @@ const styles = css`
     align-items: center;
     gap: 0;
     block-size: calc(${t.height} + var(--ui-density, 0) * 4px);
-    padding-inline: ${sys.space(4)};
+    padding-inline: ${sys.space(3)};
     border: 1px solid ${t.outlineColor};
     border-radius: ${t.radius};
     background: transparent;
@@ -118,9 +115,9 @@ const styles = css`
   .selected .label, :host([aria-selected="true"]) .label { color: ${t.selectedFg}; }
 
   .dismiss {
-    margin-inline-end: calc(${sys.space(2)} * -1);
+    margin-inline-start: ${sys.space(2)};
     --ui-icon-button-size: 18px;
-    --ui-icon-size: 1rem;
+    --ui-icon-size: 1.125rem;
   }
 
   :host([aria-disabled="true"]) { pointer-events: none; }

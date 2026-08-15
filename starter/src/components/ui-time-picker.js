@@ -132,10 +132,11 @@ const styles = css`
 
   fieldset {
     position: absolute;
-    inset: -8px 0 0;
+    inset: -6px 0 0;
     margin: 0;
-    padding: 0 calc(${sys.space(4)} - 4px);
+    padding: 0 calc(${sys.space(3)} - 2px);
     min-inline-size: 0;
+    box-sizing: border-box;
     appearance: none;
     border: 1px solid ${t.outlineColor};
     border-radius: ${t.radius};
@@ -144,16 +145,33 @@ const styles = css`
                 border-width ${sys.duration.short2} ${sys.easing.standard};
   }
   legend {
+    float: unset;
+    display: block;
+    width: max-content;
     padding: 0;
+    margin: 0;
     margin-inline-start: 0;
-    inline-size: 0;
     white-space: nowrap;
+    overflow: hidden;
+    font: ${t.font};
     font-size: 0.75em;
+    letter-spacing: calc(${sys.tracking.bodyLg} * 0.75);
     visibility: hidden;
-    transition: inline-size ${sys.duration.short2} ${sys.easing.standard};
+    max-inline-size: 0.01px;
+    height: 12px;
+    line-height: 12px;
+    transition: max-inline-size ${sys.duration.short2} ${sys.easing.standard};
   }
-  legend span { padding-inline: 4px; }
-  .outlined.floating legend { inline-size: auto; }
+  legend span {
+    padding-inline: ${sys.space(1)} calc(${sys.space(1)} - 0.5px);
+    display: inline-block;
+    opacity: 0;
+    visibility: visible;
+  }
+  .outlined.floating legend {
+    max-inline-size: 100%;
+    transition: max-inline-size ${sys.duration.short3} ${sys.easing.standard};
+  }
   .outlined:focus-within fieldset,
   .outlined.open fieldset { border-width: 2px; border-color: ${t.accent}; }
   .root:hover:not(:focus-within):not(.open) fieldset { border-color: ${sys.color.onSurface}; }
@@ -165,12 +183,12 @@ const styles = css`
     translate: 0 -50%;
     color: ${t.labelFg};
     pointer-events: none;
-    transform-origin: 0 0;
+    transform-origin: 0 50%;
     transition: translate ${sys.duration.short3} ${sys.easing.standard},
                 scale ${sys.duration.short3} ${sys.easing.standard},
                 color ${sys.duration.short2} ${sys.easing.standard};
   }
-  .filled.floating .label { translate: 0 -106%; scale: 0.75; }
+  .filled.floating .label { translate: 0 calc(-50% - 16px); scale: 0.75; }
   .outlined.floating .label {
     translate: 0 calc(-50% - (${t.height} + var(--ui-density, 0) * 4px) / 2);
     scale: 0.75;
@@ -232,11 +250,11 @@ const styles = css`
                 color ${sys.duration.short4} ${sys.easing.standard};
   }
   .digit.active { background: ${t.selectedBg}; color: ${t.selectedFg}; }
-  .digit:focus-visible { outline: var(--ui-focus-ring); outline-offset: 2px; }
+  .digit:focus-visible { outline: ${sys.focus.ring}; outline-offset: 2px; }
   .colon {
     font: ${sys.type.displaySm};
     color: ${t.fg};
-    padding-inline: 2px;
+    padding-inline: calc(${sys.space(1)} / 2);
   }
   .period {
     display: flex;
@@ -263,7 +281,7 @@ const styles = css`
                 color ${sys.duration.short4} ${sys.easing.standard};
   }
   .period button.active { background: ${t.selectedBg}; color: ${t.selectedFg}; }
-  .period button:focus-visible { outline: var(--ui-focus-ring); outline-offset: -2px; }
+  .period button:focus-visible { outline: ${sys.focus.ring}; outline-offset: -2px; }
 
   .grid {
     display: grid;
@@ -300,7 +318,7 @@ const styles = css`
   .choice:hover .layer { opacity: ${sys.state.hover}; }
   .choice:active .layer { opacity: ${sys.state.pressed}; }
   .choice.active { background: ${t.accent}; color: ${t.onAccent}; }
-  .choice:focus-visible { outline: var(--ui-focus-ring); outline-offset: -2px; }
+  .choice:focus-visible { outline: ${sys.focus.ring}; outline-offset: -2px; }
 
   .dial {
     position: relative;
@@ -372,7 +390,7 @@ const styles = css`
     letter-spacing: ${sys.tracking.bodySm};
   }
   .tick.active { color: ${t.onAccent}; }
-  .tick:focus-visible { outline: var(--ui-focus-ring); outline-offset: 2px; }
+  .tick:focus-visible { outline: ${sys.focus.ring}; outline-offset: 2px; }
   .ticks {
     position: absolute;
     inset: 0;
@@ -669,7 +687,7 @@ define('ui-time-picker', {
       <div class=${cls}>
         <div class="field" part="field" ref=${(el) => (fieldEl = el)}>
           ${() => (variant() === 'outlined'
-            ? html`<fieldset aria-hidden="true"><legend><span>${label}</span></legend></fieldset>`
+            ? html`<fieldset aria-hidden="true"><legend><span>${label}${() => (required() ? ' *' : '')}</span></legend></fieldset>`
             : null)}
           ${() => (label() ? html`<span class="label" part="label">${label}${() => (required() ? ' *' : '')}</span>` : null)}
           <input part="input" .value=${text}

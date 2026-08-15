@@ -47,7 +47,7 @@ const styles = css`
     justify-content: center;
     min-block-size: ${t.size};
     min-inline-size: ${t.size};
-    padding-inline: 4px;
+    padding-inline: ${sys.space(1)};
     border-radius: ${sys.radius.full};
     background: ${t.bg};
     color: ${t.fg};

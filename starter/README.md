@@ -26,7 +26,7 @@ build — the source is identical in both setups:
 
 ```html
 <script type="importmap">
-{ "imports": { "alacris": "https://cdn.jsdelivr.net/npm/alacris@0.4/dist/alacris.js" } }
+{ "imports": { "alacris": "https://cdn.jsdelivr.net/npm/alacris@0.6/dist/alacris.js" } }
 </script>
 ```
 

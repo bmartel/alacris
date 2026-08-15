@@ -56,7 +56,7 @@ const styles = css`
     font: ${t.font};
     letter-spacing: ${sys.tracking.labelSm};
     border-radius: ${t.radius};
-    padding: 4px 8px;
+    padding: ${sys.space(1)} ${sys.space(2)};
     max-inline-size: ${t.maxWidth};
     pointer-events: none;
   }

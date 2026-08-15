@@ -19,8 +19,8 @@ import { ripple } from '../motion/ripple.js';
 
 const t = vars('ui-button', {
   height: '40px',
-  padInline: '24px',
-  gap: '8px',
+  padInline: sys.space(6),
+  gap: sys.space(2),
   radius: sys.radius.full,
   font: sys.type.labelLg,
   tracking: sys.tracking.labelLg,
@@ -77,16 +77,16 @@ const styles = css`
     color: ${t.outlinedFg};
     border: 1px solid ${t.outlineColor};
   }
-  .text { color: ${t.textFg}; padding-inline: 12px; }
+  .text { color: ${t.textFg}; padding-inline: ${sys.space(3)}; }
   .elevated { background: ${t.elevatedBg}; color: ${t.elevatedFg}; box-shadow: ${sys.elevation[1]}; }
   .elevated:hover { box-shadow: ${sys.elevation[2]}; }
   .elevated:active { box-shadow: ${sys.elevation[1]}; }
 
   /* Leading icon: 16dp start padding. Trailing icon: 16dp end padding. */
-  .with-icon:not(.text) { padding-inline-start: 16px; }
-  .with-trailing:not(.text) { padding-inline-end: 16px; }
-  .text.with-icon { padding-inline-end: 16px; }
-  .text.with-trailing { padding-inline-start: 16px; }
+  .with-icon:not(.text) { padding-inline-start: ${sys.space(4)}; }
+  .with-trailing:not(.text) { padding-inline-end: ${sys.space(4)}; }
+  .text.with-icon { padding-inline-end: ${sys.space(4)}; }
+  .text.with-trailing { padding-inline-start: ${sys.space(4)}; }
 
   .control:disabled, .control[aria-disabled="true"] {
     cursor: default;
