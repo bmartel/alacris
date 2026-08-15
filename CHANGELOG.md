@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.13](https://github.com/bmartel/alacris/compare/v0.6.12...v0.6.13) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** fix hero carousel last slide selection and button navigation ([d435e51](https://github.com/bmartel/alacris/commit/d435e511a7e926c9ec1af831cea9e762e539dd55))
+
 ## [0.6.12](https://github.com/bmartel/alacris/compare/v0.6.11...v0.6.12) (2026-08-15)
 
 ### Bug Fixes
