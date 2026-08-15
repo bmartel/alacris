@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.9.1](https://github.com/bmartel/alacris/compare/v0.9.0...v0.9.1) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** restore demo interaction and overlay search results ([48ffa15](https://github.com/bmartel/alacris/commit/48ffa151712c28cee06bcc7855f2417e3cc208b8))
+
 ## [0.9.0](https://github.com/bmartel/alacris/compare/v0.8.0...v0.9.0) (2026-08-15)
 
 ### Features
