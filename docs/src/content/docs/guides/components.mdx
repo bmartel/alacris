@@ -44,6 +44,7 @@ define('hello-world', () => html`<p>hello</p>`);
 | `setup` | — | runs **once** per element; return a template to render it |
 | `styles` | — | a sheet, a CSS string, or an array; parsed once per unique stylesheet |
 | `shadow` | `'open'` | `'open'`, `'closed'`, or `false` for light DOM |
+| `formAssociated` | `false` | register as a [form-associated custom element](#forms) |
 
 ## setup runs once
 
@@ -170,6 +171,52 @@ component's. Reach inside with `::slotted()`:
 ```css
 :host ::slotted(p) { margin: 0 }
 ```
+
+## Forms
+
+A control inside a shadow root is invisible to an enclosing `<form>` — its
+value never submits. `formAssociated: true` registers the element as a
+[form-associated custom element](https://developer.mozilla.org/en-US/docs/Web/API/ElementInternals):
+the browser treats it as a real field, and `host.internals` (the platform's
+`ElementInternals`) is how it reports a value, validity, and state.
+
+```js
+define('x-field', {
+  formAssociated: true,
+  props: { value: '', name: '' },
+  setup({ value }, host) {
+    // A live binding: every write to `value` reaches the form.
+    effect(() => host.internals.setFormValue(value()));
+    host.onFormReset = () => value.set('');
+    host.onFormDisabled = (disabled) => { /* fieldset disabled you */ };
+    return html`<input .value=${value} @input=${(e) => value.set(e.target.value)}>`;
+  },
+});
+```
+
+```html
+<form>
+  <x-field name="nick"></x-field>   <!-- submits like a native input -->
+</form>
+```
+
+The platform captures form lifecycle reactions when the element is registered,
+so they cannot be added per instance — assign the forwarded handlers in
+`setup` instead: `onFormAssociated(form)`, `onFormDisabled(disabled)`,
+`onFormReset()`, and `onFormStateRestore(state, mode)`. Validity works the
+same way: `host.internals.setValidity({ valueMissing: true }, 'Required',
+anchor)` makes the form refuse to submit exactly like an empty
+`<input required>`.
+
+One ordering fact to know: the *initial* association and disabled state are
+established during upgrade, before `setup` runs — so the handlers only hear
+*changes* from then on. For the starting state, read it:
+`host.internals.form` for the owning form, `host.matches(':disabled')` for a
+surrounding `<fieldset disabled>`.
+
+`host.internals` is `undefined` in environments without `attachInternals`
+(some simulated DOMs in tests) — guard with `host.internals?.` where that
+matters.
 
 ## Light DOM
 

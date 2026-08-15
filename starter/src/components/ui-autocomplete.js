@@ -184,6 +184,7 @@ const styles = css`
 `;
 
 define('ui-autocomplete', {
+  formAssociated: true,
   props: {
     label: '', value: '', options: [], variant: 'filled', disabled: false,
     required: false, name: '', placeholder: '', freeSolo: false,

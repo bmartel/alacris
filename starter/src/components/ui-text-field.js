@@ -159,6 +159,7 @@ const styles = css`
 `;
 
 define('ui-text-field', {
+  formAssociated: true,
   props: {
     variant: 'filled', label: '', value: '', type: 'text', placeholder: '',
     helper: '', error: '', disabled: false, required: false, clearable: false,

@@ -18,20 +18,24 @@ const coerce = (v, d) => {
 };
 
 /**
- * define('x-thing', { props, setup, styles, shadow })
+ * define('x-thing', { props, setup, styles, shadow, formAssociated })
  * define('x-thing', (props, host) => html`...`)
  */
 export function define(name, opts) {
   if (typeof opts === 'function') opts = { setup: opts };
-  const { props = {}, setup, styles, shadow = 'open' } = opts;
+  const { props = {}, setup, styles, shadow = 'open', formAssociated } = opts;
   const keys = Object.keys(props);
   const attrs = keys.map(kebab);
 
   class AlacrisElement extends HTMLElement {
     static observedAttributes = attrs;
+    static formAssociated = !!formAssociated;
 
     constructor() {
       super();
+      // `internals` is the platform's ElementInternals: setFormValue,
+      // setValidity, form, labels, … (undefined where unsupported).
+      if (formAssociated) this.internals = this.attachInternals?.();
       const p = this.props = {};
       for (let i = 0; i < keys.length; i++) p[keys[i]] = signal(props[keys[i]]);
       // Values assigned before upgrade shadow the accessors; replay them.
@@ -86,6 +90,16 @@ export function define(name, opts) {
       return this.dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true, ...o }));
     }
   }
+
+  // Form lifecycle reactions are captured from the prototype when the element
+  // is registered, so an instance cannot add them later — these forward to
+  // handlers a setup assigns on the host (host.onFormReset = () => …).
+  if (formAssociated) Object.assign(AlacrisElement.prototype, {
+    formAssociatedCallback(form) { this.onFormAssociated?.(form); },
+    formDisabledCallback(disabled) { this.onFormDisabled?.(disabled); },
+    formResetCallback() { this.onFormReset?.(); },
+    formStateRestoreCallback(state, mode) { this.onFormStateRestore?.(state, mode); },
+  });
 
   for (let i = 0; i < keys.length; i++) {
     const k = keys[i];

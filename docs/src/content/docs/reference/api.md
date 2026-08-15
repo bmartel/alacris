@@ -160,6 +160,7 @@ define('x-thing', {
   props:  { label: '', count: 0 },
   styles: css`:host { display: block }`,
   shadow: 'open',            // 'open' | 'closed' | false
+  formAssociated: false,     // true: a form-associated custom element
   setup(props, host) { return html`…`; },
 });
 
@@ -172,6 +173,14 @@ Returns the element constructor.
 
 - `props.x` — the prop as a signal (`props.x()` reads, `props.x.set(v)` writes)
 - `host` — the element, with `host.props` and `host.emit`
+- with `formAssociated: true`: `host.internals` — the element's
+  `ElementInternals` (`setFormValue`, `setValidity`, `form`, …) — and the
+  form lifecycle reactions forwarded to handlers assigned in `setup`:
+  `host.onFormAssociated(form)`, `host.onFormDisabled(disabled)`,
+  `host.onFormReset()`, `host.onFormStateRestore(state, mode)`. The initial
+  association/disabled state precedes `setup` — read `host.internals.form`
+  and `host.matches(':disabled')` for the starting state; the handlers hear
+  changes from then on
 
 **On the element:**
 

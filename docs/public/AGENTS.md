@@ -1,7 +1,7 @@
 # AGENTS.md — building applications with Alacris
 
 You are working in a project that uses **Alacris** (npm: `alacris`) — web components
-with signals and fine-grained DOM updates. ~6.45 kB gzip, ESM-only, zero dependencies,
+with signals and fine-grained DOM updates. ~6.56 kB gzip, ESM-only, zero dependencies,
 no build step required. Docs: https://bmartel.github.io/alacris/
 
 This file tells you how to organize, write, and verify Alacris code. Follow it
@@ -137,6 +137,17 @@ Shorthand without props/styles: `define('x-hello', () => html`<p>hello</p>`)`.
   `onCleanup`.
 - Use `<slot>` (named and default) for composition instead of passing template
   children through props.
+- A control that should submit inside a `<form>` needs `formAssociated: true`
+  in its options — shadow inputs are invisible to forms. That gives `setup`
+  `host.internals` (the platform's `ElementInternals`): keep the value live
+  with `effect(() => host.internals.setFormValue(value()))`, report validity
+  with `host.internals.setValidity(...)`, and assign the forwarded lifecycle
+  handlers there (`host.onFormReset = () => value.set('')`, plus
+  `onFormAssociated` / `onFormDisabled` / `onFormStateRestore`). The initial
+  association/disabled state precedes `setup` — read `host.internals.form` /
+  `host.matches(':disabled')` for the starting state; handlers hear changes
+  from then on. Guard with `host.internals?.` in DOMs without
+  `attachInternals`.
 
 ```js
 import { define, html, signal } from 'alacris';

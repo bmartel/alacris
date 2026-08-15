@@ -26,7 +26,7 @@ build — the source is identical in both setups:
 
 ```html
 <script type="importmap">
-{ "imports": { "alacris": "https://cdn.jsdelivr.net/npm/alacris@0.3/dist/alacris.js" } }
+{ "imports": { "alacris": "https://cdn.jsdelivr.net/npm/alacris@0.4/dist/alacris.js" } }
 </script>
 ```
 
@@ -145,10 +145,13 @@ Full guide: [docs/motion.md](docs/motion.md).
 
 ## Forms
 
-Shadow-DOM inputs can't participate in `<form>` submission, so every named
-control (`ui-text-field`, `ui-switch`, `ui-checkbox`, `ui-select`, …) mirrors
-its value into a hidden light-DOM input via `formBind`. Give a component a
-`name` and it submits like a native field.
+Every named control (`ui-text-field`, `ui-switch`, `ui-checkbox`,
+`ui-select`, …) is a **form-associated custom element** (Alacris's
+`formAssociated: true`): the browser treats it as a real field via
+`ElementInternals`, so it submits, resets to its initial value, and follows
+`<fieldset disabled>` natively. Where `ElementInternals` is unavailable,
+`formBind` falls back to mirroring the value into a hidden light-DOM input —
+either way, give a component a `name` and it submits like a native field.
 
 ## Components
 

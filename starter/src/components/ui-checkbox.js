@@ -107,6 +107,7 @@ const styles = css`
 `;
 
 define('ui-checkbox', {
+  formAssociated: true,
   props: { checked: false, indeterminate: false, disabled: false, label: '', name: '', value: 'on' },
   styles: [base, styles],
   setup({ checked, indeterminate, disabled, label, name, value }, host) {

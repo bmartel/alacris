@@ -123,6 +123,7 @@ const styles = css`
 `;
 
 define('ui-slider', {
+  formAssociated: true,
   props: {
     value: 0, min: 0, max: 100, step: 1,
     label: '', disabled: false, showValue: false, name: '',

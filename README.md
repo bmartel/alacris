@@ -4,14 +4,14 @@
 
 # Alacris
 
-**Web components with signals and fine-grained DOM updates — in 6.45 kB.**
+**Web components with signals and fine-grained DOM updates — in 6.56 kB.**
 
 ESM-only · zero dependencies · no build step required · works inside any framework
 
 [![CI](https://github.com/bmartel/alacris/actions/workflows/ci.yml/badge.svg)](https://github.com/bmartel/alacris/actions/workflows/ci.yml)
 [![Docs](https://github.com/bmartel/alacris/actions/workflows/docs.yml/badge.svg)](https://bmartel.github.io/alacris/)
 [![npm](https://img.shields.io/npm/v/alacris.svg)](https://www.npmjs.com/package/alacris)
-[![core size](https://img.shields.io/badge/core-6.45%20kB%20gzip-blue)](#size)
+[![core size](https://img.shields.io/badge/core-6.56%20kB%20gzip-blue)](#size)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ***alacris*** *(Latin)* — brisk, lively, quick.
@@ -63,7 +63,7 @@ See [Performance](#performance) for the numbers and for where Alacris still pays
 
 | file | raw | gzip | brotli |
 | --- | ---: | ---: | ---: |
-| `dist/alacris.js` — signals + templates + styles + elements | 16.47 KB | **6.45 KB** | 5.87 KB |
+| `dist/alacris.js` — signals + templates + styles + elements | 16.79 KB | **6.56 KB** | 5.96 KB |
 | `dist/store.js` — deep reactive state | 2.14 KB | **1.03 KB** | 0.95 KB |
 | `dist/context.js` — cross-component context | 0.91 KB | **0.54 KB** | 0.46 KB |
 | `dist/signal.js` — reactivity alone, no DOM | 2.34 KB | **1.03 KB** | 0.96 KB |
@@ -277,6 +277,31 @@ Merely *moving* an element does not tear it down.
 One footgun to know: an object or array prop default (`tags: []`) is a single
 value shared by every instance that has not been given its own — treat defaults
 as immutable, or set a fresh value per element.
+
+### Form controls
+
+A control inside a shadow root is invisible to an enclosing `<form>`.
+`formAssociated: true` registers a **form-associated custom element**: the
+browser treats it as a real field, and `host.internals` — the platform's
+[`ElementInternals`](https://developer.mozilla.org/en-US/docs/Web/API/ElementInternals) —
+reports its value, validity and state:
+
+```js
+define('x-field', {
+  formAssociated: true,
+  props: { value: '' },
+  setup({ value }, host) {
+    effect(() => host.internals.setFormValue(value()));   // live: every write submits
+    host.onFormReset = () => value.set('');
+    return html`<input .value=${value} @input=${e => value.set(e.target.value)}>`;
+  },
+});
+```
+
+`<x-field name="nick">` now submits, resets, and disables (inside a
+`<fieldset disabled>`) like a native input. Form lifecycle reactions are
+captured at registration, so assign the forwarded handlers in `setup`:
+`onFormAssociated`, `onFormDisabled`, `onFormReset`, `onFormStateRestore`.
 
 ## Styling
 

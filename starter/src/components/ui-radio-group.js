@@ -35,6 +35,7 @@ const styles = css`
 `;
 
 define('ui-radio-group', {
+  formAssociated: true,
   props: { value: '', name: '', label: '', disabled: false, orientation: 'vertical' },
   styles: [base, styles],
   setup({ value, name, label, disabled }, host) {

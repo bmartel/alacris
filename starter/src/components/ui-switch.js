@@ -90,6 +90,7 @@ const styles = css`
 `;
 
 define('ui-switch', {
+  formAssociated: true,
   props: { checked: false, disabled: false, label: '', name: '', value: 'on', icons: false },
   styles: [base, styles],
   setup({ checked, disabled, label, name, value, icons }, host) {
