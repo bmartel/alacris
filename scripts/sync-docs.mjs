@@ -89,6 +89,13 @@ const measured = new Set([...sizes.values()].flatMap((m) => Object.values(m)));
 const METRICS = ['raw', 'gzip', 'brotli'];
 const FIGURE = /(\d+\.\d+)(\s*)([kK]B)/;
 
+// Compressed output moves a rounding step when Node's zlib/brotli update —
+// the same drift scripts/size.js tolerates in SIZE.md. A quoted gzip/brotli
+// figure within one hundredth of a KB of the measurement is current; raw is
+// deterministic and stays exact.
+const close = (a, b) => Math.abs(parseFloat(a) - parseFloat(b)) <= 0.02;
+const current = (was, now, metric) => (metric === 'raw' ? was === now : close(was, now));
+
 /** Which bundle a table row is about, read from its first cell. */
 function bundleOf(cell) {
   const text = cell.replace(/`/g, '');
@@ -114,7 +121,8 @@ function syncCell(cell, bundle, metric, note) {
   const size = sizes.get(bundle);
   if (!size) return cell;
   return cell.replace(FIGURE, (match, was, gap, unit) => {
-    if (was !== size[metric]) note(`${bundle} ${metric} ${was} -> ${size[metric]}`);
+    if (current(was, size[metric], metric)) return match;
+    note(`${bundle} ${metric} ${was} -> ${size[metric]}`);
     return `${size[metric]}${gap}${unit}`;
   });
 }
@@ -194,7 +202,8 @@ function syncBadge(text, note) {
   const core = sizes.get('alacris.js');
   if (!core) return text;
   return text.replace(BADGE, (match, prefix, was, suffix) => {
-    if (was !== core.gzip) note(`badge ${was} -> ${core.gzip}`);
+    if (current(was, core.gzip, 'gzip')) return match;
+    note(`badge ${was} -> ${core.gzip}`);
     return prefix + core.gzip + suffix;
   });
 }
@@ -207,7 +216,7 @@ function syncBadge(text, note) {
 function strayFigures(text) {
   return [...text.matchAll(/(\d+\.\d+)\s*[kK]B/g)]
     .map((m) => m[1])
-    .filter((figure) => !measured.has(figure));
+    .filter((figure) => ![...measured].some((m) => close(figure, m)));
 }
 
 // ---------------------------------------------------------------------- run

@@ -38,6 +38,7 @@
   "scripts": {
     "build": "node scripts/build.js",
     "test": "node --import ./test/setup.js --test test/*.test.js",
+    "pretest:starter": "node -e \"if(!require('fs').existsSync('dist/alacris.js'))require('child_process').execSync('npm run build',{stdio:'inherit'})\"",
     "test:starter": "npm test --prefix starter",
     "typecheck": "tsc -p tsconfig.json",
     "size": "node scripts/size.js",
