@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.19](https://github.com/bmartel/alacris/compare/v0.6.18...v0.6.19) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** keep ui-table styles inside the shadow tree ([df6b6d3](https://github.com/bmartel/alacris/commit/df6b6d3b41d30f68deec42b7a8f39acd391a51b1))
+
 ## [0.6.18](https://github.com/bmartel/alacris/compare/v0.6.17...v0.6.18) (2026-08-15)
 
 ### Bug Fixes
