@@ -25,7 +25,7 @@
 // @part  scrim, surface, headline, body, actions
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars, effect, onCleanup } from 'alacris';
+import { define, html, css, vars, effect, onCleanup, signal } from 'alacris';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { presence } from '../motion/presence.js';
@@ -116,6 +116,7 @@ define('ui-side-sheet', {
     let releaseTrap = null;
     let unlock = null;
     let surfaceEl = null;
+    const hasHeadline = signal(false);
 
     const requestClose = (reason) => {
       if (reason !== 'method' && persistent()) return;
@@ -160,16 +161,24 @@ define('ui-side-sheet', {
       animate(el, slideIn(), { duration: 'medium2', easing: 'emphasizedDecelerate' });
     };
 
-    const hasSlot = (el, set) =>
-      el.addEventListener('slotchange', () => set(el.assignedElements().length > 0));
+    const hasSlot = (el, set) => {
+      const sync = () => set(el.assignedElements().length > 0);
+      el.addEventListener('slotchange', sync);
+      sync();
+    };
 
     const modalView = () => html`
       <div class="overlay">
-        <div class="scrim" part="scrim" @click=${() => requestClose('scrim')}></div>
+        <div class="scrim" part="scrim" aria-hidden="true" @click=${() => requestClose('scrim')}></div>
         <aside class=${() => `surface ${anchor()}`} part="surface" role="dialog" aria-modal="true"
-               aria-label=${() => label() || null} tabindex="-1" ref=${surfaceRef}>
+               aria-labelledby=${() => (hasHeadline() ? 'headline' : null)}
+               aria-label=${() => (hasHeadline() ? null : (label() || 'Side sheet'))}
+               tabindex="-1" ref=${surfaceRef}>
           <div class="header">
-            <div class="headline" part="headline"><slot name="headline"></slot></div>
+            <div class="headline" part="headline" id="headline"
+                 ref=${(el) => hasSlot(el.querySelector('slot'), (has) => hasHeadline.set(has))}>
+              <slot name="headline"></slot>
+            </div>
             <ui-icon-button icon="close" label="Close" @click=${() => requestClose('method')}></ui-icon-button>
           </div>
           <div class="body" part="body"><slot></slot></div>
@@ -184,10 +193,15 @@ define('ui-side-sheet', {
       ${() =>
         variant() === 'standard'
           ? html`<aside class=${() => `std ${anchor()}${open() ? ' open' : ''}`} part="surface"
-                        role="region" aria-label=${() => label() || null}>
+                        role="region"
+                        aria-labelledby=${() => (hasHeadline() ? 'headline' : null)}
+                        aria-label=${() => (hasHeadline() ? null : (label() || 'Side sheet'))}>
               <div class="std-inner">
                 <div class="header">
-                  <div class="headline" part="headline"><slot name="headline"></slot></div>
+                  <div class="headline" part="headline" id="headline"
+                       ref=${(el) => hasSlot(el.querySelector('slot'), (has) => hasHeadline.set(has))}>
+                    <slot name="headline"></slot>
+                  </div>
                 </div>
                 <div class="body" part="body"><slot></slot></div>
               </div>

@@ -326,10 +326,15 @@ const styles = css`
     font: ${sys.type.titleSm};
     letter-spacing: ${sys.tracking.titleSm};
   }
-  .weekdays, .days {
+  .weekdays, .cal-row {
     display: grid;
     grid-template-columns: repeat(7, 40px);
     justify-content: center;
+  }
+  .days {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
   .weekday {
     display: grid;
@@ -636,7 +641,7 @@ define('ui-date-picker', {
       cell.rangeStart && 'range-start',
       cell.rangeEnd && 'range-end',
     ].filter(Boolean).join(' ');
-    const dayButtons = () => cells().map((cell) => html`
+    const dayButton = (cell) => html`
       <button type="button" part="day" role="gridcell"
               class=${dayClassFrom(cell)}
               data-iso=${cell.iso}
@@ -645,7 +650,19 @@ define('ui-date-picker', {
               @click=${() => pick(cell.iso)}>
         <span class="layer" aria-hidden="true"></span>
         <span class="text">${cell.day}</span>
-      </button>`);
+      </button>`;
+    const calGrid = () => {
+      const all = cells();
+      const rows = [];
+      for (let r = 0; r < all.length; r += 7) {
+        rows.push(html`<div class="cal-row" role="row">${all.slice(r, r + 7).map(dayButton)}</div>`);
+      }
+      return html`
+        <div class="cal" role="grid" aria-label=${() => title()}>
+          <div class="weekdays" role="row">${() => heads().map((w) => html`<span class="weekday" role="columnheader">${w}</span>`)}</div>
+          <div class="days">${rows}</div>
+        </div>`;
+    };
 
     // Presence mounts the grid in a nested owner. A setup-level paint keeps
     // selected / in-range classes in sync even if a row binding does not.
@@ -690,13 +707,12 @@ define('ui-date-picker', {
           <ui-icon-button icon="chevron-left" label="Previous month" @click=${() => shiftMonth(-1)}></ui-icon-button>
           <ui-icon-button icon="chevron-right" label="Next month" @click=${() => shiftMonth(1)}></ui-icon-button>
         </div>
-        <div class="weekdays">${() => heads().map((w) => html`<span class="weekday">${w}</span>`)}</div>
-        <div class="days" role="grid" aria-label=${() => title()}>${dayButtons}</div>
+        ${calGrid}
       </div>`;
 
     const modalView = () => html`
       <div class="overlay">
-        <div class="scrim" @click=${closePanel}></div>
+        <div class="scrim" aria-hidden="true" @click=${closePanel}></div>
         <div class="modal-surface" part="panel" role="dialog" aria-modal="true"
              aria-label=${() => label() || 'Choose date'}
              ref=${(el) => (modalSurfaceEl = el)}>
@@ -707,8 +723,7 @@ define('ui-date-picker', {
             <ui-icon-button icon="chevron-left" label="Previous month" @click=${() => shiftMonth(-1)}></ui-icon-button>
             <ui-icon-button icon="chevron-right" label="Next month" @click=${() => shiftMonth(1)}></ui-icon-button>
           </div>
-          <div class="weekdays">${() => heads().map((w) => html`<span class="weekday">${w}</span>`)}</div>
-          <div class="days" role="grid" aria-label=${() => title()}>${dayButtons}</div>
+          ${calGrid}
           <div class="actions">
             <ui-button variant="text" @click=${closePanel}>Cancel</ui-button>
             <ui-button variant="text" @click=${() => range() ? commitRange(draftStart(), draftEnd()) : commit(draft())}>OK</ui-button>
@@ -722,10 +737,12 @@ define('ui-date-picker', {
           ${() => (variant() === 'outlined'
             ? html`<fieldset aria-hidden="true"><legend><span>${label}${() => (required() ? ' *' : '')}</span></legend></fieldset>`
             : null)}
-          ${() => (label() ? html`<span class="label" part="label">${label}${() => (required() ? ' *' : '')}</span>` : null)}
+          ${() => (label() ? html`<span class="label" part="label" id="field-label">${label}${() => (required() ? ' *' : '')}</span>` : null)}
           <input part="input" .value=${text}
                  placeholder=${() => placeholder() || null}
                  ?disabled=${disabled} ?required=${required}
+                 aria-labelledby=${() => (label() ? 'field-label' : null)}
+                 aria-label=${() => (label() ? null : (placeholder() || 'Date'))}
                  aria-haspopup="dialog" aria-expanded=${() => String(open())}
                  autocomplete="off"
                  @input=${onInput} @focus=${() => focused.set(true)} @blur=${onBlur}

@@ -14,7 +14,7 @@
 // @prop  {boolean} open=false
 // @prop  {string}  variant='modal' — modal | standard
 // @prop  {string}  anchor='start'  — start | end (which edge it slides from)
-// @prop  {string}  label=''        — accessible name for the drawer
+// @prop  {string}  label=''        — accessible name; falls back to "Navigation"
 // @event close  — modal dismissed; detail: { reason: 'esc' | 'scrim' }
 // @event opened — modal enter animation finished
 // @event closed — modal exit animation finished, DOM removed
@@ -140,9 +140,9 @@ define('ui-drawer', {
 
     const overlay = () => html`
       <div class="overlay">
-        <div class="scrim" part="scrim" @click=${() => host.emit('close', { reason: 'scrim' })}></div>
+        <div class="scrim" part="scrim" aria-hidden="true" @click=${() => host.emit('close', { reason: 'scrim' })}></div>
         <aside class=${() => `surface ${anchor()}`} part="surface" role="dialog" aria-modal="true"
-               aria-label=${() => label() || null} tabindex="-1" ref=${surfaceRef}>
+               aria-label=${() => label() || 'Navigation'} tabindex="-1" ref=${surfaceRef}>
           <slot></slot>
         </aside>
       </div>`;
@@ -151,7 +151,7 @@ define('ui-drawer', {
       ${() =>
         variant() === 'standard'
           ? html`<aside class=${() => `std ${anchor()}${open() ? ' open' : ''}`} part="surface"
-                        aria-label=${() => label() || null}>
+                        aria-label=${() => label() || 'Navigation'}>
               <div class="inner"><slot></slot></div>
             </aside>`
           : null}

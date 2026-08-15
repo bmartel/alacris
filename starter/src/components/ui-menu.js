@@ -79,10 +79,22 @@ define('ui-menu', {
 
     const anchorEl = () => anchorSlot?.assignedElements()[0] || host;
 
+    const popupTrigger = (el) => {
+      if (!el || el === host) return null;
+      return el.shadowRoot?.querySelector('button, a[href], [role="button"]') || el;
+    };
+
+    const syncTrigger = () => {
+      const trigger = popupTrigger(anchorEl());
+      if (!trigger) return;
+      trigger.setAttribute('aria-haspopup', 'menu');
+      trigger.setAttribute('aria-expanded', open.peek() ? 'true' : 'false');
+    };
+
     const close = () => {
       if (!open.peek()) return;
       open.set(false);
-      anchorEl().focus?.();
+      (popupTrigger(anchorEl()) || anchorEl()).focus?.();
     };
 
     host.addEventListener('keydown', (e) => {
@@ -102,10 +114,19 @@ define('ui-menu', {
     });
 
     // Keyboard roving + outside-pointerdown dismissal, exactly while open.
+    // Items may be projected through a nested slot (ui-split-button), so
+    // collect from the flattened default slot and listen on document.
     effect(() => {
+      syncTrigger();
       if (!open()) return;
+      const menuItems = () => {
+        const slot = host.shadowRoot?.querySelector('.panel > slot');
+        return (slot?.assignedElements({ flatten: true }) || [])
+          .filter((el) => el.localName === 'ui-menu-item');
+      };
       roving = rovingTabindex(host, {
-        selector: 'ui-menu-item',
+        items: menuItems,
+        listenOn: document,
         orientation: 'vertical',
         skip: (el) => el.disabled,
       });
@@ -115,9 +136,19 @@ define('ui-menu', {
       const onPointerDown = (e) => {
         if (!e.composedPath().includes(host)) close();
       };
+      const onDocKey = (e) => {
+        if (e.key === 'Escape') {
+          e.stopPropagation();
+          close();
+        } else if (e.key === 'Tab') {
+          close();
+        }
+      };
       document.addEventListener('pointerdown', onPointerDown);
+      document.addEventListener('keydown', onDocKey);
       return () => {
         document.removeEventListener('pointerdown', onPointerDown);
+        document.removeEventListener('keydown', onDocKey);
         roving?.destroy();
         roving = null;
         stopPosition?.();
@@ -138,7 +169,11 @@ define('ui-menu', {
 
     return html`
       <span class="anchor" @click=${() => open.set(!open())}>
-        <slot name="anchor" ref=${(el) => (anchorSlot = el)}></slot>
+        <slot name="anchor" ref=${(el) => {
+          anchorSlot = el;
+          el.addEventListener('slotchange', syncTrigger);
+          syncTrigger();
+        }}></slot>
       </span>
       ${presence(open, view, {
         enter: fx.scaleIn,

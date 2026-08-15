@@ -155,10 +155,10 @@ define('ui-toggle-button', {
         <span class="layer" aria-hidden="true"></span>
         <span class=${() => `lead${showLead() ? ' on' : ''}`}>
           <ui-icon class=${() => `check-glyph${isSelected() ? ' on' : ''}`}
-                   name="check" aria-hidden=${() => isSelected() ? 'false' : 'true'}></ui-icon>
+                   name="check"></ui-icon>
           ${() => (hasIcon()
             ? html`<ui-icon class=${() => `custom-glyph${isSelected() ? ' off' : ''}`}
-                           name=${icon} aria-hidden=${() => isSelected() ? 'true' : 'false'}></ui-icon>`
+                           name=${icon}></ui-icon>`
             : null)}
         </span>
         <slot></slot>

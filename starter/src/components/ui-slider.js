@@ -245,7 +245,7 @@ define('ui-slider', {
           : html`<input part="input" type="range"
                      min=${min} max=${max} step=${step} .value=${value}
                      ?disabled=${disabled}
-                     aria-label=${() => label() || null}
+                     aria-label=${() => label() || 'Slider'}
                      @input=${onInput} @change=${onChange}
                      @pointerdown=${() => active.set(true)}
                      @focus=${() => active.set(true)}

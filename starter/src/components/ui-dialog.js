@@ -25,7 +25,7 @@
 // @part  scrim, surface, headline, body, actions
 // @vars  see `t` below
 
-import { define, html, css, vars, effect, onCleanup } from 'alacris';
+import { define, html, css, vars, effect, onCleanup, signal } from 'alacris';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { presence } from '../motion/presence.js';
@@ -96,6 +96,7 @@ define('ui-dialog', {
     let releaseTrap = null;
     let unlock = null;
     let surfaceEl = null;
+    const hasHeadline = signal(false);
 
     const requestClose = (reason) => {
       if (reason !== 'method' && persistent()) return;
@@ -136,16 +137,24 @@ define('ui-dialog', {
       unlock?.();
     });
 
-    const hasSlot = (el, set) =>
-      el.addEventListener('slotchange', () => set(el.assignedElements().length > 0));
+    const hasSlot = (el, set) => {
+      const sync = () => set(el.assignedElements().length > 0);
+      el.addEventListener('slotchange', sync);
+      sync();
+    };
 
     const view = () => html`
       <div class="overlay">
-        <div class="scrim" part="scrim" @click=${() => requestClose('scrim')}></div>
+        <div class="scrim" part="scrim" aria-hidden="true" @click=${() => requestClose('scrim')}></div>
         <div class="surface" part="surface" role="dialog" aria-modal="true"
-             aria-label=${() => label() || null} tabindex="-1" ref=${(el) => (surfaceEl = el)}>
-          <div class="headline" part="headline"
-               ref=${(el) => hasSlot(el.querySelector('slot'), (has) => el.classList.toggle('has', has))}>
+             aria-labelledby=${() => (hasHeadline() ? 'headline' : null)}
+             aria-label=${() => (hasHeadline() ? null : (label() || 'Dialog'))}
+             tabindex="-1" ref=${(el) => (surfaceEl = el)}>
+          <div class="headline" part="headline" id="headline"
+               ref=${(el) => hasSlot(el.querySelector('slot'), (has) => {
+                 hasHeadline.set(has);
+                 el.classList.toggle('has', has);
+               })}>
             <slot name="headline"></slot>
           </div>
           <div class="body" part="body"><slot></slot></div>

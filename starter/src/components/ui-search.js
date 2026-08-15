@@ -32,7 +32,8 @@
 // @event close  — suggestions removed (after the exit animation)
 // @slot  leading  — replaces the search icon
 // @slot  trailing — after the clear button (avatar, extra actions)
-// @slot  (default) — suggestion rows (ui-list-item, …)
+// @slot  (default) — suggestion rows (ui-list-item, …). The panel is a list
+//        so those rows keep role="listitem"; it is not a listbox.
 // @part  bar, input, panel
 // @vars  see `t` below (`themeVars.names`)
 
@@ -237,7 +238,8 @@ define('ui-search', {
     };
 
     const panelView = () => html`
-      <div class="panel" part="panel" role="listbox" aria-label=${() => label() || 'Suggestions'}>
+      <div class="panel" part="panel" role="list" id="suggestions"
+           aria-label=${() => label() || 'Suggestions'}>
         <slot></slot>
       </div>`;
 
@@ -263,8 +265,11 @@ define('ui-search', {
           <input part="input" ref=${(el) => (input = el)}
                  .value=${() => value() ?? ''}
                  placeholder=${ph}
-                 aria-label=${label}
+                 aria-label=${() => label() || 'Search'}
                  aria-expanded=${() => String(open())}
+                 aria-controls=${() => (showPanel() ? 'suggestions' : null)}
+                 aria-autocomplete="list"
+                 aria-haspopup=${() => (isView() || slotted() ? 'true' : null)}
                  ?disabled=${disabled}
                  @input=${onInput} @change=${commit} @keydown=${onKeydown}
                  @focus=${onFocus}>

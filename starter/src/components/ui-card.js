@@ -6,6 +6,7 @@
 // @slot  (default) — card body (compose freely; padding is yours via parts/vars)
 // @slot  media     — full-bleed media at the top
 // @part  container — the card surface
+// @part  body      — padded wrapper around the default slot
 // @vars  see `t` below
 
 import { define, html, css, vars, computed } from 'alacris';

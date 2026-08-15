@@ -25,7 +25,7 @@
 // @part  scrim, surface, handle, headline, body, actions
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars, effect, onCleanup } from 'alacris';
+import { define, html, css, vars, effect, onCleanup, signal } from 'alacris';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { presence } from '../motion/presence.js';
@@ -115,6 +115,7 @@ define('ui-sheet', {
     let releaseTrap = null;
     let unlock = null;
     let surfaceEl = null;
+    const hasHeadline = signal(false);
 
     const requestClose = (reason) => {
       if (reason !== 'method' && persistent()) return;
@@ -149,18 +150,26 @@ define('ui-sheet', {
       unlock?.();
     });
 
-    const hasSlot = (el, set) =>
-      el.addEventListener('slotchange', () => set(el.assignedElements().length > 0));
+    const hasSlot = (el, set) => {
+      const sync = () => set(el.assignedElements().length > 0);
+      el.addEventListener('slotchange', sync);
+      sync();
+    };
 
     const modalView = () => html`
       <div class="overlay">
-        <div class="scrim" part="scrim" @click=${() => requestClose('scrim')}></div>
+        <div class="scrim" part="scrim" aria-hidden="true" @click=${() => requestClose('scrim')}></div>
         <div class="surface" part="surface" role="dialog" aria-modal="true"
-             aria-label=${() => label() || null} tabindex="-1"
+             aria-labelledby=${() => (hasHeadline() ? 'headline' : null)}
+             aria-label=${() => (hasHeadline() ? null : (label() || 'Sheet'))}
+             tabindex="-1"
              ref=${(el) => { surfaceEl = el; animate(el, fx.sheetIn, { duration: 'medium2', easing: 'emphasizedDecelerate' }); }}>
           <div class="handle" part="handle" aria-hidden="true"></div>
-          <div class="headline" part="headline"
-               ref=${(el) => hasSlot(el.querySelector('slot'), (has) => el.classList.toggle('has', has))}>
+          <div class="headline" part="headline" id="headline"
+               ref=${(el) => hasSlot(el.querySelector('slot'), (has) => {
+                 hasHeadline.set(has);
+                 el.classList.toggle('has', has);
+               })}>
             <slot name="headline"></slot>
           </div>
           <div class="body" part="body"><slot></slot></div>
@@ -175,7 +184,7 @@ define('ui-sheet', {
       ${() =>
         variant() === 'standard'
           ? html`<div class=${() => `std${open() ? ' open' : ''}`} part="surface" role="region"
-                      aria-label=${() => label() || null}>
+                      aria-label=${() => label() || 'Sheet'}>
               <div class="std-inner">
                 <div class="handle" part="handle" aria-hidden="true"></div>
                 <div class="body" part="body"><slot></slot></div>

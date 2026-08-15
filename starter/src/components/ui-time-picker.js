@@ -23,7 +23,7 @@
 // @event input  — field keystroke; detail: { value } (the raw text)
 // @event open   — panel visible (after the enter animation)
 // @event close  — panel removed (after the exit animation)
-// @part  field, input, label, panel
+// @part  field, input, label, panel, dial
 // @vars  see `t` below (`themeVars.names`)
 
 import { define, html, css, vars, computed, signal, effect, onCleanup, each } from 'alacris';
@@ -33,6 +33,7 @@ import { formBind } from '../util/form.js';
 import { presence } from '../motion/presence.js';
 import { fx } from '../motion/animate.js';
 import { autoUpdate } from '../util/position.js';
+import { rovingTabindex } from '../util/keys.js';
 import './ui-icon-button.js';
 
 const TIME = /^(\d{1,2}):(\d{2})$/;
@@ -573,6 +574,38 @@ define('ui-time-picker', {
         document.removeEventListener('keydown', onEsc, true);
       };
     });
+    // One tab stop per clock face / digital grid; arrows rove. Do not steal
+    // focus from the field — only retarget the tab stop onto the current value.
+    effect(() => {
+      if (!open()) return;
+      isClock();
+      selecting();
+      let roving = null;
+      let cancelled = false;
+      queueMicrotask(() => {
+        if (cancelled || !open.peek()) return;
+        const root = host.shadowRoot;
+        if (!root) return;
+        if (isClock.peek()) {
+          const ticks = root.querySelector('.ticks.on');
+          if (!ticks) return;
+          const sel = selecting.peek() === 'hour' ? '[data-hour]' : '[data-minute]';
+          roving = rovingTabindex(ticks, { selector: sel, orientation: 'both' });
+          const current = ticks.querySelector('.tick.active') || ticks.querySelector(sel);
+          if (current) roving.activate(current);
+        } else {
+          const grid = root.querySelector('.grid:not(.off)');
+          if (!grid) return;
+          roving = rovingTabindex(grid, { selector: '[role=option]', orientation: 'both' });
+          const current = grid.querySelector('[aria-selected="true"]') || grid.querySelector('[role=option]');
+          if (current) roving.activate(current);
+        }
+      });
+      return () => {
+        cancelled = true;
+        roving?.destroy();
+      };
+    });
     effect(() => {
       if (!open() && stopAuto) { stopAuto(); stopAuto = null; }
     });
@@ -616,14 +649,14 @@ define('ui-time-picker', {
                             style=${{ '--a': ((h % 12) * 30) + 'deg' }}
                             data-hour=${h}
                             aria-label=${h + ' hours'}
-                            tabindex=${() => (isClock() && selecting() === 'hour' ? '0' : '-1')}
+                            tabindex="-1"
                             @click=${() => pickHour(h)}>${h}</button>`)}
                 ${() => innerHours().map((h) => html`
                     <button type="button" class=${() => ({ tick: true, inner: true, active: hourActive(h) })}
                             style=${{ '--a': ((h % 12) * 30) + 'deg' }}
                             data-hour=${h}
                             aria-label=${h + ' hours'}
-                            tabindex=${() => (isClock() && selecting() === 'hour' ? '0' : '-1')}
+                            tabindex="-1"
                             @click=${() => pickHour(h)}>${pad(h)}</button>`)}
               </div>
               <div class=${() => `ticks${selecting() === 'minute' ? ' on' : ''}`}>
@@ -632,7 +665,7 @@ define('ui-time-picker', {
                             style=${{ '--a': (m * 6) + 'deg' }}
                             data-minute=${m}
                             aria-label=${m + ' minutes'}
-                            tabindex=${() => (isClock() && selecting() === 'minute' ? '0' : '-1')}
+                            tabindex="-1"
                             @click=${() => pickMinute(m)}>${pad(m)}</button>`)}
               </div>
           </div>
@@ -647,6 +680,7 @@ define('ui-time-picker', {
                 active: is12() ? h() === hour12() : h() === parsed().h,
               })}
               data-hour=${() => h()}
+              tabindex="-1"
               aria-selected=${() => String(is12() ? h() === hour12() : h() === parsed().h)}
               @click=${() => pickHour(h())}>
                 <span class="layer" aria-hidden="true"></span>
@@ -665,6 +699,7 @@ define('ui-time-picker', {
                 active: m() === parsed().m,
               })}
               data-minute=${() => m()}
+              tabindex="-1"
               aria-selected=${() => String(m() === parsed().m)}
               @click=${() => pickMinute(m())}>
                 <span class="layer" aria-hidden="true"></span>
@@ -689,10 +724,12 @@ define('ui-time-picker', {
           ${() => (variant() === 'outlined'
             ? html`<fieldset aria-hidden="true"><legend><span>${label}${() => (required() ? ' *' : '')}</span></legend></fieldset>`
             : null)}
-          ${() => (label() ? html`<span class="label" part="label">${label}${() => (required() ? ' *' : '')}</span>` : null)}
+          ${() => (label() ? html`<span class="label" part="label" id="field-label">${label}${() => (required() ? ' *' : '')}</span>` : null)}
           <input part="input" .value=${text}
                  placeholder=${() => placeholder() || null}
                  ?disabled=${disabled} ?required=${required}
+                 aria-labelledby=${() => (label() ? 'field-label' : null)}
+                 aria-label=${() => (label() ? null : (placeholder() || 'Time'))}
                  aria-haspopup="dialog" aria-expanded=${() => String(open())}
                  autocomplete="off"
                  @input=${onInput} @focus=${() => focused.set(true)} @blur=${onBlur}

@@ -98,7 +98,7 @@ define('ui-icon-button', {
 
     return html`
       <button part="control" class=${cls} type="button" ?disabled=${disabled}
-              aria-label=${label}
+              aria-label=${() => label() || icon() || null}
               aria-pressed=${() => (toggle() ? String(selected()) : null)}
               @click=${onClick}
               ref=${(el) => ripple(el, { disabled, centered: true })}>

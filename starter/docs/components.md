@@ -211,6 +211,7 @@ viewport bottom. Distinct from &lt;ui-bottom-nav&gt;, which is destination tabs.
 
 | | |
 | --- | --- |
+| `@prop` | {string}  label='Bottom app bar' — accessible name of the toolbar |
 | `@prop` | {string} fabAlign='end' — end \| center \| start — where the FAB sits |
 | `@slot` | navigation — leading icon button |
 | `@slot` | actions    — trailing icon buttons |
@@ -311,6 +312,7 @@ a Material card surface.
 | `@slot` | (default) — card body (compose freely; padding is yours via parts/vars) |
 | `@slot` | media     — full-bleed media at the top |
 | `@part` | container — the card surface |
+| `@part` | body      — padded wrapper around the default slot |
 | `@vars` | see `t` below |
 
 Source: [`src/components/ui-card.js`](../src/components/ui-card.js)
@@ -559,7 +561,7 @@ no scrim, no trap.
 | `@prop` | {boolean} open=false |
 | `@prop` | {string}  variant='modal' — modal \| standard |
 | `@prop` | {string}  anchor='start'  — start \| end (which edge it slides from) |
-| `@prop` | {string}  label=''        — accessible name for the drawer |
+| `@prop` | {string}  label=''        — accessible name; falls back to "Navigation" |
 | `@event` | close  — modal dismissed; detail: { reason: 'esc' \| 'scrim' } |
 | `@event` | opened — modal enter animation finished |
 | `@event` | closed — modal exit animation finished, DOM removed |
@@ -581,8 +583,9 @@ actions stacked above it.
   &lt;/ui-fab-menu&gt;
 
 The PARENT may pass `open`; clicking the trigger toggles it and emits
-`open`/`close`. Choosing an action emits `select` (the action's click still
-bubbles) and closes the menu.
+`open`/`close`. Related actions are a disclosure of buttons (not a menu
+widget) so slotted `&lt;ui-fab&gt;`s keep their native button semantics.
+Escape closes and returns focus to the trigger.
 
 | | |
 | --- | --- |
@@ -981,7 +984,7 @@ and the list.
 | `@event` | close  — suggestions removed (after the exit animation) |
 | `@slot` | leading  — replaces the search icon |
 | `@slot` | trailing — after the clear button (avatar, extra actions) |
-| `@slot` | (default) — suggestion rows (ui-list-item, …) |
+| `@slot` | (default) — suggestion rows (ui-list-item, …). The panel is a list so those rows keep role="listitem"; it is not a listbox. |
 | `@part` | bar, input, panel |
 | `@vars` | see `t` below (`themeVars.names`) |
 
@@ -1478,7 +1481,7 @@ faces crossfade; the clock hand rotates with the motion tokens.
 | `@event` | input  — field keystroke; detail: { value } (the raw text) |
 | `@event` | open   — panel visible (after the enter animation) |
 | `@event` | close  — panel removed (after the exit animation) |
-| `@part` | field, input, label, panel |
+| `@part` | field, input, label, panel, dial |
 | `@vars` | see `t` below (`themeVars.names`) |
 
 Source: [`src/components/ui-time-picker.js`](../src/components/ui-time-picker.js)

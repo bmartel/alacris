@@ -8,8 +8,9 @@
 //   </ui-fab-menu>
 //
 // The PARENT may pass `open`; clicking the trigger toggles it and emits
-// `open`/`close`. Choosing an action emits `select` (the action's click still
-// bubbles) and closes the menu.
+// `open`/`close`. Related actions are a disclosure of buttons (not a menu
+// widget) so slotted `<ui-fab>`s keep their native button semantics.
+// Escape closes and returns focus to the trigger.
 //
 // @prop  {boolean} open=false
 // @prop  {string}  label='' — accessible name for the action list
@@ -20,7 +21,7 @@
 // @part  actions, trigger
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars } from 'alacris';
+import { define, html, css, vars, effect, onCleanup } from 'alacris';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { presence } from '../motion/presence.js';
@@ -51,8 +52,20 @@ define('ui-fab-menu', {
   props: { open: false, label: '' },
   styles: [base, styles],
   setup({ open, label }, host) {
+    const triggerEl = () => host.querySelector('[slot="trigger"]');
+    const triggerControl = () => {
+      const el = triggerEl();
+      return el?.shadowRoot?.querySelector('button, a[href]') || el;
+    };
+    const syncTrigger = () => {
+      const control = triggerControl();
+      if (!control) return;
+      control.setAttribute('aria-haspopup', 'true');
+      control.setAttribute('aria-expanded', open.peek() ? 'true' : 'false');
+    };
+
     host.addEventListener('click', (e) => {
-      const trigger = host.querySelector('[slot="trigger"]');
+      const trigger = triggerEl();
       if (trigger && e.composedPath().includes(trigger)) {
         open.set(!open.peek());
         return;
@@ -62,8 +75,30 @@ define('ui-fab-menu', {
       }
     });
 
+    effect(() => {
+      open();
+      queueMicrotask(syncTrigger);
+    });
+
+    effect(() => {
+      if (!open()) return;
+      const onKey = (e) => {
+        if (e.key !== 'Escape') return;
+        e.stopPropagation();
+        open.set(false);
+        triggerControl()?.focus?.();
+      };
+      document.addEventListener('keydown', onKey, true);
+      return () => document.removeEventListener('keydown', onKey, true);
+    });
+    onCleanup(() => {
+      const control = triggerControl();
+      control?.removeAttribute('aria-haspopup');
+      control?.removeAttribute('aria-expanded');
+    });
+
     const actionsView = () => html`
-      <div class="actions" part="actions" role="menu"
+      <div class="actions" part="actions" role="group"
            aria-label=${() => label() || 'Actions'}>
         <slot></slot>
       </div>`;

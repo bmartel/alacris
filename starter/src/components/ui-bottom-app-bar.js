@@ -10,6 +10,7 @@
 // FAB. The host flows with the page — pin it with CSS when it should hug the
 // viewport bottom. Distinct from <ui-bottom-nav>, which is destination tabs.
 //
+// @prop  {string}  label='Bottom app bar' — accessible name of the toolbar
 // @prop  {string} fabAlign='end' — end | center | start — where the FAB sits
 // @slot  navigation — leading icon button
 // @slot  actions    — trailing icon buttons
@@ -60,12 +61,12 @@ const styles = css`
 `;
 
 define('ui-bottom-app-bar', {
-  props: { fabAlign: 'end' },
+  props: { label: 'Bottom app bar', fabAlign: 'end' },
   styles: [base, styles],
-  setup({ fabAlign }) {
+  setup({ label, fabAlign }) {
     const cls = computed(() => `bar ${fabAlign() === 'center' ? 'center' : fabAlign() === 'start' ? 'start' : 'end'}`);
     return html`
-      <div class=${cls} part="bar" role="toolbar">
+      <div class=${cls} part="bar" role="toolbar" aria-label=${() => label() || 'Bottom app bar'}>
         <div class="nav" part="navigation"><slot name="navigation"></slot></div>
         <div class="fab" part="fab"><slot name="fab"></slot></div>
         <div class="actions" part="actions"><slot name="actions"></slot></div>
