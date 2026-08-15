@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.7](https://github.com/bmartel/alacris/compare/v0.6.6...v0.6.7) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** smooth bidirectional icon morphing on toggle button selection and deselection ([29678cb](https://github.com/bmartel/alacris/commit/29678cbaabd33e12433fb0de3c42f62d238cbcc6))
+
 ## [0.6.6](https://github.com/bmartel/alacris/compare/v0.6.5...v0.6.6) (2026-08-15)
 
 ### Bug Fixes
