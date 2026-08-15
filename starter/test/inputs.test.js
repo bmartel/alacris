@@ -85,13 +85,12 @@ test('ui-toggle-button reflects selection and emits ui-toggle', async () => {
   await tick();
   const btn = el.shadowRoot.querySelector('button');
   assert.equal(btn.getAttribute('aria-pressed'), 'false');
-  assert.equal(el.shadowRoot.querySelector('.check.on'), null, 'check is visually off while unselected');
-  assert.ok(el.shadowRoot.querySelector('.check ui-icon'), 'check slot is reserved so the group does not shift');
+  assert.equal(el.shadowRoot.querySelector('.lead.on'), null, 'lead check is off while unselected (no dead space)');
 
   el.selected = true;
   assert.equal(btn.getAttribute('aria-pressed'), 'true', 'selected prop is live');
   await tick();
-  assert.ok(el.shadowRoot.querySelector('.check.on'), 'check icon appears when selected');
+  assert.ok(el.shadowRoot.querySelector('.lead.on'), 'check icon appears when selected');
 
   let detail = null;
   el.addEventListener('ui-toggle', (e) => (detail = e.detail));

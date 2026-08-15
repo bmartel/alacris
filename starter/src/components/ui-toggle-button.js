@@ -2,8 +2,8 @@
 // <ui-toggle-group> (the group draws the outlined container and dividers;
 // standalone the segment is a flat pill).
 //
-// Selecting shows a leading check icon. The check slot is always reserved so
-// selecting a segment does not shift its neighbors; the glyph scales in.
+// Selecting animates a leading check icon in smoothly via width and scale transitions,
+// adhering to Material Design 3 and matching the filter chip pattern without reserving dead space.
 // The button does not own its selection: it emits `ui-toggle` and the group
 // (or any parent) sets `selected` back down.
 //
@@ -16,10 +16,12 @@
 // @part  control   — the <button>
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars } from 'alacris';
+import { define, html, css, vars, computed } from 'alacris';
 import { sys } from '../tokens/sys.js';
 import { base, focusRingOn } from './base.js';
 import { ripple } from '../motion/ripple.js';
+import { presence } from '../motion/presence.js';
+import { fx } from '../motion/animate.js';
 import './ui-icon.js';
 
 const t = vars('ui-toggle-button', {
@@ -41,7 +43,6 @@ const styles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: ${sys.space(2)};
     inline-size: 100%;
     block-size: calc(${t.height} + var(--ui-density, 0) * 4px);
     padding-inline: ${sys.space(3)};
@@ -58,23 +59,24 @@ const styles = css`
                 color ${sys.duration.short4} ${sys.easing.standard};
     --ui-icon-size: 1.125rem;
   }
-  .check {
+  .lead {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    inline-size: 1.125rem;
-    min-inline-size: 1.125rem;
-    flex-shrink: 0;
+    inline-size: 0;
+    min-inline-size: 0;
     overflow: hidden;
     opacity: 0;
-    scale: 0.8;
     pointer-events: none;
-    transition: opacity ${sys.duration.short2} ${sys.easing.standard},
-                scale ${sys.duration.short4} ${sys.easing.emphasized};
+    transition: inline-size ${sys.duration.short4} ${sys.easing.emphasized},
+                margin-inline-end ${sys.duration.short4} ${sys.easing.emphasized},
+                opacity ${sys.duration.short2} ${sys.easing.standard};
   }
-  .check.on {
+  .lead.on {
+    inline-size: 1.125rem;
+    margin-inline-end: ${sys.space(2)};
     opacity: 1;
-    scale: 1;
+    pointer-events: auto;
   }
   ${focusRingOn('.control')}
   .layer {
@@ -112,15 +114,27 @@ define('ui-toggle-button', {
       host.emit('ui-toggle', { value: value() });
     };
 
+    const checkWhen = computed(() => selected());
+    const showLead = computed(() => selected() || !!icon());
+
+    const checkIcon = presence(checkWhen, () => html`<ui-icon name="check"></ui-icon>`, {
+      enter: fx.scaleIn,
+      exit: fx.scaleOut,
+      enterDuration: 'short3',
+      exitDuration: 'short2',
+    });
+
     return html`
       <button part="control" class="control" type="button" ?disabled=${disabled}
               aria-pressed=${() => String(selected())}
               @click=${onClick} ref=${(el) => ripple(el, { disabled })}>
         <span class="layer" aria-hidden="true"></span>
-        <span class=${() => `check${selected() ? ' on' : ''}`} aria-hidden=${() => selected() ? 'false' : 'true'}>
-          <ui-icon name="check"></ui-icon>
-        </span>
-        ${() => (icon() ? html`<ui-icon name=${icon}></ui-icon>` : null)}
+        ${() => (showLead()
+          ? html`<span class=${() => `lead${checkWhen() || icon() ? ' on' : ''}`}>
+              ${checkIcon}
+              ${() => (icon() && !checkWhen() ? html`<ui-icon name=${icon}></ui-icon>` : null)}
+            </span>`
+          : null)}
         <slot></slot>
       </button>`;
   },
