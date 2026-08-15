@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.10.0](https://github.com/bmartel/alacris/compare/v0.9.2...v0.10.0) (2026-08-15)
+
+### Features
+
+* **starter:** restack the theme playground and default to brand gold ([4464cbc](https://github.com/bmartel/alacris/commit/4464cbc8c89dfdc0273f45d76680d1d318d10419)), closes [#e8ad18](https://github.com/bmartel/alacris/issues/e8ad18)
+
 ## [0.9.2](https://github.com/bmartel/alacris/compare/v0.9.1...v0.9.2) (2026-08-15)
 
 ### Bug Fixes
