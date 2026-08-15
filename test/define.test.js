@@ -240,3 +240,61 @@ test('kebab-case names on a child map to camelCase props', () => {
   assert.equal(child.maxCount, 12);
   assert.equal(child.shadowRoot.querySelector('span').textContent, '12');
 });
+
+test('formAssociated: true registers a form-associated class', () => {
+  const t = tag();
+  const cls = define(t, { formAssociated: true, setup: () => html`<p>field</p>` });
+  assert.equal(cls.formAssociated, true);
+  // attachInternals is guarded, so constructing must work even where the
+  // simulated DOM lacks it — internals is then simply undefined.
+  const el = mount(document.createElement(t));
+  assert.equal(el.shadowRoot.querySelector('p').textContent, 'field');
+  assert.ok(!('attachInternals' in HTMLElement.prototype) ? el.internals === undefined : true);
+});
+
+test('form lifecycle reactions forward to host handlers assigned in setup', () => {
+  const t = tag();
+  const calls = [];
+  define(t, {
+    formAssociated: true,
+    setup(_p, host) {
+      host.onFormAssociated = form => calls.push(['associated', form]);
+      host.onFormDisabled = disabled => calls.push(['disabled', disabled]);
+      host.onFormReset = () => calls.push(['reset']);
+      host.onFormStateRestore = (state, mode) => calls.push(['restore', state, mode]);
+      return html`<p></p>`;
+    },
+  });
+  const el = mount(document.createElement(t));
+  // A simulated DOM never fires these, so invoke the prototype reactions the
+  // way the platform would and assert the forwarding.
+  el.formAssociatedCallback('the-form');
+  el.formDisabledCallback(true);
+  el.formResetCallback();
+  el.formStateRestoreCallback('saved', 'restore');
+  assert.deepEqual(calls, [
+    ['associated', 'the-form'],
+    ['disabled', true],
+    ['reset'],
+    ['restore', 'saved', 'restore'],
+  ]);
+});
+
+test('handlers are optional: reactions no-op when setup assigns none', () => {
+  const t = tag();
+  define(t, { formAssociated: true, setup: () => html`<p></p>` });
+  const el = mount(document.createElement(t));
+  el.formAssociatedCallback(null);
+  el.formDisabledCallback(false);
+  el.formResetCallback();
+  el.formStateRestoreCallback(null, 'autocomplete');
+});
+
+test('without formAssociated the class stays plain', () => {
+  const t = tag();
+  const cls = define(t, () => html`<p></p>`);
+  assert.equal(cls.formAssociated, false);
+  assert.equal(cls.prototype.formResetCallback, undefined);
+  const el = mount(document.createElement(t));
+  assert.equal(el.internals, undefined);
+});

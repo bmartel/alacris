@@ -105,6 +105,28 @@ export type AlacrisElement<P> = HTMLElement & P & {
   readonly props: Props<P>;
   /** Dispatch a composed, bubbling CustomEvent. */
   emit<T>(type: string, detail?: T, options?: EventInit): boolean;
+  /**
+   * The element's ElementInternals — only when the component was defined with
+   * `formAssociated: true`, and `undefined` where the platform lacks
+   * `attachInternals`. Use it from `setup`: `host.internals?.setFormValue(v)`.
+   */
+  readonly internals?: ElementInternals;
+  /**
+   * Assign in `setup` to run when the element's form association *changes*.
+   * The initial association precedes `setup` — read `internals.form` for the
+   * starting owner.
+   */
+  onFormAssociated?: (form: HTMLFormElement | null) => void;
+  /**
+   * Assign in `setup` to follow the form's disabled state (fieldset
+   * included). The initial state precedes `setup` — check
+   * `host.matches(':disabled')` at startup.
+   */
+  onFormDisabled?: (disabled: boolean) => void;
+  /** Assign in `setup` to clear state when the form resets. */
+  onFormReset?: () => void;
+  /** Assign in `setup` to restore state (autofill, back/forward navigation). */
+  onFormStateRestore?: (state: unknown, mode: 'restore' | 'autocomplete') => void;
 };
 
 export interface Options<P extends Record<string, unknown>> {
@@ -117,6 +139,14 @@ export interface Options<P extends Record<string, unknown>> {
   styles?: Styles;
   /** Shadow root mode, or `false` to render into light DOM. Defaults to `'open'`. */
   shadow?: 'open' | 'closed' | false;
+  /**
+   * Register as a form-associated custom element. The element gains
+   * `host.internals` (its ElementInternals) so it can report a value,
+   * validity and state to an enclosing `<form>`, and the form lifecycle
+   * reactions are forwarded to `host.onFormAssociated` / `onFormDisabled` /
+   * `onFormReset` / `onFormStateRestore`, assigned in `setup`.
+   */
+  formAssociated?: boolean;
 }
 
 export function define<P extends Record<string, unknown>>(

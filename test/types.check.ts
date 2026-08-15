@@ -55,6 +55,19 @@ define('x-typed', {
 
 define('x-plain', () => html`<p>no props</p>`);
 
+define('x-form-field', {
+  formAssociated: true,
+  props: { value: '' },
+  setup({ value }, host) {
+    host.internals?.setFormValue(value());
+    host.onFormAssociated = (form: HTMLFormElement | null) => void form;
+    host.onFormDisabled = (disabled: boolean) => void disabled;
+    host.onFormReset = () => value.set('');
+    host.onFormStateRestore = (state, mode: 'restore' | 'autocomplete') => void [state, mode];
+    return html`<input .value=${value} @input=${(e: Event) => value.set((e.target as HTMLInputElement).value)}>`;
+  },
+});
+
 // --- each / store / context ------------------------------------------------
 import { each } from '../types/index.js';
 import { store, unwrap, update as mutate, selector } from '../types/store.js';

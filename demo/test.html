@@ -260,6 +260,49 @@ test('style bindings set custom properties that cascade into children', () => {
   style.remove();
 });
 
+/* ---- form-associated custom elements: a real <form> sees the value ---- */
+test('formAssociated: setFormValue reaches FormData, reset forwards', () => {
+  const events = [];
+  define('x-fa-field', {
+    formAssociated: true,
+    props: { value: 'initial' },
+    setup({ value }, host) {
+      effect(() => host.internals.setFormValue(value()));
+      host.onFormAssociated = f => events.push(['associated', f?.id]);
+      host.onFormReset = () => { value.set('initial'); events.push(['reset']); };
+      host.onFormDisabled = d => events.push(['disabled', d]);
+      return html`<input .value=${value} @input=${e => value.set(e.target.value)}>`;
+    },
+  });
+  const form = document.createElement('form');
+  form.id = 'fa-form';
+  form.innerHTML = '<x-fa-field name="nick"></x-fa-field>';
+  fixture.append(form);
+  const el = form.querySelector('x-fa-field');
+  // The initial association precedes setup (the platform fires that reaction
+  // during upgrade, before connectedCallback) — its state is read, not heard:
+  eq(el.internals.form, form, 'internals.form is the owner');
+  eq(new FormData(form).get('nick'), 'initial', 'initial value submits');
+  el.value = 'ada';
+  eq(new FormData(form).get('nick'), 'ada', 'a live write submits');
+  form.reset();
+  eq(el.value, 'initial', 'reset handler restored the prop');
+  eq(new FormData(form).get('nick'), 'initial', 'reset value submits');
+  eq(events.some(e => e[0] === 'reset'), true, 'reset forwarded');
+  const fs = document.createElement('fieldset');
+  form.append(fs); fs.append(el);
+  fs.disabled = true;
+  eq(events.some(e => e[0] === 'disabled' && e[1] === true), true, 'fieldset disable forwarded');
+  // Re-association — moving into another form — happens after setup, so the
+  // handler hears it:
+  const other = document.createElement('form');
+  other.id = 'fa-other';
+  fixture.append(other);
+  other.append(el);
+  eq(events.some(e => e[0] === 'associated' && e[1] === 'fa-other'), true, 're-association forwarded');
+  form.remove(); other.remove();
+});
+
 /* ---- async: teardown on real disconnect ---- */
 (async () => {
   await new Promise(r => setTimeout(r, 0));
