@@ -47,10 +47,10 @@ import './ui-icon-button.js';
 
 const t = vars('ui-search', {
   bg: sys.color.surfaceContainerHigh,
-  bgActive: sys.color.surfaceContainerHighest,
+  bgActive: sys.color.surfaceContainerHigh,
   fg: sys.color.onSurface,
   placeholderFg: sys.color.onSurfaceVariant,
-  radius: sys.radius.full,
+  radius: sys.radius.xl,
   font: sys.type.bodyLg,
   height: '56px',
   panelBg: sys.color.surfaceContainerHigh,
@@ -65,8 +65,7 @@ const styles = css`
     border-radius: ${t.radius};
     background: ${t.bg};
     box-shadow: none;
-    transition: border-radius ${sys.duration.medium2} ${sys.easing.emphasizedDecelerate},
-                box-shadow ${sys.duration.short4} ${sys.easing.standard},
+    transition: box-shadow ${sys.duration.short4} ${sys.easing.standard},
                 background-color ${sys.duration.short2} ${sys.easing.standard};
   }
   .shell:focus-within:not(.open) {
@@ -84,7 +83,7 @@ const styles = css`
     align-items: center;
     gap: ${sys.space(2)};
     min-block-size: calc(${t.height} + var(--ui-density, 0) * 4px);
-    padding-inline: ${sys.space(4)} ${sys.space(2)};
+    padding-inline: ${sys.space(2)};
     border-radius: inherit;
     background: transparent;
     color: ${t.fg};
@@ -92,7 +91,6 @@ const styles = css`
     letter-spacing: ${sys.tracking.bodyLg};
     cursor: text;
     --ui-icon-size: 1.5rem;
-    transition: padding-inline ${sys.duration.short4} ${sys.easing.standard};
   }
   .bar::before {
     content: '';
@@ -104,12 +102,10 @@ const styles = css`
     transition: opacity ${sys.duration.short2} ${sys.easing.standard};
   }
   .bar:hover:not(:focus-within)::before { opacity: ${sys.state.hover}; }
-  .shell.open .bar {
-    padding-inline: ${sys.space(2)};
-  }
   .shell.open .bar::before { opacity: 0; }
   .lead { color: ${t.placeholderFg}; display: grid; place-items: center; }
   .leads {
+    position: relative;
     display: grid;
     place-items: center;
     inline-size: 48px;
@@ -119,11 +115,28 @@ const styles = css`
   .lead-slot {
     display: grid;
     place-items: center;
-    transform-origin: center;
-    transition: opacity ${sys.duration.short4} ${sys.easing.standard},
+    transform-origin: center center;
+    transition: opacity ${sys.duration.short3} ${sys.easing.standard},
                 transform ${sys.duration.short4} ${sys.easing.emphasized};
   }
-  .lead-slot.off { opacity: 0; transform: scale(0.8); pointer-events: none; }
+  .lead-search {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+  .lead-search.off {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.6);
+    pointer-events: none;
+  }
+  .lead-back {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+  .lead-back.off {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.6);
+    pointer-events: none;
+  }
   input {
     flex: 1;
     min-inline-size: 0;
@@ -234,11 +247,11 @@ define('ui-search', {
              @click=${() => input?.focus()}>
           ${() => (isView()
             ? html`<span class="leads">
-                <span class=${() => `lead-slot${open() ? ' off' : ''}`}>
+                <span class=${() => `lead-slot lead-search${open() ? ' off' : ''}`}>
                   <slot name="leading" ref=${(el) => el.addEventListener('slotchange', () => hasLeading.set(el.assignedElements().length > 0))}></slot>
                   ${() => (hasLeading() ? null : html`<ui-icon name="search"></ui-icon>`)}
                 </span>
-                <span class=${() => `lead-slot${open() ? '' : ' off'}`}>
+                <span class=${() => `lead-slot lead-back${open() ? '' : ' off'}`}>
                   <ui-icon-button icon="arrow-back" label="Back"
                     @click=${(e) => { e.stopPropagation(); closeView(); }}></ui-icon-button>
                 </span>
