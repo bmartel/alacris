@@ -44,7 +44,7 @@ const styles = css`
     justify-content: center;
     gap: ${sys.space(2)};
     block-size: calc(${t.height} + var(--ui-density, 0) * 4px);
-    padding-inline: ${sys.space(4)};
+    padding-inline: ${sys.space(3)};
     border: none;
     border-radius: ${t.radius};
     background: ${t.bg};

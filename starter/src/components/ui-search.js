@@ -59,6 +59,8 @@ const t = vars('ui-search', {
 const styles = css`
   :host { display: block; position: relative; inline-size: min(100%, 720px); }
   .bar {
+    position: relative;
+    isolation: isolate;
     display: flex;
     align-items: center;
     gap: ${sys.space(2)};
@@ -74,6 +76,16 @@ const styles = css`
     transition: background-color ${sys.duration.short2} ${sys.easing.standard},
                 border-radius ${sys.duration.short2} ${sys.easing.standard};
   }
+  .bar::before {
+    content: '';
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    background: ${sys.color.onSurface};
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity ${sys.duration.short2} ${sys.easing.standard};
+  }
+  .bar:hover:not(:focus-within)::before { opacity: ${sys.state.hover}; }
   .bar:focus-within { background: ${t.bgActive}; }
   /* Docked search view: one extra-large surface, not a pill stretched over the list. */
   .open {
@@ -86,6 +98,7 @@ const styles = css`
     background: transparent;
     padding-inline: ${sys.space(2)};
   }
+  .open .bar::before { opacity: 0; }
   .open .bar:focus-within { background: transparent; }
   .lead { color: ${t.placeholderFg}; display: grid; place-items: center; }
   input {

@@ -73,8 +73,6 @@ const styles = css`
   .filled:hover { box-shadow: ${sys.elevation[1]}; }
   .filled:active { box-shadow: none; }
   .tonal { background: ${t.tonalBg}; color: ${t.tonalFg}; }
-  .tonal:hover { box-shadow: ${sys.elevation[1]}; }
-  .tonal:active { box-shadow: none; }
   .outlined {
     color: ${t.outlinedFg};
     border: 1px solid ${t.outlineColor};

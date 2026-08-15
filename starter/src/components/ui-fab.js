@@ -79,7 +79,7 @@ const styles = css`
   .sm { --_size: ${t.sizeSm}; --_radius: ${t.radiusSm}; --_icon: 1.5rem; }
   .md { --_size: ${t.sizeMd}; --_radius: ${t.radiusMd}; --_icon: 1.5rem; }
   .lg { --_size: ${t.sizeLg}; --_radius: ${t.radiusLg}; --_icon: 2.25rem; }
-  .extended { padding-inline: ${sys.space(4)}; --_icon: 1.5rem; }
+  .extended { padding-inline: ${sys.space(4)} 20px; --_icon: 1.5rem; }
 
   .primary { background: ${t.primaryBg}; color: ${t.primaryFg}; }
   .secondary { background: ${t.secondaryBg}; color: ${t.secondaryFg}; }

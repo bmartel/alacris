@@ -80,6 +80,20 @@ const styles = css`
                 background-color ${sys.duration.short2} ${sys.easing.standard};
   }
   .filled.focused .field::after { block-size: 2px; background: ${t.accent}; }
+  .filled .field::before {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none;
+    background: ${sys.color.onSurface};
+    opacity: 0;
+    border-radius: inherit;
+    transition: opacity ${sys.duration.short2} ${sys.easing.standard};
+  }
+  .filled:hover:not(.focused):not(.disabled) .field::before {
+    opacity: ${sys.state.hover};
+  }
+  .filled:hover:not(.focused):not(.disabled) .field::after {
+    background: ${sys.color.onSurface};
+  }
 
   fieldset {
     position: absolute;

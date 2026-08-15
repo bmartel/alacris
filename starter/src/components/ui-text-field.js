@@ -53,7 +53,7 @@ const styles = css`
     font: ${t.font};
     color: ${t.fg};
     cursor: text;
-    --ui-icon-size: 1.25rem;
+    --ui-icon-size: 1.5rem;
   }
   .filled .field {
     background: ${t.bg};
@@ -113,6 +113,9 @@ const styles = css`
   .filled:hover:not(.focused):not(.error):not(.disabled) .filled-hover {
     opacity: ${sys.state.hover};
   }
+  .filled:hover:not(.focused):not(.error):not(.disabled) .field::after {
+    background: ${sys.color.onSurface};
+  }
 
   .label {
     position: absolute;
@@ -126,7 +129,7 @@ const styles = css`
                 scale ${sys.duration.short3} ${sys.easing.standard},
                 color ${sys.duration.short2} ${sys.easing.standard};
   }
-  .with-leading .label { inset-inline-start: calc(${sys.space(4)} + 1.25rem + ${sys.space(2)}); }
+  .with-leading .label { inset-inline-start: calc(${sys.space(4)} + 1.5rem + ${sys.space(2)}); }
   /* Multi-line fields anchor the label to the top, not the vertical center. */
   .multiline .label { inset-block-start: 24px; }
   .filled.floating .label { translate: 0 -106%; scale: 0.75; }

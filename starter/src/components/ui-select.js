@@ -96,6 +96,20 @@ const styles = css`
   }
   .filled:focus-within .field::after,
   .filled.open .field::after { block-size: 2px; background: ${t.accent}; }
+  .filled .field::before {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none;
+    background: ${sys.color.onSurface};
+    opacity: 0;
+    border-radius: inherit;
+    transition: opacity ${sys.duration.short2} ${sys.easing.standard};
+  }
+  .filled:hover:not(:focus-within):not(.open):not(.disabled) .field::before {
+    opacity: ${sys.state.hover};
+  }
+  .filled:hover:not(:focus-within):not(.open):not(.disabled) .field::after {
+    background: ${sys.color.onSurface};
+  }
 
   /* Outlined: a fieldset (sibling of the button — never inside it, or the
      UA paints a second inner border) draws the notchable outline. */

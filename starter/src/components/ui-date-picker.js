@@ -36,7 +36,7 @@ import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { formBind } from '../util/form.js';
 import { presence } from '../motion/presence.js';
-import { fx } from '../motion/animate.js';
+import { animate, fx } from '../motion/animate.js';
 import { autoUpdate } from '../util/position.js';
 import { focusTrap, scrollLock } from '../util/focus.js';
 import './ui-icon-button.js';
@@ -120,7 +120,7 @@ const t = vars('ui-date-picker', {
   mutedFg: sys.color.onSurfaceVariant,
   rangeBg: sys.color.secondaryContainer,
   rangeFg: sys.color.onSecondaryContainer,
-  scrim: `color-mix(in srgb, ${sys.color.scrim} 40%, transparent)`,
+  scrim: `color-mix(in srgb, ${sys.color.scrim} 32%, transparent)`,
 });
 
 const styles = css`
@@ -159,6 +159,20 @@ const styles = css`
   }
   .filled:focus-within .field::after,
   .filled.open .field::after { block-size: 2px; background: ${t.accent}; }
+  .filled .field::before {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none;
+    background: ${sys.color.onSurface};
+    opacity: 0;
+    border-radius: inherit;
+    transition: opacity ${sys.duration.short2} ${sys.easing.standard};
+  }
+  .filled:hover:not(:focus-within):not(.open):not(.disabled) .field::before {
+    opacity: ${sys.state.hover};
+  }
+  .filled:hover:not(:focus-within):not(.open):not(.disabled) .field::after {
+    background: ${sys.color.onSurface};
+  }
 
   fieldset {
     position: absolute;
@@ -242,7 +256,12 @@ const styles = css`
     place-items: center;
   }
   .scrim { position: absolute; inset: 0; background: ${t.scrim}; }
+  @keyframes ui-date-picker-in {
+    from { transform: scale(0.8); }
+    to { transform: none; }
+  }
   .modal-surface {
+    animation: ui-date-picker-in ${sys.duration.medium2} ${sys.easing.emphasizedDecelerate};
     position: relative;
     display: flex;
     flex-direction: column;
@@ -252,6 +271,7 @@ const styles = css`
     border-radius: ${t.panelRadius};
     box-shadow: ${sys.elevation[3]};
     color: ${t.fg};
+    min-inline-size: min(360px, calc(100vw - 48px));
     max-inline-size: calc(100vw - 48px);
   }
   .headline {
@@ -366,6 +386,7 @@ define('ui-date-picker', {
     const draftEnd = signal(end());
     const rangeAnchor = signal('');
     let fieldEl = null;
+    let modalSurfaceEl = null;
     let stopAuto = null;
     let releaseTrap = null;
     let unlock = null;
@@ -519,6 +540,9 @@ define('ui-date-picker', {
         unlock = scrollLock();
         queueMicrotask(() => { if (open() && !releaseTrap) releaseTrap = focusTrap(host); });
       } else {
+        if (modalSurfaceEl?.isConnected) {
+          animate(modalSurfaceEl, fx.scaleOut, { duration: 'short4', easing: 'emphasizedAccelerate' });
+        }
         releaseTrap?.(); releaseTrap = null;
         unlock?.(); unlock = null;
       }
@@ -570,7 +594,8 @@ define('ui-date-picker', {
       <div class="overlay">
         <div class="scrim" @click=${closePanel}></div>
         <div class="modal-surface" part="panel" role="dialog" aria-modal="true"
-             aria-label=${() => label() || 'Choose date'}>
+             aria-label=${() => label() || 'Choose date'}
+             ref=${(el) => (modalSurfaceEl = el)}>
           <div class="headline">${() => (range() ? 'Select dates' : 'Select date')}</div>
           <div class="picked">${pickedLabel}</div>
           <div class="cal-header">
@@ -606,17 +631,17 @@ define('ui-date-picker', {
         </div>
         ${presence(() => open() && presentation() !== 'modal', dockedView, {
           enter: fx.scaleIn,
-          exit: fx.fadeOut,
+          exit: fx.scaleOut,
           enterDuration: 'short4',
-          exitDuration: 'short3',
+          exitDuration: 'short4',
           onEntered: () => host.emit('open'),
           onExited: () => host.emit('close'),
         })}
         ${presence(() => open() && presentation() === 'modal', modalView, {
           enter: fx.fadeIn,
           exit: fx.fadeOut,
-          enterDuration: 'short4',
-          exitDuration: 'short3',
+          enterDuration: 'medium2',
+          exitDuration: 'short4',
           onEntered: () => host.emit('open'),
           onExited: () => host.emit('close'),
         })}

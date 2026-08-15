@@ -104,7 +104,16 @@ const styles = css`
     box-shadow: ${sys.elevation[1]};
   }
 
-  .disabled { pointer-events: none; opacity: ${sys.state.disabledContent}; }
+  .disabled { pointer-events: none; }
+  .filled.disabled, .tonal.disabled, .elevated.disabled {
+    background: color-mix(in srgb, ${sys.color.onSurface} calc(${sys.state.disabledContainer} * 100%), transparent);
+    color: color-mix(in srgb, ${sys.color.onSurface} calc(${sys.state.disabledContent} * 100%), transparent);
+    box-shadow: none;
+  }
+  .outlined.disabled {
+    color: color-mix(in srgb, ${sys.color.onSurface} calc(${sys.state.disabledContent} * 100%), transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, ${sys.color.onSurface} calc(${sys.state.disabledContainer} * 100%), transparent);
+  }
   .group ui-menu { display: contents; }
 `;
 

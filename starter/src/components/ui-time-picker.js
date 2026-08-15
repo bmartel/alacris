@@ -111,6 +111,20 @@ const styles = css`
   }
   .filled:focus-within .field::after,
   .filled.open .field::after { block-size: 2px; background: ${t.accent}; }
+  .filled .field::before {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none;
+    background: ${sys.color.onSurface};
+    opacity: 0;
+    border-radius: inherit;
+    transition: opacity ${sys.duration.short2} ${sys.easing.standard};
+  }
+  .filled:hover:not(:focus-within):not(.open):not(.disabled) .field::before {
+    opacity: ${sys.state.hover};
+  }
+  .filled:hover:not(:focus-within):not(.open):not(.disabled) .field::after {
+    background: ${sys.color.onSurface};
+  }
 
   fieldset {
     position: absolute;
@@ -604,9 +618,9 @@ define('ui-time-picker', {
         </div>
         ${presence(open, panelView, {
           enter: fx.scaleIn,
-          exit: fx.fadeOut,
+          exit: fx.scaleOut,
           enterDuration: 'short4',
-          exitDuration: 'short3',
+          exitDuration: 'short4',
           onEntered: () => host.emit('open'),
           onExited: () => host.emit('close'),
         })}

@@ -31,6 +31,7 @@ import { focusTrap, scrollLock } from '../util/focus.js';
 
 const t = vars('ui-drawer', {
   bg: sys.color.surfaceContainerLow,
+  stdBg: sys.color.surface,
   fg: sys.color.onSurface,
   width: 'min(360px, 80vw)',
   radius: sys.radius.lg,
@@ -70,7 +71,7 @@ const styles = css`
     inline-size: 0;
     block-size: 100%;
     overflow: hidden;
-    background: ${t.bg};
+    background: ${t.stdBg};
     color: ${t.fg};
     transition: inline-size ${sys.duration.medium2} ${sys.easing.emphasized};
   }
