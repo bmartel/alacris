@@ -113,25 +113,37 @@ const styles = css`
     min-block-size: calc(var(--ui-search-height, 56px) + var(--ui-density, 0) * 4px);
   }
   .hero-search { inline-size: 100%; }
-  .hero-search.is-pinned { margin: 0; max-inline-size: none; }
+  /* Pinned idle is the same search pill, shorter, matching the hero's width —
+     not a full-bar trough. In-use (open view) keeps the extra-large overlay. */
+  .hero-search.is-pinned {
+    margin: 0;
+    max-inline-size: none;
+    --ui-search-height: 40px;
+    --ui-search-font: ${sys.type.bodyMd};
+  }
   .bar-mid {
     display: grid;
     grid-template: 1fr / 1fr;
     align-items: center;
+    justify-items: start;
     min-inline-size: 0;
     inline-size: 100%;
-    block-size: 48px;
+    block-size: 40px;
   }
   .bar-mid > * { grid-area: 1 / 1; min-inline-size: 0; }
   .app-title {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: opacity ${sys.duration.short4} ${sys.easing.standard};
+    inline-size: 100%;
+    transition: opacity ${sys.duration.long2} ${sys.easing.emphasized};
   }
   .app-title.away { opacity: 0; pointer-events: none; }
   .search-dock {
-    min-block-size: 48px;
+    justify-self: start;
+    inline-size: min(100%, 36rem);
+    block-size: 40px;
+    min-block-size: 40px;
     visibility: hidden;
     pointer-events: none;
   }
