@@ -93,7 +93,7 @@ Or skip installing entirely:
 // latest
 import { define, html, signal } from 'https://unpkg.com/@alacris/core';
 // pinned (recommended for production)
-import { define, html, signal } from 'https://unpkg.com/@alacris/core@0.9.2/dist/alacris.js';
+import { define, html, signal } from 'https://unpkg.com/@alacris/core@0.10.0/dist/alacris.js';
 // or jsDelivr
 import { define, html, signal } from 'https://cdn.jsdelivr.net/npm/@alacris/core/+esm';
 ```
