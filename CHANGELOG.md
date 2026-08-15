@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.9.2](https://github.com/bmartel/alacris/compare/v0.9.1...v0.9.2) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** restore the full Material category icon ([ad1d9bc](https://github.com/bmartel/alacris/commit/ad1d9bcb991174b4735d2c796b5577decb03161e))
+
 ## [0.9.1](https://github.com/bmartel/alacris/compare/v0.9.0...v0.9.1) (2026-08-15)
 
 ### Bug Fixes
