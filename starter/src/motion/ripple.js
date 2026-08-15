@@ -45,7 +45,9 @@ export function ripple(el, opts = {}) {
     const h = rect.height || 48;
     const cx = centered ? w / 2 : clientX - rect.left;
     const cy = centered ? h / 2 : clientY - rect.top;
-    const radius = Math.hypot(Math.max(cx, w - cx), Math.max(cy, h - cy));
+    // Soft-edge padding matches material-web: the wave slightly overruns the
+    // container so the edge never looks clipped at rest.
+    const radius = Math.hypot(Math.max(cx, w - cx), Math.max(cy, h - cy)) + 10;
 
     const dot = document.createElement('span');
     Object.assign(dot.style, {
@@ -61,23 +63,28 @@ export function ripple(el, opts = {}) {
     });
     holder.append(dot);
 
-    const grow = animate(dot, [{ transform: 'scale(0)' }, { transform: 'scale(1)' }], {
+    const pressedAt = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    // material-web: grow from 20% of the final size over 450ms (long1) with
+    // standard easing; stay visible at least 225ms (short4 + a beat).
+    const grow = animate(dot, [{ transform: 'scale(0.2)' }, { transform: 'scale(1)' }], {
       duration: 'long1',
-      easing: 'standardDecelerate',
+      easing: 'standard',
     });
 
     let released = false;
     release = () => {
       if (released) return;
       released = true;
-      // Let the wave reach full size before it fades — the Material feel.
-      settled(grow).then(() => {
-        const fade = animate(dot, [{ opacity: 'var(--ui-state-pressed, 0.1)' }, { opacity: '0' }], {
+      const elapsed = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - pressedAt;
+      const rest = Math.max(0, 225 - elapsed);
+      const fade = () => {
+        const out = animate(dot, [{ opacity: 'var(--ui-state-pressed, 0.1)' }, { opacity: '0' }], {
           duration: 'medium1',
           easing: 'linear',
         });
-        settled(fade).then(() => dot.remove());
-      });
+        settled(out).then(() => dot.remove());
+      };
+      Promise.all([settled(grow), rest ? new Promise((r) => setTimeout(r, rest)) : null]).then(fade);
     };
   };
 

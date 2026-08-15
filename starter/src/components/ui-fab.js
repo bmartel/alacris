@@ -47,7 +47,7 @@ const styles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: ${sys.space(2)};
+    gap: ${sys.space(3)};
     block-size: calc(var(--_size) + var(--ui-density, 0) * 4px);
     min-inline-size: calc(var(--_size) + var(--ui-density, 0) * 4px);
     padding: 0;
@@ -63,6 +63,7 @@ const styles = css`
     --ui-icon-size: var(--_icon);
   }
   .control:hover { box-shadow: ${sys.elevation[4]}; }
+  .control:active { box-shadow: ${sys.elevation[3]}; }
   ${focusRingOn('.control')}
   .layer {
     position: absolute; inset: 0; z-index: -1;
@@ -73,6 +74,7 @@ const styles = css`
   }
   .control:hover .layer { opacity: ${sys.state.hover}; }
   .control:focus-visible .layer { opacity: ${sys.state.focus}; }
+  .control:active .layer { opacity: ${sys.state.pressed}; }
 
   .sm { --_size: ${t.sizeSm}; --_radius: ${t.radiusSm}; --_icon: 1.5rem; }
   .md { --_size: ${t.sizeMd}; --_radius: ${t.radiusMd}; --_icon: 1.5rem; }

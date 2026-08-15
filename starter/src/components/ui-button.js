@@ -12,9 +12,9 @@
 // @part  control   — the <button>/<a>
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars, computed } from 'alacris';
+import { define, html, css, vars, computed, signal } from 'alacris';
 import { sys } from '../tokens/sys.js';
-import { base, focusRingOn } from './base.js';
+import { base, focusRingOn, stateLayerOn } from './base.js';
 import { ripple } from '../motion/ripple.js';
 
 const t = vars('ui-button', {
@@ -67,13 +67,14 @@ const styles = css`
     opacity: 0;
     transition: opacity ${sys.duration.short2} ${sys.easing.standard};
   }
-  .control:hover .layer { opacity: ${sys.state.hover}; }
-  .control:focus-visible .layer { opacity: ${sys.state.focus}; }
+  ${stateLayerOn('.control')}
 
   .filled { background: ${t.filledBg}; color: ${t.filledFg}; }
   .filled:hover { box-shadow: ${sys.elevation[1]}; }
+  .filled:active { box-shadow: none; }
   .tonal { background: ${t.tonalBg}; color: ${t.tonalFg}; }
   .tonal:hover { box-shadow: ${sys.elevation[1]}; }
+  .tonal:active { box-shadow: none; }
   .outlined {
     color: ${t.outlinedFg};
     border: 1px solid ${t.outlineColor};
@@ -81,6 +82,13 @@ const styles = css`
   .text { color: ${t.textFg}; padding-inline: 12px; }
   .elevated { background: ${t.elevatedBg}; color: ${t.elevatedFg}; box-shadow: ${sys.elevation[1]}; }
   .elevated:hover { box-shadow: ${sys.elevation[2]}; }
+  .elevated:active { box-shadow: ${sys.elevation[1]}; }
+
+  /* Leading icon: 16dp start padding. Trailing icon: 16dp end padding. */
+  .with-icon:not(.text) { padding-inline-start: 16px; }
+  .with-trailing:not(.text) { padding-inline-end: 16px; }
+  .text.with-icon { padding-inline-end: 16px; }
+  .text.with-trailing { padding-inline-start: 16px; }
 
   .control:disabled, .control[aria-disabled="true"] {
     cursor: default;
@@ -101,7 +109,15 @@ define('ui-button', {
   props: { variant: 'filled', disabled: false, type: 'button', href: '', target: '' },
   styles: [base, styles],
   setup({ variant, disabled, type, href, target }, host) {
-    const cls = computed(() => `control ${variant()}`);
+    const hasIcon = signal(false);
+    const hasTrailing = signal(false);
+    const onSlot = (sig) => (el) => {
+      const sync = () => sig.set(el.assignedElements().length > 0);
+      el.addEventListener('slotchange', sync);
+      sync();
+    };
+    const cls = computed(() =>
+      `control ${variant()}${hasIcon() ? ' with-icon' : ''}${hasTrailing() ? ' with-trailing' : ''}`);
 
     const onClick = (e) => {
       if (disabled()) { e.preventDefault(); e.stopPropagation(); return; }
@@ -111,9 +127,9 @@ define('ui-button', {
 
     const inner = html`
       <span class="layer" aria-hidden="true"></span>
-      <slot name="icon"></slot>
+      <slot name="icon" ref=${onSlot(hasIcon)}></slot>
       <slot></slot>
-      <slot name="trailing"></slot>`;
+      <slot name="trailing" ref=${onSlot(hasTrailing)}></slot>`;
 
     return html`${() =>
       href()

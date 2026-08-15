@@ -20,7 +20,7 @@ import { fx } from '../motion/animate.js';
 import { scrollLock } from '../util/focus.js';
 
 const t = vars('ui-backdrop', {
-  bg: `color-mix(in srgb, ${sys.color.scrim} 40%, transparent)`,
+  bg: `color-mix(in srgb, ${sys.color.scrim} 32%, transparent)`,
 });
 
 const styles = css`

@@ -16,7 +16,7 @@
 // @prop  {boolean} open=false
 // @prop  {string}  message=''
 // @prop  {string}  action=''      — label for a trailing text action button
-// @prop  {number}  duration=5000  — auto-dismiss after ms; 0 = sticky
+// @prop  {number}  duration=4000  — auto-dismiss after ms; 0 = sticky
 // @prop  {boolean} closeButton=false — trailing close icon button
 // @event action — action button pressed
 // @event close  — detail: { reason: 'timeout' | 'action' | 'close' | 'method' }
@@ -48,7 +48,7 @@ const styles = css`
   .region {
     position: fixed;
     inset-inline: 0;
-    inset-block-end: ${sys.space(6)};
+    inset-block-end: ${sys.space(4)};
     z-index: ${sys.z.snackbar};
     display: flex;
     justify-content: center;
@@ -96,6 +96,7 @@ const styles = css`
   }
   .action:hover .layer, .close:hover .layer { opacity: ${sys.state.hover}; }
   .action:focus-visible .layer, .close:focus-visible .layer { opacity: ${sys.state.focus}; }
+  .action:active .layer, .close:active .layer { opacity: ${sys.state.pressed}; }
 
   .action {
     block-size: 36px;
@@ -115,7 +116,7 @@ const styles = css`
 `;
 
 define('ui-snackbar', {
-  props: { open: false, message: '', action: '', duration: 5000, closeButton: false },
+  props: { open: false, message: '', action: '', duration: 4000, closeButton: false },
   styles: [base, styles],
   setup({ open, message, action, duration, closeButton }, host) {
     const requestClose = (reason) => host.emit('close', { reason });
@@ -212,7 +213,7 @@ function next() {
  * from the queue if it has not shown yet); `closed` resolves once it has fully
  * left the screen.
  */
-export function showSnackbar(message, { action = '', duration = 5000, closeButton = false } = {}) {
+export function showSnackbar(message, { action = '', duration = 4000, closeButton = false } = {}) {
   let resolve;
   const closed = new Promise((r) => { resolve = r; });
   const entry = { message, action, duration, closeButton, resolve };

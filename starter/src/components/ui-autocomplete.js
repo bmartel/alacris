@@ -182,6 +182,7 @@ const styles = css`
   }
   .opt:hover .layer { opacity: ${sys.state.hover}; }
   .opt.active .layer { opacity: ${sys.state.focus}; }
+  .opt:active .layer { opacity: ${sys.state.pressed}; }
   .opt[aria-selected="true"] { background: ${sys.color.secondaryContainer}; color: ${sys.color.onSecondaryContainer}; }
 
   .disabled { opacity: ${sys.state.disabledContent}; pointer-events: none; }
@@ -324,9 +325,11 @@ define('ui-autocomplete', {
         </label>
         ${presence(showPanel, panelView, {
           enter: fx.scaleIn,
-          exit: fx.fadeOut,
+          exit: fx.scaleOut,
           enterDuration: 'short4',
-          exitDuration: 'short3',
+          exitDuration: 'short2',
+          enterEasing: 'emphasizedDecelerate',
+          exitEasing: 'emphasizedAccelerate',
         })}
       </div>`;
   },

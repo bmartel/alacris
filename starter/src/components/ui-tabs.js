@@ -131,12 +131,23 @@ define('ui-tabs', {
     // animating to garbage.
     const ix = signal(0);
     const iw = signal(0);
+    let tablistEl = null;
     const measure = () => {
       const tab = tabsOf().find((el) => el.selected);
-      const w = tab?.offsetWidth || 0;
-      if (!w) { iw.set(0); return; }
-      ix.set(tab.offsetLeft || 0);
-      iw.set(w);
+      if (!tab || !tablistEl) { iw.set(0); return; }
+      if (variant.peek() === 'primary') {
+        const inner = tab.shadowRoot?.querySelector('.inner');
+        const listRect = tablistEl.getBoundingClientRect();
+        const r = (inner || tab).getBoundingClientRect();
+        if (!r.width) { iw.set(0); return; }
+        ix.set(r.left - listRect.left);
+        iw.set(r.width);
+      } else {
+        const w = tab.offsetWidth || 0;
+        if (!w) { iw.set(0); return; }
+        ix.set(tab.offsetLeft || 0);
+        iw.set(w);
+      }
     };
     effect(() => {
       value();
@@ -149,7 +160,8 @@ define('ui-tabs', {
     });
 
     return html`
-      <div class=${() => `tablist ${variant()}`} part="tablist" role="tablist" aria-label=${() => label() || null}>
+      <div class=${() => `tablist ${variant()}`} part="tablist" role="tablist" aria-label=${() => label() || null}
+           ref=${(el) => (tablistEl = el)}>
         <slot @slotchange=${bump}></slot>
         <span class="indicator" part="indicator" aria-hidden="true"
               style=${() => ({

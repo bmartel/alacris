@@ -270,6 +270,7 @@ const styles = css`
     border-radius: inherit; background: currentColor; opacity: 0;
   }
   .choice:hover .layer { opacity: ${sys.state.hover}; }
+  .choice:active .layer { opacity: ${sys.state.pressed}; }
   .choice.active { background: ${t.accent}; color: ${t.onAccent}; }
   .choice:focus-visible { outline: var(--ui-focus-ring); outline-offset: -2px; }
 

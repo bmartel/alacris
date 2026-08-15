@@ -103,6 +103,16 @@ const styles = css`
   .outlined.focused fieldset { border-width: 2px; border-color: ${t.accent}; }
   .outlined.error fieldset { border-color: ${t.errorFg}; }
   .root:hover:not(.focused):not(.error) fieldset { border-color: ${sys.color.onSurface}; }
+  .filled .filled-hover {
+    position: absolute; inset: 0; pointer-events: none;
+    background: ${sys.color.onSurface};
+    opacity: 0;
+    border-radius: inherit;
+    transition: opacity ${sys.duration.short2} ${sys.easing.standard};
+  }
+  .filled:hover:not(.focused):not(.error):not(.disabled) .filled-hover {
+    opacity: ${sys.state.hover};
+  }
 
   .label {
     position: absolute;
@@ -226,6 +236,7 @@ define('ui-text-field', {
     return html`
       <label class=${cls}>
         <span class="field" part="field">
+          ${() => (variant() === 'filled' ? html`<span class="filled-hover" aria-hidden="true"></span>` : null)}
           ${() => (variant() === 'outlined'
             ? html`<fieldset aria-hidden="true"><legend><span>${label}</span></legend></fieldset>`
             : null)}

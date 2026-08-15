@@ -29,7 +29,7 @@ import { define, html, css, vars, effect, onCleanup } from 'alacris';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { presence } from '../motion/presence.js';
-import { fx } from '../motion/animate.js';
+import { animate, fx } from '../motion/animate.js';
 import { focusTrap, scrollLock } from '../util/focus.js';
 
 const t = vars('ui-dialog', {
@@ -38,7 +38,7 @@ const t = vars('ui-dialog', {
   headlineFg: sys.color.onSurface,
   radius: sys.radius.xl,
   width: 'min(560px, calc(100vw - 48px))',
-  scrim: `color-mix(in srgb, ${sys.color.scrim} 40%, transparent)`,
+  scrim: `color-mix(in srgb, ${sys.color.scrim} 32%, transparent)`,
 });
 
 const styles = css`
@@ -52,7 +52,7 @@ const styles = css`
   }
   .scrim { position: absolute; inset: 0; background: ${t.scrim}; }
   @keyframes ui-dialog-in {
-    from { transform: scale(0.92); }
+    from { transform: scale(0.8); }
     to { transform: none; }
   }
   .surface {
@@ -95,6 +95,7 @@ define('ui-dialog', {
   setup({ open, persistent, label }, host) {
     let releaseTrap = null;
     let unlock = null;
+    let surfaceEl = null;
 
     const requestClose = (reason) => {
       if (reason !== 'method' && persistent()) return;
@@ -124,6 +125,9 @@ define('ui-dialog', {
         releaseTrap = null;
         unlock?.();
         unlock = null;
+        if (surfaceEl?.isConnected) {
+          animate(surfaceEl, fx.scaleOut, { duration: 'short4', easing: 'emphasizedAccelerate' });
+        }
       }
     });
     onCleanup(() => {
@@ -139,7 +143,7 @@ define('ui-dialog', {
       <div class="overlay">
         <div class="scrim" part="scrim" @click=${() => requestClose('scrim')}></div>
         <div class="surface" part="surface" role="dialog" aria-modal="true"
-             aria-label=${() => label() || null} tabindex="-1">
+             aria-label=${() => label() || null} tabindex="-1" ref=${(el) => (surfaceEl = el)}>
           <div class="headline" part="headline"
                ref=${(el) => hasSlot(el.querySelector('slot'), (has) => el.classList.toggle('has', has))}>
             <slot name="headline"></slot>
@@ -155,7 +159,7 @@ define('ui-dialog', {
     return html`${presence(open, view, {
       enter: fx.fadeIn,
       exit: fx.fadeOut,
-      exitDuration: 'short3',
+      exitDuration: 'short4',
       onEntered: () => host.emit('opened'),
       onExited: () => host.emit('closed'),
     })}`;

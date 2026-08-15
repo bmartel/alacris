@@ -32,7 +32,7 @@ import { autoUpdate } from '../util/position.js';
 const t = vars('ui-tooltip', {
   bg: sys.color.inverseSurface,
   fg: sys.color.inverseOnSurface,
-  font: sys.type.bodySm,
+  font: sys.type.labelSm,
   radius: sys.radius.xs,
   maxWidth: '200px',
   richBg: sys.color.surfaceContainer,
@@ -54,7 +54,7 @@ const styles = css`
     background: ${t.bg};
     color: ${t.fg};
     font: ${t.font};
-    letter-spacing: ${sys.tracking.bodySm};
+    letter-spacing: ${sys.tracking.labelSm};
     border-radius: ${t.radius};
     padding: 4px 8px;
     max-inline-size: ${t.maxWidth};
@@ -136,9 +136,9 @@ define('ui-tooltip', {
     return html`
       <slot></slot>
       ${presence(open, view, {
-        enter: fx.scaleIn,
+        enter: fx.fadeIn,
         exit: fx.fadeOut,
-        enterDuration: 'short4',
+        enterDuration: 'short2',
         exitDuration: 'short2',
       })}`;
   },

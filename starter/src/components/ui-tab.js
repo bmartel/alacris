@@ -55,7 +55,12 @@ const styles = css`
     user-select: none;
     white-space: nowrap;
     transition: color ${sys.duration.short4} ${sys.easing.standard};
-    --ui-icon-size: 1.125rem;
+    --ui-icon-size: 1.5rem;
+  }
+  .inner {
+    display: inline-flex;
+    align-items: center;
+    gap: inherit;
   }
   .selected { color: ${t.selectedFg}; }
   .layer {
@@ -65,6 +70,7 @@ const styles = css`
   }
   .control:hover .layer { opacity: ${sys.state.hover}; }
   :host(:focus-visible) .layer { opacity: ${sys.state.focus}; }
+  .control:active .layer { opacity: ${sys.state.pressed}; }
   :host([aria-disabled="true"]) .control {
     cursor: default;
     color: color-mix(in srgb, ${sys.color.onSurface} calc(${sys.state.disabledContent} * 100%), transparent);
@@ -98,8 +104,10 @@ define('ui-tab', {
       <div part="control" class=${() => `control${selected() ? ' selected' : ''}`}
            ref=${(el) => ripple(el, { disabled })}>
         <span class="layer" aria-hidden="true"></span>
-        ${() => (icon() ? html`<ui-icon name=${icon}></ui-icon>` : null)}
-        <slot></slot>
+        <span class="inner">
+          ${() => (icon() ? html`<ui-icon name=${icon}></ui-icon>` : null)}
+          <slot></slot>
+        </span>
       </div>`;
   },
 });

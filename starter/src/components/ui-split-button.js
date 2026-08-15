@@ -78,6 +78,7 @@ const styles = css`
   }
   .action:hover .layer, .chevron:hover .layer { opacity: ${sys.state.hover}; }
   .action:focus-visible .layer, .chevron:focus-visible .layer { opacity: ${sys.state.focus}; }
+  .action:active .layer, .chevron:active .layer { opacity: ${sys.state.pressed}; }
 
   .action {
     gap: ${sys.space(2)};

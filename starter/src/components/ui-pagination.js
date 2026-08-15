@@ -68,6 +68,7 @@ const styles = css`
   }
   button.item:hover .layer { opacity: ${sys.state.hover}; }
   button.item:focus-visible .layer { opacity: ${sys.state.focus}; }
+  button.item:active .layer { opacity: ${sys.state.pressed}; }
   button.item.current { background: ${t.currentBg}; color: ${t.currentFg}; }
   button.item:disabled {
     cursor: default;

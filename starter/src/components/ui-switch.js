@@ -51,6 +51,7 @@ const styles = css`
     background: ${t.trackBg};
     cursor: pointer;
     padding: 0;
+    overflow: visible;
     transition: background-color ${sys.duration.short4} ${sys.easing.standard},
                 border-color ${sys.duration.short4} ${sys.easing.standard};
   }
@@ -62,7 +63,7 @@ const styles = css`
   .handle {
     position: absolute;
     inset-block-start: 50%;
-    inset-inline-start: 4px;
+    inset-inline-start: 6px;
     translate: 0 -50%;
     inline-size: 16px;
     block-size: 16px;
@@ -71,20 +72,40 @@ const styles = css`
     display: grid;
     place-items: center;
     color: ${t.iconFg};
-    --ui-icon-size: 12px;
-    transition: translate ${sys.duration.short4} ${sys.easing.emphasized},
-                inline-size ${sys.duration.short4} ${sys.easing.emphasized},
-                block-size ${sys.duration.short4} ${sys.easing.emphasized},
-                background-color ${sys.duration.short4} ${sys.easing.standard};
+    --ui-icon-size: 16px;
+    transition: translate ${sys.duration.medium2} ${sys.easing.emphasizedOvershoot},
+                inline-size ${sys.duration.medium1} ${sys.easing.standard},
+                block-size ${sys.duration.medium1} ${sys.easing.standard},
+                background-color ${sys.duration.short2} ${sys.easing.standard};
   }
+  .handle::after {
+    content: '';
+    position: absolute;
+    inset: 50%;
+    width: 40px;
+    height: 40px;
+    margin: -20px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0;
+    pointer-events: none;
+    z-index: -1;
+    transition: opacity ${sys.duration.short2} ${sys.easing.standard};
+  }
+  .control:hover .handle::after { opacity: ${sys.state.hover}; }
+  .control:focus-visible .handle::after { opacity: ${sys.state.focus}; }
+  .control:active .handle::after { opacity: ${sys.state.pressed}; }
+  .control:hover:not([aria-checked="true"]) .handle { background: ${sys.color.onSurface}; }
+  .control[aria-checked="true"]:hover .handle { background: ${sys.color.primaryContainer}; }
   .control:active .handle { inline-size: 28px; block-size: 28px; }
   .control[aria-checked="true"] .handle {
-    translate: 20px -50%;
+    translate: 16px -50%;
     inline-size: 24px;
     block-size: 24px;
     background: ${t.handleBgChecked};
     color: ${t.iconFgChecked};
   }
+  .control.with-icons .handle { inline-size: 24px; block-size: 24px; }
   .control:disabled { cursor: default; pointer-events: none; opacity: ${sys.state.disabledContent}; }
   :host([disabled]) label { cursor: default; pointer-events: none; }
 `;
@@ -104,7 +125,7 @@ define('ui-switch', {
 
     return html`
       <label>
-        <button part="control" class="control" type="button" role="switch"
+        <button part="control" class=${() => `control${icons() ? ' with-icons' : ''}`} type="button" role="switch"
                 aria-checked=${() => String(checked())}
                 ?disabled=${disabled}
                 @click=${toggle}>

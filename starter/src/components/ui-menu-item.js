@@ -51,7 +51,7 @@ const styles = css`
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
-    --ui-icon-size: 1.25rem;
+    --ui-icon-size: 1.5rem;
   }
   .danger { color: ${t.dangerFg}; }
   .layer {
@@ -61,6 +61,7 @@ const styles = css`
   }
   .control:hover .layer { opacity: ${sys.state.hover}; }
   :host(:focus-visible) .layer { opacity: ${sys.state.focus}; }
+  .control:active .layer { opacity: ${sys.state.pressed}; }
   .leading { display: inline-flex; color: ${t.iconFg}; }
   .danger .leading { color: inherit; }
   .label { flex: 1; }

@@ -68,6 +68,7 @@ const styles = css`
   }
   .control:hover .layer { opacity: ${sys.state.hover}; }
   .control:focus-visible .layer { opacity: ${sys.state.focus}; }
+  .control:active .layer { opacity: ${sys.state.pressed}; }
 
   .control[aria-pressed="true"] {
     background: ${t.selectedBg};

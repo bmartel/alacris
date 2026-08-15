@@ -47,8 +47,11 @@ const styles = css`
   }
   .interactive:hover .layer { opacity: ${sys.state.hover}; }
   .interactive:focus-visible .layer { opacity: ${sys.state.focus}; }
+  .interactive:active .layer { opacity: ${sys.state.pressed}; }
   .interactive.elevated:hover { box-shadow: ${sys.elevation[2]}; }
+  .interactive.elevated:active { box-shadow: ${sys.elevation[1]}; }
   .interactive.outlined:hover, .interactive.filled:hover { box-shadow: ${sys.elevation[1]}; }
+  .interactive.outlined:active, .interactive.filled:active { box-shadow: none; }
 `;
 
 define('ui-card', {

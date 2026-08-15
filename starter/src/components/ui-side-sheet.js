@@ -38,7 +38,7 @@ const t = vars('ui-side-sheet', {
   fg: sys.color.onSurface,
   width: 'min(400px, 90vw)',
   radius: sys.radius.lg,
-  scrim: `color-mix(in srgb, ${sys.color.scrim} 40%, transparent)`,
+  scrim: `color-mix(in srgb, ${sys.color.scrim} 32%, transparent)`,
 });
 
 const styles = css`
@@ -196,7 +196,7 @@ define('ui-side-sheet', {
       ${presence(() => open() && variant() !== 'standard', modalView, {
         enter: fx.fadeIn,
         exit: fx.fadeOut,
-        exitDuration: 'short3',
+        exitDuration: 'short4',
         onEntered: () => host.emit('opened'),
         onExited: () => host.emit('closed'),
       })}`;

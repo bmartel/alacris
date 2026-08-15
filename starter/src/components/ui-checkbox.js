@@ -75,6 +75,7 @@ const styles = css`
   }
   .control:hover .layer { opacity: ${sys.state.hover}; }
   .control:focus-visible .layer { opacity: ${sys.state.focus}; }
+  .control:active .layer { opacity: ${sys.state.pressed}; }
 
   .box {
     position: relative;
@@ -94,6 +95,8 @@ const styles = css`
     inline-size: ${t.boxSize};
     block-size: ${t.boxSize};
   }
+  .control[aria-checked="true"],
+  .control[aria-checked="mixed"] { color: ${t.bg}; }
   .control[aria-checked="true"] .box,
   .control[aria-checked="mixed"] .box {
     background: ${t.bg};

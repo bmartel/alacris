@@ -53,6 +53,8 @@ export const EASINGS = {
   emphasized: 'cubic-bezier(0.2, 0, 0, 1)',
   'emphasized-accelerate': 'cubic-bezier(0.3, 0, 0.8, 0.15)',
   'emphasized-decelerate': 'cubic-bezier(0.05, 0.7, 0.1, 1)',
+  // Switch-handle overshoot — the MD3 track/handle settle (not a generic curve).
+  'emphasized-overshoot': 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
   linear: 'linear',
 };
 

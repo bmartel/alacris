@@ -115,6 +115,7 @@ const styles = css`
   }
   .close:hover .layer { opacity: ${sys.state.hover}; }
   .close:focus-visible .layer { opacity: ${sys.state.focus}; }
+  .close:active .layer { opacity: ${sys.state.pressed}; }
 `;
 
 define('ui-alert', {

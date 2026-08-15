@@ -112,8 +112,9 @@ export const settled = (anim) => anim.finished.catch(() => {});
 export const fx = {
   fadeIn: [{ opacity: 0 }, { opacity: 1 }],
   fadeOut: [{ opacity: 1 }, { opacity: 0 }],
-  scaleIn: [{ opacity: 0, transform: 'scale(0.9)' }, { opacity: 1, transform: 'scale(1)' }],
-  scaleOut: [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(0.9)' }],
+  // 0.8 is the MD3 container-transform start scale (dialogs, menus).
+  scaleIn: [{ opacity: 0, transform: 'scale(0.8)' }, { opacity: 1, transform: 'scale(1)' }],
+  scaleOut: [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(0.8)' }],
   slideInUp: [{ opacity: 0, transform: 'translateY(16px)' }, { opacity: 1, transform: 'translateY(0)' }],
   slideOutDown: [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(16px)' }],
   slideInDown: [{ opacity: 0, transform: 'translateY(-16px)' }, { opacity: 1, transform: 'translateY(0)' }],
@@ -122,5 +123,8 @@ export const fx = {
   slideOutLeft: [{ transform: 'translateX(0)' }, { transform: 'translateX(-100%)' }],
   slideInRight: [{ transform: 'translateX(100%)' }, { transform: 'translateX(0)' }],
   slideOutRight: [{ transform: 'translateX(0)' }, { transform: 'translateX(100%)' }],
+  // Bottom-sheet cover: the panel travels its full height, not a 16px nudge.
+  sheetIn: [{ transform: 'translateY(100%)' }, { transform: 'translateY(0)' }],
+  sheetOut: [{ transform: 'translateY(0)' }, { transform: 'translateY(100%)' }],
   collapse: [{ blockSize: 'var(--ui-collapse-size, auto)', opacity: 1 }, { blockSize: '0', opacity: 0 }],
 };

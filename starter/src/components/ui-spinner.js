@@ -6,7 +6,7 @@
 //
 // @prop  {number} value=-1 — current value; -1 (any negative) = indeterminate
 // @prop  {number} max=100  — value scale
-// @prop  {string} size=''  — CSS length; overrides --ui-spinner-size (default 40px)
+// @prop  {string} size=''  — CSS length; overrides --ui-spinner-size (default 48px)
 // @prop  {string} label='' — accessible name (aria-label on the progressbar)
 // @part  progress — the progressbar wrapper
 // @vars  see `t` below (`themeVars.names`)
@@ -21,7 +21,7 @@ import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 
 const t = vars('ui-spinner', {
-  size: '40px',
+  size: '48px',
   color: sys.color.primary,
   trackColor: 'transparent',
 });

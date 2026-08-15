@@ -61,7 +61,7 @@ const styles = css`
     align-items: center;
     gap: ${sys.space(2)};
     block-size: calc(${t.height} + var(--ui-density, 0) * 4px);
-    padding-inline: ${sys.space(3)};
+    padding-inline: ${sys.space(4)};
     border: 1px solid ${t.outlineColor};
     border-radius: ${t.radius};
     background: transparent;
@@ -87,6 +87,8 @@ const styles = css`
   .control:active .layer { opacity: ${sys.state.pressed}; }
 
   .label { color: ${t.labelFg}; }
+  .with-lead .control { padding-inline-start: ${sys.space(2)}; }
+  .with-dismiss .control { padding-inline-end: ${sys.space(2)}; }
   .selected .control, :host([aria-selected="true"]) .control {
     background: ${t.selectedBg};
     border-color: transparent;
@@ -138,7 +140,12 @@ define('ui-chip', {
       }
     });
 
-    const rootCls = computed(() => (selected() && variant() === 'filter' ? 'selected' : ''));
+    const rootCls = computed(() =>
+      [
+        selected() && variant() === 'filter' ? 'selected' : '',
+        (icon() || (variant() === 'filter' && selected())) ? 'with-lead' : '',
+        dismissible() ? 'with-dismiss' : '',
+      ].filter(Boolean).join(' '));
 
     const activate = () => {
       if (disabled()) return;

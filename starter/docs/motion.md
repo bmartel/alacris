@@ -35,8 +35,9 @@ animate(dot, [{ transform: 'scale(0)' }, { transform: 'scale(1)' }], { duration:
 - Returns the `Animation`. `settled(anim)` awaits it without throwing on
   cancellation (cancel is control flow, not an error).
 
-`fx` is the preset library: `fadeIn/Out`, `scaleIn/Out`, `slideInUp/Down/Left/Right`
-(+ matching outs), `collapse`. Enter presets pair naturally with
+`fx` is the preset library: `fadeIn/Out`, `scaleIn/Out` (0.8 container scale),
+`slideInUp/Down/Left/Right` (+ matching outs), `sheetIn`/`sheetOut` (full-height
+bottom-sheet cover), `collapse`. Enter presets pair naturally with
 `emphasizedDecelerate`, exits with `emphasizedAccelerate`.
 
 ## `presence` — exit animations for conditional DOM

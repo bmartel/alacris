@@ -83,6 +83,7 @@ const styles = css`
   }
   .control:hover .layer { opacity: ${sys.state.hover}; }
   .control:focus-visible .layer, :host(:focus-visible) .layer { opacity: ${sys.state.focus}; }
+  .control:active .layer { opacity: ${sys.state.pressed}; }
   .selected .pill { color: ${t.iconFgActive}; }
   .selected .bg { opacity: 1; scale: 1; }
   .label {

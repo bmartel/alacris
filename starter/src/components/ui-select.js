@@ -370,9 +370,11 @@ define('ui-select', {
         </div>
         ${presence(open, panelView, {
           enter: fx.scaleIn,
-          exit: fx.fadeOut,
+          exit: fx.scaleOut,
           enterDuration: 'short4',
-          exitDuration: 'short3',
+          exitDuration: 'short2',
+          enterEasing: 'emphasizedDecelerate',
+          exitEasing: 'emphasizedAccelerate',
           onEntered: () => host.emit('open'),
           onExited: () => host.emit('close'),
         })}

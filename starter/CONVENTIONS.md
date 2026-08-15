@@ -113,6 +113,7 @@ setup({ disabled }, host) {
 
 - `ripple(el, { disabled })` attaches the Material press ripple (already
   reduced-motion aware). Pass the prop signal itself, not its value.
+- Hover/focus/pressed opacities: `${stateLayerOn('.control')}` from `base.js`.
 - Focus ring: `.control:focus-visible { outline: var(--ui-focus-ring) }` via the
   `focusRing` snippet in `base.js`. Never remove outlines without replacing them.
 

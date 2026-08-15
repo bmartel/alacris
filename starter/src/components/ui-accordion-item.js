@@ -66,6 +66,7 @@ const styles = css`
   }
   .header:hover .layer { opacity: ${sys.state.hover}; }
   .header:focus-visible .layer { opacity: ${sys.state.focus}; }
+  .header:active .layer { opacity: ${sys.state.pressed}; }
   .header:disabled {
     cursor: default;
     pointer-events: none;

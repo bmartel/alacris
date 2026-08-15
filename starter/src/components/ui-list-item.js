@@ -66,6 +66,7 @@ const styles = css`
   }
   .interactive:hover .layer { opacity: ${sys.state.hover}; }
   .interactive:focus-visible .layer { opacity: ${sys.state.focus}; }
+  .interactive:active .layer { opacity: ${sys.state.pressed}; }
   .selected { background: ${t.selectedBg}; color: ${t.selectedFg}; }
 
   .text {

@@ -323,6 +323,7 @@ const styles = css`
     transition: opacity ${sys.duration.short2} ${sys.easing.standard};
   }
   .day:hover .layer { opacity: ${sys.state.hover}; }
+  .day:active .layer { opacity: ${sys.state.pressed}; }
   .day:focus-visible { outline: var(--ui-focus-ring); outline-offset: -2px; }
   .day.outside { color: ${t.mutedFg}; }
   .day.today { color: ${t.todayFg}; box-shadow: inset 0 0 0 1px ${t.todayFg}; }

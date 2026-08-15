@@ -49,6 +49,7 @@ const styles = css`
   }
   :host(:hover) .layer { opacity: ${sys.state.hover}; }
   :host([data-active]) .layer { opacity: ${sys.state.focus}; }
+  :host(:active) .layer { opacity: ${sys.state.pressed}; }
   :host([aria-selected="true"]) .control {
     background: ${t.selectedBg};
     color: ${t.selectedFg};

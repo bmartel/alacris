@@ -35,7 +35,7 @@ const t = vars('ui-drawer', {
   width: 'min(360px, 80vw)',
   radius: sys.radius.lg,
   pad: sys.space(3),
-  scrim: `color-mix(in srgb, ${sys.color.scrim} 40%, transparent)`,
+  scrim: `color-mix(in srgb, ${sys.color.scrim} 32%, transparent)`,
 });
 
 const styles = css`
@@ -157,7 +157,7 @@ define('ui-drawer', {
       ${presence(() => open() && variant() === 'modal', overlay, {
         enter: fx.fadeIn,
         exit: fx.fadeOut,
-        exitDuration: 'short3',
+        exitDuration: 'short4',
         onEntered: () => host.emit('opened'),
         onExited: () => host.emit('closed'),
       })}`;

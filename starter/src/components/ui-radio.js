@@ -70,6 +70,7 @@ const styles = css`
   }
   .control:hover .layer { opacity: ${sys.state.hover}; }
   .control:focus-visible .layer { opacity: ${sys.state.focus}; }
+  .control:active .layer { opacity: ${sys.state.pressed}; }
 
   .circle {
     inline-size: ${t.circleSize};
@@ -80,6 +81,7 @@ const styles = css`
     place-items: center;
     transition: border-color ${sys.duration.short2} ${sys.easing.standard};
   }
+  .control[aria-checked="true"] { color: ${t.checkedColor}; }
   .control[aria-checked="true"] .circle { border-color: ${t.checkedColor}; }
   .dot {
     inline-size: 10px;

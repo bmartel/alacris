@@ -27,7 +27,7 @@ import './ui-nav-item.js';
 const t = vars('ui-bottom-nav', {
   height: '80px',
   bg: sys.color.surfaceContainer,
-  shadow: sys.elevation[2],
+  shadow: 'none',
 });
 
 const styles = css`

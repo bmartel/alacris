@@ -29,7 +29,7 @@ import { define, html, css, vars, effect, onCleanup } from 'alacris';
 import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { presence } from '../motion/presence.js';
-import { fx } from '../motion/animate.js';
+import { animate, fx } from '../motion/animate.js';
 import { focusTrap, scrollLock } from '../util/focus.js';
 
 const t = vars('ui-sheet', {
@@ -38,7 +38,7 @@ const t = vars('ui-sheet', {
   radius: sys.radius.xl,
   width: 'min(640px, 100%)',
   handle: sys.color.outline,
-  scrim: `color-mix(in srgb, ${sys.color.scrim} 40%, transparent)`,
+  scrim: `color-mix(in srgb, ${sys.color.scrim} 32%, transparent)`,
 });
 
 const styles = css`
@@ -52,12 +52,7 @@ const styles = css`
     justify-content: center;
   }
   .scrim { position: absolute; inset: 0; background: ${t.scrim}; }
-  @keyframes ui-sheet-in {
-    from { transform: translateY(100%); }
-    to { transform: none; }
-  }
   .surface {
-    animation: ui-sheet-in ${sys.duration.medium2} ${sys.easing.emphasizedDecelerate};
     position: relative;
     display: flex;
     flex-direction: column;
@@ -119,6 +114,7 @@ define('ui-sheet', {
   setup({ open, variant, persistent, label }, host) {
     let releaseTrap = null;
     let unlock = null;
+    let surfaceEl = null;
 
     const requestClose = (reason) => {
       if (reason !== 'method' && persistent()) return;
@@ -142,6 +138,9 @@ define('ui-sheet', {
         releaseTrap = null;
         unlock?.();
         unlock = null;
+        if (surfaceEl?.isConnected) {
+          animate(surfaceEl, fx.sheetOut, { duration: 'short4', easing: 'emphasizedAccelerate' });
+        }
       }
     });
     onCleanup(() => {
@@ -157,7 +156,8 @@ define('ui-sheet', {
       <div class="overlay">
         <div class="scrim" part="scrim" @click=${() => requestClose('scrim')}></div>
         <div class="surface" part="surface" role="dialog" aria-modal="true"
-             aria-label=${() => label() || null} tabindex="-1">
+             aria-label=${() => label() || null} tabindex="-1"
+             ref=${(el) => { surfaceEl = el; animate(el, fx.sheetIn, { duration: 'medium2', easing: 'emphasizedDecelerate' }); }}>
           <div class="handle" part="handle" aria-hidden="true"></div>
           <div class="headline" part="headline"
                ref=${(el) => hasSlot(el.querySelector('slot'), (has) => el.classList.toggle('has', has))}>
@@ -185,7 +185,7 @@ define('ui-sheet', {
       ${presence(() => open() && variant() !== 'standard', modalView, {
         enter: fx.fadeIn,
         exit: fx.fadeOut,
-        exitDuration: 'short3',
+        exitDuration: 'short4',
         onEntered: () => host.emit('opened'),
         onExited: () => host.emit('closed'),
       })}`;

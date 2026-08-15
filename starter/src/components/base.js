@@ -27,3 +27,14 @@ export const focusRingOn = (selector) => `
     outline-offset: var(--ui-focus-ring-offset);
   }
 `;
+
+/**
+ * Hover / focus-visible / pressed opacities for a `.layer` descendant.
+ * `host` is the interactive element (`.control`, `.header`, …). Pass
+ * `focus` when focus lives on a different node (the host custom element).
+ */
+export const stateLayerOn = (host, { focus = host } = {}) => `
+  ${host}:hover .layer { opacity: var(--ui-state-hover); }
+  ${focus}:focus-visible .layer { opacity: var(--ui-state-focus); }
+  ${host}:active .layer { opacity: var(--ui-state-pressed); }
+`;

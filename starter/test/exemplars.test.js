@@ -21,6 +21,7 @@ test('createTheme produces both schemes with contrast-mapped roles', () => {
   assert.ok(theme.schemes.dark['color-primary'].startsWith('#'));
   assert.notEqual(theme.schemes.light['color-primary'], theme.schemes.dark['color-primary']);
   assert.equal(theme.common['radius-full'], '9999px');
+  assert.equal(theme.common['easing-emphasized-overshoot'], 'cubic-bezier(0.175, 0.885, 0.32, 1.275)');
   const cssText = themeCss(theme);
   assert.match(cssText, /--ui-color-primary:#/);
   assert.match(cssText, /data-ui-scheme="dark"/);
@@ -52,6 +53,16 @@ test('ui-button href renders a link', async () => {
   const a = el.shadowRoot.querySelector('a');
   assert.ok(a);
   assert.equal(a.getAttribute('href'), '/docs');
+  unmountAll();
+});
+
+test('ui-button leading icon applies the MD3 with-icon padding class', async () => {
+  const el = mount('<ui-button><span slot="icon">+</span>Add</ui-button>');
+  await tick();
+  const btn = el.shadowRoot.querySelector('button');
+  el.shadowRoot.querySelector('slot[name="icon"]').dispatchEvent(new Event('slotchange'));
+  await tick();
+  assert.ok(btn.className.includes('with-icon'));
   unmountAll();
 });
 

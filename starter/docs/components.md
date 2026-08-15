@@ -1158,7 +1158,7 @@ PARENT flips `open`. `closed` fires after the exit animation finishes.
 | `@prop` | {boolean} open=false |
 | `@prop` | {string}  message='' |
 | `@prop` | {string}  action=''      — label for a trailing text action button |
-| `@prop` | {number}  duration=5000  — auto-dismiss after ms; 0 = sticky |
+| `@prop` | {number}  duration=4000  — auto-dismiss after ms; 0 = sticky |
 | `@prop` | {boolean} closeButton=false — trailing close icon button |
 | `@event` | action — action button pressed |
 | `@event` | close  — detail: { reason: 'timeout' \| 'action' \| 'close' \| 'method' } |
@@ -1181,7 +1181,7 @@ Material circular progress.
 | --- | --- |
 | `@prop` | {number} value=-1 — current value; -1 (any negative) = indeterminate |
 | `@prop` | {number} max=100  — value scale |
-| `@prop` | {string} size=''  — CSS length; overrides --ui-spinner-size (default 40px) |
+| `@prop` | {string} size=''  — CSS length; overrides --ui-spinner-size (default 48px) |
 | `@prop` | {string} label='' — accessible name (aria-label on the progressbar) |
 | `@part` | progress — the progressbar wrapper |
 | `@vars` | see `t` below (`themeVars.names`)  One SVG circle in a 44-unit viewBox with a 4-unit stroke, so the stroke scales with `size`. Determinate progress binds stroke-dashoffset from the value; indeterminate is the classic rotate + dash-grow loop as CSS keyframes, its cycle derived from the motion tokens. |
