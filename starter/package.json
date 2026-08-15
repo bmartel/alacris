@@ -1,0 +1,21 @@
+{
+  "name": "alacris-ui-starter",
+  "version": "0.1.0",
+  "description": "A complete, themeable design system and component library built with Alacris — Material design defaults, zero other dependencies.",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.js",
+    "./theme": "./src/theme/index.js",
+    "./motion": "./src/motion/index.js",
+    "./tokens": "./src/tokens/index.js"
+  },
+  "scripts": {
+    "start": "node ../scripts/serve.js 5174",
+    "pretest": "node -e \"const fs=require('fs');fs.mkdirSync('node_modules',{recursive:true});try{fs.symlinkSync('../..','node_modules/alacris')}catch{}\"",
+    "test": "node --import ./test/setup.js --test test/*.test.js"
+  },
+  "dependencies": {
+    "alacris": "^0.3.0"
+  }
+}

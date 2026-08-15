@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alacris UI — design system starter</title>
+  <!--
+    Inside this repo the import map points at the local build (run `npm run build`
+    at the repo root first, or `npm run demo` which serves this page at
+    http://localhost:5173/starter/).
+
+    In your own project, point it at a pinned CDN build instead:
+      "alacris": "https://cdn.jsdelivr.net/npm/alacris@0.3/dist/alacris.js"
+  -->
+  <script type="importmap">
+  {
+    "imports": {
+      "alacris": "../dist/alacris.js",
+      "alacris/store": "../dist/store.js",
+      "alacris/context": "../dist/context.js"
+    }
+  }
+  </script>
+  <style>
+    /* Demo page chrome only — every component styles itself from the theme. */
+    html { height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--ui-color-surface);
+      color: var(--ui-color-on-surface);
+      font: var(--ui-type-body-md);
+      letter-spacing: var(--ui-type-body-md-tracking);
+    }
+    #app { display: flex; min-height: 100vh; }
+    .demo-nav {
+      position: sticky;
+      top: 0;
+      align-self: flex-start;
+      max-height: 100vh;
+      overflow: auto;
+      flex: none;
+      inline-size: 220px;
+      padding: 24px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      background: var(--ui-color-surface-container-low);
+    }
+    .demo-nav a {
+      color: var(--ui-color-on-surface-variant);
+      text-decoration: none;
+      font: var(--ui-type-label-lg);
+      letter-spacing: var(--ui-type-label-lg-tracking);
+      padding: 8px 16px;
+      border-radius: var(--ui-radius-full);
+    }
+    .demo-nav a:hover { background: var(--ui-color-surface-container-high); }
+    main { flex: 1; min-inline-size: 0; padding: 24px 40px 120px; max-inline-size: 1080px; }
+    .demo-section { padding-block: 24px; border-block-end: 1px solid var(--ui-color-outline-variant); }
+    .demo-block { margin-block: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .demo-row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+    .demo-col { display: flex; flex-direction: column; gap: 16px; max-inline-size: 560px; }
+    @media (max-width: 720px) {
+      .demo-nav { display: none; }
+      main { padding-inline: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="./demo/main.js"></script>
+</body>
+</html>
