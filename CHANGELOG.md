@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.5](https://github.com/bmartel/alacris/compare/v0.6.4...v0.6.5) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** smooth search view container transitions and presence height animations ([2664eea](https://github.com/bmartel/alacris/commit/2664eeae70564cea3e20031dd106f9d1638e6ca6))
+
 ## [0.6.4](https://github.com/bmartel/alacris/compare/v0.6.3...v0.6.4) (2026-08-15)
 
 ### Bug Fixes
