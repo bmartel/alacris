@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.4.0](https://github.com/bmartel/alacris/compare/v0.3.0...v0.4.0) (2026-08-15)
+
+### Features
+
+* **starter:** Alacris UI — a complete design-system starter ([#4](https://github.com/bmartel/alacris/issues/4)) ([f715052](https://github.com/bmartel/alacris/commit/f715052227f4f350d031667c9d46889a6f45f17e))
+
 ## [0.3.0](https://github.com/bmartel/alacris/compare/v0.2.4...v0.3.0) (2026-08-14)
 
 ### Features

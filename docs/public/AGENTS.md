@@ -32,9 +32,9 @@ npm path — code stays portable between the two setups:
 <script type="importmap">
 {
   "imports": {
-    "alacris": "https://cdn.jsdelivr.net/npm/alacris@0.3/dist/alacris.js",
-    "alacris/store": "https://cdn.jsdelivr.net/npm/alacris@0.3/dist/store.js",
-    "alacris/context": "https://cdn.jsdelivr.net/npm/alacris@0.3/dist/context.js"
+    "alacris": "https://cdn.jsdelivr.net/npm/alacris@0.4/dist/alacris.js",
+    "alacris/store": "https://cdn.jsdelivr.net/npm/alacris@0.4/dist/store.js",
+    "alacris/context": "https://cdn.jsdelivr.net/npm/alacris@0.4/dist/context.js"
   }
 }
 </script>
