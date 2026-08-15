@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.7.0](https://github.com/bmartel/alacris/compare/v0.6.20...v0.7.0) (2026-08-15)
+
+### Features
+
+* **starter:** compose ui-table from a data pipeline and kit chrome ([9a71fcd](https://github.com/bmartel/alacris/commit/9a71fcd098a2d6084c7bbc71854a8f35b8d3bd37))
+
 ## [0.6.20](https://github.com/bmartel/alacris/compare/v0.6.19...v0.6.20) (2026-08-15)
 
 ### Bug Fixes
