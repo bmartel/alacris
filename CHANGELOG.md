@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.2](https://github.com/bmartel/alacris/compare/v0.6.1...v0.6.2) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** align components with Material Design 3 specs ([6b4b8a5](https://github.com/bmartel/alacris/commit/6b4b8a528db132ec7bfdc01c6d731e24461c145e))
+
 ## [0.6.1](https://github.com/bmartel/alacris/compare/v0.6.0...v0.6.1) (2026-08-15)
 
 ### Bug Fixes
