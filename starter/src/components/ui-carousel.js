@@ -77,6 +77,8 @@ define('ui-carousel', {
   styles: [base, styles],
   setup({ index, variant, label }, host) {
     const rev = signal(0);
+    const scrollPos = signal(0);
+    const maxScroll = signal(0);
     const bump = () => rev.update((n) => n + 1);
     const itemsOf = () => [...host.querySelectorAll('ui-carousel-item')];
     let viewport = null;
@@ -88,24 +90,95 @@ define('ui-carousel', {
       const max = Math.max(0, itemsOf().length - 1);
       return Math.max(0, Math.min(max, n));
     };
-    const go = (n) => {
-      const next = clamp(n);
-      if (next === index.peek()) return;
-      index.set(next);
-      host.emit('change', { index: next });
+
+    const updateScrollBounds = () => {
+      if (!viewport) return;
+      scrollPos.set(viewport.scrollLeft);
+      maxScroll.set(Math.max(0, viewport.scrollWidth - viewport.clientWidth));
     };
 
     const beginIgnore = () => {
       const gen = ++ignoreGen;
       ignoreScroll = true;
+      if (viewport) viewport.style.scrollSnapType = 'none';
       if (ignoreTimer) clearTimeout(ignoreTimer);
       const done = () => {
         if (gen !== ignoreGen) return;
         ignoreScroll = false;
         ignoreTimer = 0;
+        if (viewport) viewport.style.scrollSnapType = '';
+        updateScrollBounds();
       };
       viewport.addEventListener('scrollend', done, { once: true });
-      ignoreTimer = setTimeout(done, 500);
+      ignoreTimer = setTimeout(done, 450);
+    };
+
+    const targetScrollFor = (i) => {
+      const items = itemsOf();
+      if (!items.length || !viewport) return 0;
+      const idx = clamp(i);
+      const max = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+      if (idx === 0) return 0;
+      if (idx === items.length - 1 && items.length > 1) return max;
+
+      if (variant() === 'hero') {
+        const track = viewport.querySelector('.track');
+        const gap = track ? parseFloat(getComputedStyle(track).gap) || 8 : 8;
+        const smallWidth = viewport.clientWidth * 0.28;
+        const dest = idx * (smallWidth + gap);
+        return Math.max(0, Math.min(max, dest));
+      }
+
+      const target = items[idx];
+      if (!target) return 0;
+      const vRect = viewport.getBoundingClientRect();
+      const tRect = target.getBoundingClientRect();
+      const raw = viewport.scrollLeft + (tRect.left - vRect.left);
+      return Math.max(0, Math.min(max, raw));
+    };
+
+    const go = (n) => {
+      const items = itemsOf();
+      if (!items.length) return;
+      const cur = index.peek();
+      const max = viewport ? Math.max(0, viewport.scrollWidth - viewport.clientWidth) : 0;
+      const hasLayout = viewport && viewport.clientWidth > 0 && max > 0;
+
+      let targetIdx = clamp(n);
+      if (hasLayout) {
+        const curScroll = viewport.scrollLeft;
+        targetIdx = cur;
+        if (n > cur) {
+          for (let i = cur + 1; i < items.length; i++) {
+            const dest = targetScrollFor(i);
+            if (dest > curScroll + 1 || (i === items.length - 1 && curScroll < max - 1)) {
+              targetIdx = i;
+              break;
+            }
+          }
+          if (targetIdx === cur && curScroll < max - 1) {
+            targetIdx = Math.min(items.length - 1, cur + 1);
+          }
+        } else if (n < cur) {
+          for (let i = cur - 1; i >= 0; i--) {
+            const dest = targetScrollFor(i);
+            if (dest < curScroll - 1 || (i === 0 && curScroll > 1)) {
+              targetIdx = i;
+              break;
+            }
+          }
+          if (targetIdx === cur && curScroll > 1) {
+            targetIdx = Math.max(0, cur - 1);
+          }
+        }
+      }
+
+      if (targetIdx !== index.peek()) {
+        index.set(targetIdx);
+        host.emit('change', { index: targetIdx });
+      } else {
+        scrollToCurrent();
+      }
     };
 
     const scrollToCurrent = () => {
@@ -114,15 +187,11 @@ define('ui-carousel', {
       const target = items[i];
       if (!target || !viewport) return;
       if (typeof viewport.scrollTo !== 'function') return;
-      const vRect = viewport.getBoundingClientRect();
-      const tRect = target.getBoundingClientRect();
-      const last = i === items.length - 1 && items.length > 1;
-      const raw = viewport.scrollLeft + (last
-        ? tRect.right - vRect.right
-        : tRect.left - vRect.left);
-      const max = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
-      const dest = Math.max(0, Math.min(max, raw));
-      if (Math.abs(dest - viewport.scrollLeft) < 1) return;
+      const dest = targetScrollFor(i);
+      if (Math.abs(dest - viewport.scrollLeft) < 1) {
+        updateScrollBounds();
+        return;
+      }
       beginIgnore();
       viewport.scrollTo({
         left: dest,
@@ -138,7 +207,12 @@ define('ui-carousel', {
     };
     effect(sync);
 
+    const onScroll = () => {
+      updateScrollBounds();
+    };
+
     const onScrollEnd = () => {
+      updateScrollBounds();
       if (ignoreScroll) return;
       const items = itemsOf();
       if (!items.length || !viewport) return;
@@ -171,21 +245,42 @@ define('ui-carousel', {
 
     const viewportRef = (el) => {
       viewport?.removeEventListener('scrollend', onScrollEnd);
+      viewport?.removeEventListener('scroll', onScroll);
       viewport = el;
       el.addEventListener('scrollend', onScrollEnd);
-      requestAnimationFrame(scrollToCurrent);
+      el.addEventListener('scroll', onScroll, { passive: true });
+      requestAnimationFrame(() => {
+        updateScrollBounds();
+        scrollToCurrent();
+      });
     };
     onCleanup(() => {
       if (ignoreTimer) clearTimeout(ignoreTimer);
       viewport?.removeEventListener('scrollend', onScrollEnd);
+      viewport?.removeEventListener('scroll', onScroll);
     });
 
     const cls = computed(() => `viewport ${variant()}`);
-    const atStart = computed(() => index() <= 0);
+    const atStart = computed(() => {
+      rev();
+      const i = index();
+      if (i <= 0) return true;
+      if (viewport && viewport.clientWidth > 0) {
+        return scrollPos() <= 1 && i <= 0;
+      }
+      return i <= 0;
+    });
     const atEnd = computed(() => {
       rev();
       const n = itemsOf().length;
-      return n === 0 || index() >= n - 1;
+      if (n === 0) return true;
+      const i = index();
+      if (i >= n - 1) return true;
+      const max = maxScroll();
+      if (viewport && viewport.clientWidth > 0 && max > 1 && scrollPos() >= max - 2) {
+        return true;
+      }
+      return false;
     });
 
     return html`
@@ -193,7 +288,7 @@ define('ui-carousel', {
            aria-label=${() => label() || null} @keydown=${onKey}>
         <ui-icon-button class="prev" part="prev" variant="tonal"
                         icon="chevron-left" label="Previous"
-                        disabled=${atStart} @click=${() => go(index() - 1)}></ui-icon-button>
+                        ?disabled=${atStart} @click=${() => go(index() - 1)}></ui-icon-button>
         <div class=${cls} part="viewport" tabindex="0" ref=${viewportRef}>
           <div class="track" part="track">
             <slot @slotchange=${bump}></slot>
@@ -201,7 +296,7 @@ define('ui-carousel', {
         </div>
         <ui-icon-button class="next" part="next" variant="tonal"
                         icon="chevron-right" label="Next"
-                        disabled=${atEnd} @click=${() => go(index() + 1)}></ui-icon-button>
+                        ?disabled=${atEnd} @click=${() => go(index() + 1)}></ui-icon-button>
       </div>`;
   },
 });

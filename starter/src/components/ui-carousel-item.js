@@ -27,6 +27,7 @@ const styles = css`
     flex: 0 0 var(--ui-carousel-item-basis, 40%);
     scroll-snap-align: start;
     min-inline-size: 0;
+    transition: flex-basis ${sys.duration.medium2} ${sys.easing.standard};
   }
   :host(:last-child) { scroll-snap-align: end; }
   .surface {
