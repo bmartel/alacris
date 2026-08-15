@@ -72,11 +72,10 @@ const styles = css`
     display: grid;
     place-items: center;
     color: ${t.iconFg};
-    --ui-icon-size: 16px;
+    --ui-icon-size: 12px;
     transition: translate ${sys.duration.medium2} ${sys.easing.emphasizedOvershoot},
                 inline-size ${sys.duration.medium1} ${sys.easing.standard},
                 block-size ${sys.duration.medium1} ${sys.easing.standard},
-                inset-inline-start ${sys.duration.medium1} ${sys.easing.standard},
                 background-color ${sys.duration.short2} ${sys.easing.standard};
   }
   .handle::after {
@@ -98,35 +97,23 @@ const styles = css`
   .control:active .handle::after { opacity: ${sys.state.pressed}; }
   .control:hover:not([aria-checked="true"]) .handle { background: ${sys.color.onSurface}; }
   .control[aria-checked="true"]:hover .handle { background: ${sys.color.primaryContainer}; }
-  .control.with-icons .handle {
-    inset-inline-start: 2px;
-    inline-size: 24px;
-    block-size: 24px;
-  }
   .control[aria-checked="true"] .handle {
     translate: 16px -50%;
     inline-size: 24px;
     block-size: 24px;
     background: ${t.handleBgChecked};
     color: ${t.iconFgChecked};
-  }
-  .control[aria-checked="true"].with-icons .handle {
-    translate: 20px -50%;
+    --ui-icon-size: 16px;
   }
   .control:active:not([aria-checked="true"]) .handle {
-    inset-inline-start: 0px;
     inline-size: 28px;
     block-size: 28px;
+    translate: -2px -50%;
   }
-  .control:active[aria-checked="true"]:not(.with-icons) .handle {
+  .control:active[aria-checked="true"] .handle {
+    inline-size: 28px;
+    block-size: 28px;
     translate: 14px -50%;
-    inline-size: 28px;
-    block-size: 28px;
-  }
-  .control:active[aria-checked="true"].with-icons .handle {
-    translate: 18px -50%;
-    inline-size: 28px;
-    block-size: 28px;
   }
   .control:disabled { cursor: default; pointer-events: none; opacity: ${sys.state.disabledContent}; }
   :host([disabled]) label { cursor: default; pointer-events: none; }
