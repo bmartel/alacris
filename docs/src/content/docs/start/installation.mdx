@@ -81,6 +81,13 @@ import { createContext, provide, consume } from 'alacris/context';
 
 TypeScript declarations ship with the package. There is nothing to add.
 
+## A component library, not a blank runtime
+
+If you want buttons, fields, and a theme rather than starting from
+`define(...)`, copy the [UI starter](../ui-starter/) out of the repo. It is a
+template — sixty-odd custom elements and a theme engine — not a second npm
+package.
+
 ## The entry points
 
 Add-ons import the core rather than bundling it, so there is exactly one
@@ -118,4 +125,5 @@ polyfills and no transpiled build; the published code is modern ESM.
 
 ## Next
 
-- [Your first component](../first-component/)
+- [Your first component](../first-component/) — the whole model in one file
+- [UI starter](../ui-starter/) — a copy-out design system built with Alacris

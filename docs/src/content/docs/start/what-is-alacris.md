@@ -95,3 +95,4 @@ Solid is a compiler — which is the one thing this library refuses.
 
 - [Installation](../installation/) — npm, or a CDN URL
 - [Your first component](../first-component/) — the whole model in one file
+- [UI starter](../ui-starter/) — a copy-out design system built with Alacris

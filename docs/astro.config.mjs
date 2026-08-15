@@ -53,6 +53,7 @@ export default defineConfig({
             { label: 'What is Alacris?', slug: 'start/what-is-alacris' },
             { label: 'Installation', slug: 'start/installation' },
             { label: 'Your first component', slug: 'start/first-component' },
+            { label: 'UI starter', slug: 'start/ui-starter' },
             { label: 'Playground', slug: 'playground', badge: 'Live' },
           ],
         },
