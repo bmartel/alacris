@@ -171,6 +171,7 @@ const styles = css`
 `;
 
 define('ui-select', {
+  formAssociated: true,
   props: {
     label: '', value: '', variant: 'filled', disabled: false, required: false,
     name: '', placeholder: '',

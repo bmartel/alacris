@@ -166,16 +166,23 @@ compresses every control by 4px per step:
 
 ## Forms
 
-Shadow inputs do not participate in `<form>` submission. Any component with a
-`name` + `value`/`checked` calls `formBind` from `../util/form.js` in `setup` —
-it maintains a hidden light-DOM `<input>` mirroring the value:
+Any component with a `name` + `value`/`checked` declares
+`formAssociated: true` in its `define` options and calls `formBind` from
+`../util/form.js` in `setup`. formBind drives the platform's
+`ElementInternals` (`host.internals`) — value reporting, reset-to-initial,
+`<fieldset disabled>` — and falls back to a hidden light-DOM `<input>` where
+internals are unavailable:
 
 ```js
 import { formBind } from '../util/form.js';
-setup({ name, value, disabled }, host) {
-  formBind(host, { name, value, disabled });
-  …
-}
+define('ui-thing', {
+  formAssociated: true,
+  props: { name: '', value: '', disabled: false },
+  setup({ name, value, disabled }, host) {
+    formBind(host, { name, value, disabled });
+    …
+  },
+});
 ```
 
 ## Security
