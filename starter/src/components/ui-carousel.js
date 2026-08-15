@@ -181,51 +181,34 @@ define('ui-carousel', {
 
     const onScroll = () => {
       updateScrollBounds();
-      if (ignoreScroll) return;
-      const items = itemsOf();
-      if (!items.length || !viewport) return;
-      const curScroll = viewport.scrollLeft;
-      const max = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
-
-      let activeIdx = 0;
-      if (variant() === 'hero') {
-        if (max > 1 && curScroll >= max - 2) {
-          activeIdx = items.length - 1;
-        } else if (curScroll <= 2) {
-          activeIdx = 0;
-        } else {
-          const track = viewport.querySelector('.track');
-          const gap = track ? parseFloat(getComputedStyle(track).gap) || 8 : 8;
-          const smallWidth = viewport.clientWidth * 0.28;
-          const step = smallWidth + gap;
-          activeIdx = clamp(Math.round(curScroll / step));
-        }
-      } else {
-        if (max > 1 && curScroll >= max - 2) {
-          activeIdx = items.length - 1;
-        } else if (curScroll <= 2) {
-          activeIdx = 0;
-        } else {
-          let minDiff = Infinity;
-          items.forEach((it, idx) => {
-            const snap = targetScrollFor(idx);
-            const diff = Math.abs(curScroll - snap);
-            if (diff < minDiff) { minDiff = diff; activeIdx = idx; }
-          });
-        }
-      }
-
-      if (activeIdx !== index.peek()) {
-        items.forEach((el, n) => { el.selected = n === activeIdx; });
-        index.set(activeIdx);
-        host.emit('change', { index: activeIdx });
-      }
     };
 
     const onScrollEnd = () => {
       updateScrollBounds();
       if (ignoreScroll) return;
-      onScroll();
+      const items = itemsOf();
+      if (!items.length || !viewport) return;
+      const curScroll = viewport.scrollLeft;
+      const max = viewport.scrollWidth - viewport.clientWidth;
+
+      let best = 0;
+      if (max > 1 && curScroll >= max - 2) {
+        best = items.length - 1;
+      } else if (curScroll <= 2) {
+        best = 0;
+      } else {
+        const origin = viewport.getBoundingClientRect().left;
+        let bestDist = Infinity;
+        items.forEach((el, n) => {
+          const d = Math.abs(el.getBoundingClientRect().left - origin);
+          if (d < bestDist) { bestDist = d; best = n; }
+        });
+      }
+
+      if (best !== index.peek()) {
+        index.set(best);
+        host.emit('change', { index: best });
+      }
     };
 
     const onKey = (e) => {
