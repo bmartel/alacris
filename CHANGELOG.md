@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.6.10](https://github.com/bmartel/alacris/compare/v0.6.9...v0.6.10) (2026-08-15)
+
+### Bug Fixes
+
+* **starter:** correct date range picker track band layering and week boundary radius ([0c2d3ef](https://github.com/bmartel/alacris/commit/0c2d3eff7ca4e41d878c3a7db4eaef06b1db80f6))
+
 ## [0.6.9](https://github.com/bmartel/alacris/compare/v0.6.8...v0.6.9) (2026-08-15)
 
 ### Bug Fixes
