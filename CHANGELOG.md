@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.11.0](https://github.com/bmartel/alacris/compare/v0.10.0...v0.11.0) (2026-08-15)
+
+### Features
+
+* publish under the [@alacris](https://github.com/alacris) npm org ([#7](https://github.com/bmartel/alacris/issues/7)) ([a4864e6](https://github.com/bmartel/alacris/commit/a4864e62297575b9715f982a3a7047285f3fb22c))
+
 ## [0.10.0](https://github.com/bmartel/alacris/compare/v0.9.2...v0.10.0) (2026-08-15)
 
 ### Features
