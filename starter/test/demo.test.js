@@ -88,7 +88,7 @@ test('search dock pins and unpins when the hero field crosses the app bar', asyn
   const docked = signal(false);
 
   const hero = { top: 240, left: 24, width: 400, height: 56 };
-  const bar = { top: 8, left: 96, width: 640, height: 48 };
+  const bar = { top: 12, left: 96, width: 640, height: 40 };
   search.getBoundingClientRect = () => box(hero);
   anchor.getBoundingClientRect = () => box(hero);
   dock.getBoundingClientRect = () => box(bar);
@@ -106,6 +106,8 @@ test('search dock pins and unpins when the hero field crosses the app bar', asyn
     await frames();
     assert.equal(docked(), true);
     assert.equal(search.style.position, 'fixed');
+    assert.equal(search.style.height, '40px');
+    assert.ok(search.classList.contains('is-pinned'));
 
     search.getBoundingClientRect = () => box(hero);
     anchor.getBoundingClientRect = () => box(hero);
@@ -113,6 +115,8 @@ test('search dock pins and unpins when the hero field crosses the app bar', asyn
     await frames();
     assert.equal(docked(), false);
     assert.notEqual(search.style.position, 'fixed');
+    assert.equal(search.style.height, '');
+    assert.ok(!search.classList.contains('is-pinned'));
   } finally {
     stop();
     window.matchMedia = restore;

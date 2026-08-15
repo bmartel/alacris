@@ -413,6 +413,16 @@ test('ui-search view uses a single extra-large surface while open', async () => 
   unmountAll();
 });
 
+test('ui-search height token sizes the bar and leading well', async () => {
+  const el = mount('<ui-search presentation="view" label="Q" style="--ui-search-height:40px"></ui-search>');
+  await tick();
+  const bar = el.shadowRoot.querySelector('.bar');
+  const leads = el.shadowRoot.querySelector('.leads');
+  assert.match(getComputedStyle(bar).minBlockSize, /40px/);
+  assert.match(getComputedStyle(leads).inlineSize, /40px/);
+  unmountAll();
+});
+
 test('ui-split-button menu select emits the item value', async () => {
   const el = mount(`
     <ui-split-button>

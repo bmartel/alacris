@@ -115,8 +115,10 @@ const styles = css`
     position: relative;
     display: grid;
     place-items: center;
-    inline-size: 48px;
-    block-size: 48px;
+    /* Cap at 48px for the 56px bar; shrink with --ui-search-height so a
+       compact field in an app bar can match the 40px icon buttons. */
+    inline-size: min(48px, ${t.height});
+    block-size: min(48px, ${t.height});
   }
   .leads > * { grid-area: 1 / 1; }
   .lead-slot {
