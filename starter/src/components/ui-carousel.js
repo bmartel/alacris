@@ -57,7 +57,10 @@ const styles = css`
   }
   .track > slot { display: contents; }
   .uncontained { --ui-carousel-item-basis: 56%; }
-  .hero { --ui-carousel-item-basis: 28%; }
+  .hero {
+    scroll-snap-type: x proximity;
+    --ui-carousel-item-basis: 28%;
+  }
   .hero ::slotted(ui-carousel-item[selected]) { --ui-carousel-item-basis: ${t.heroSize}; }
   .prev, .next {
     position: absolute;
@@ -97,20 +100,20 @@ define('ui-carousel', {
       maxScroll.set(Math.max(0, viewport.scrollWidth - viewport.clientWidth));
     };
 
+    let isProgrammatic = true;
+
     const beginIgnore = () => {
       const gen = ++ignoreGen;
       ignoreScroll = true;
-      if (viewport) viewport.style.scrollSnapType = 'none';
       if (ignoreTimer) clearTimeout(ignoreTimer);
       const done = () => {
         if (gen !== ignoreGen) return;
         ignoreScroll = false;
         ignoreTimer = 0;
-        if (viewport) viewport.style.scrollSnapType = '';
         updateScrollBounds();
       };
       viewport.addEventListener('scrollend', done, { once: true });
-      ignoreTimer = setTimeout(done, 450);
+      ignoreTimer = setTimeout(done, 500);
     };
 
     const targetScrollFor = (i) => {
@@ -121,8 +124,10 @@ define('ui-carousel', {
       if (idx === 0) return 0;
       if (idx === items.length - 1 && items.length > 1) return max;
 
+      const track = viewport.querySelector('.track');
+      const trackPad = track ? parseFloat(getComputedStyle(track).paddingInlineStart) || 8 : 8;
+
       if (variant() === 'hero') {
-        const track = viewport.querySelector('.track');
         const gap = track ? parseFloat(getComputedStyle(track).gap) || 8 : 8;
         const smallWidth = viewport.clientWidth * 0.28;
         const dest = idx * (smallWidth + gap);
@@ -131,10 +136,8 @@ define('ui-carousel', {
 
       const target = items[idx];
       if (!target) return 0;
-      const vRect = viewport.getBoundingClientRect();
-      const tRect = target.getBoundingClientRect();
-      const raw = viewport.scrollLeft + (tRect.left - vRect.left);
-      return Math.max(0, Math.min(max, raw));
+      const dest = target.offsetLeft - trackPad;
+      return Math.max(0, Math.min(max, dest));
     };
 
     const go = (n) => {
@@ -173,6 +176,7 @@ define('ui-carousel', {
         }
       }
 
+      isProgrammatic = true;
       if (targetIdx !== index.peek()) {
         index.set(targetIdx);
         host.emit('change', { index: targetIdx });
@@ -203,37 +207,60 @@ define('ui-carousel', {
       rev();
       const i = clamp(index());
       itemsOf().forEach((el, n) => { el.selected = n === i; });
-      requestAnimationFrame(scrollToCurrent);
+      if (isProgrammatic || !viewport) {
+        isProgrammatic = false;
+        requestAnimationFrame(scrollToCurrent);
+      }
     };
     effect(sync);
 
     const onScroll = () => {
       updateScrollBounds();
+      if (ignoreScroll) return;
+      const items = itemsOf();
+      if (!items.length || !viewport) return;
+      const curScroll = viewport.scrollLeft;
+      const max = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+
+      let activeIdx = 0;
+      if (variant() === 'hero') {
+        if (max > 1 && curScroll >= max - 2) {
+          activeIdx = items.length - 1;
+        } else if (curScroll <= 2) {
+          activeIdx = 0;
+        } else {
+          const track = viewport.querySelector('.track');
+          const gap = track ? parseFloat(getComputedStyle(track).gap) || 8 : 8;
+          const smallWidth = viewport.clientWidth * 0.28;
+          const step = smallWidth + gap;
+          activeIdx = clamp(Math.round(curScroll / step));
+        }
+      } else {
+        if (max > 1 && curScroll >= max - 2) {
+          activeIdx = items.length - 1;
+        } else if (curScroll <= 2) {
+          activeIdx = 0;
+        } else {
+          let minDiff = Infinity;
+          items.forEach((it, idx) => {
+            const snap = targetScrollFor(idx);
+            const diff = Math.abs(curScroll - snap);
+            if (diff < minDiff) { minDiff = diff; activeIdx = idx; }
+          });
+        }
+      }
+
+      if (activeIdx !== index.peek()) {
+        items.forEach((el, n) => { el.selected = n === activeIdx; });
+        index.set(activeIdx);
+        host.emit('change', { index: activeIdx });
+      }
     };
 
     const onScrollEnd = () => {
       updateScrollBounds();
       if (ignoreScroll) return;
-      const items = itemsOf();
-      if (!items.length || !viewport) return;
-      const max = viewport.scrollWidth - viewport.clientWidth;
-      let best = 0;
-      if (max > 1 && viewport.scrollLeft >= max - 2) {
-        best = items.length - 1;
-      } else if (viewport.scrollLeft <= 2) {
-        best = 0;
-      } else {
-        const origin = viewport.getBoundingClientRect().left;
-        let bestDist = Infinity;
-        items.forEach((el, n) => {
-          const d = Math.abs(el.getBoundingClientRect().left - origin);
-          if (d < bestDist) { bestDist = d; best = n; }
-        });
-      }
-      if (best !== index.peek()) {
-        index.set(best);
-        host.emit('change', { index: best });
-      }
+      onScroll();
     };
 
     const onKey = (e) => {
