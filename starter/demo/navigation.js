@@ -68,12 +68,12 @@ export const section = () => {
       <ui-drawer open=${startOpen} anchor="start" label="Main navigation"
                  @close=${() => startOpen.set(false)}>
         <p>Start-anchored modal drawer. Escape or the scrim closes it.</p>
-        <ui-button variant="text" @click=${() => startOpen.set(false)}>Close</ui-button>
+        <ui-button variant="text" @click.capture=${() => startOpen.set(false)}>Close</ui-button>
       </ui-drawer>
       <ui-drawer open=${endOpen} anchor="end" label="Details"
                  @close=${() => endOpen.set(false)}>
         <p>End-anchored modal drawer.</p>
-        <ui-button variant="text" @click=${() => endOpen.set(false)}>Close</ui-button>
+        <ui-button variant="text" @click.capture=${() => endOpen.set(false)}>Close</ui-button>
       </ui-drawer>`)}
 
     ${stackBlock('Standard drawer (in-flow)', html`

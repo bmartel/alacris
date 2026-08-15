@@ -406,8 +406,10 @@ test('ui-search view uses a single extra-large surface while open', async () => 
   const root = el.shadowRoot.querySelector('.open');
   assert.ok(root, 'open view wraps bar and panel in one surface');
   assert.ok(root.className.includes('open'));
-  assert.ok(el.shadowRoot.querySelector('.panel'), 'suggestions sit inside the surface');
+  const panel = el.shadowRoot.querySelector('.panel');
+  assert.ok(panel, 'suggestions sit inside the surface');
   assert.equal(el.shadowRoot.querySelector('.bar').parentElement, root);
+  assert.equal(getComputedStyle(panel).position, 'absolute', 'panel overlays instead of growing the layout');
   unmountAll();
 });
 

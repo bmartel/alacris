@@ -63,8 +63,7 @@ starter/
     motion/             animate, fx presets, presence, withFlip, ripple
     util/               positioning, focus trap, roving tabindex, formBind, icons
     components/         one file per component
-  demo/                 the demo app — app bar, rail, drawer, search, playground,
-                        all composed from the same components it documents
+  demo/                 kitchen-sink: app bar, rail, drawer, search, playground
   docs/
     theming.md          the token architecture and how to make this yours
     motion.md           the animation system

@@ -88,8 +88,8 @@ export const section = () => html`
     <ui-dialog open=${dialogOpen} @close=${() => dialogOpen(false)}>
       <span slot="headline">Reset settings?</span>
       This will restore the defaults for every panel. You cannot undo this.
-      <ui-button slot="actions" variant="text" @click=${() => dialogOpen(false)}>Cancel</ui-button>
-      <ui-button slot="actions" @click=${() => dialogOpen(false)}>Reset</ui-button>
+      <ui-button slot="actions" variant="text" @click.capture=${() => dialogOpen(false)}>Cancel</ui-button>
+      <ui-button slot="actions" @click.capture=${() => dialogOpen(false)}>Reset</ui-button>
     </ui-dialog>`)}
 
   ${block('Bottom sheet', html`
@@ -98,7 +98,7 @@ export const section = () => html`
       <span slot="headline">Share</span>
       A modal bottom sheet — slides up from the bottom, traps focus, and the
       parent owns <code>open</code>. Escape or the scrim closes it.
-      <ui-button slot="actions" variant="text" @click=${() => sheetOpen(false)}>Close</ui-button>
+      <ui-button slot="actions" variant="text" @click.capture=${() => sheetOpen(false)}>Close</ui-button>
     </ui-sheet>`)}
 
   ${block('Side sheet', html`
@@ -107,7 +107,7 @@ export const section = () => html`
       <span slot="headline">Filters</span>
       Complementary content — distinct from a navigation drawer. Close via the
       X, Escape, or the scrim.
-      <ui-button slot="actions" variant="text" @click=${() => sideOpen(false)}>Apply</ui-button>
+      <ui-button slot="actions" variant="text" @click.capture=${() => sideOpen(false)}>Apply</ui-button>
     </ui-side-sheet>`)}
 
   ${stackBlock('Type scale', html`
@@ -118,6 +118,15 @@ export const section = () => html`
     <ui-text variant="body-md" color="onSurfaceVariant">Body medium in the variant color.</ui-text>
     <ui-text variant="label-md" color="primary">LABEL MEDIUM</ui-text>`)}
 
-  ${block('Icons (built-in registry)', html`
-    ${iconNames().map((n) => html`<ui-icon name=${n} title=${n}></ui-icon>`)}`)}
+  ${stackBlock('Icons', html`
+    <ui-text variant="body-sm" color="onSurfaceVariant">
+      Material filled 24×24. Add more with <code>registerIcons()</code>.
+    </ui-text>
+    <div class="icon-grid">
+      ${iconNames().map((n) => html`
+        <div class="icon-cell" title=${n}>
+          <ui-icon name=${n} size="1.75rem"></ui-icon>
+          <span>${n}</span>
+        </div>`)}
+    </div>`)}
 `;

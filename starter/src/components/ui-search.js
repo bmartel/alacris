@@ -9,13 +9,13 @@
 // Enter emits `submit`. The field chrome is the focus indicator — the inner
 // input has no extra outline.
 //
-// `presentation="view"` expands into a docked search view: a back control
-// and a suggestions list (the default slot) while open. Typing a query opens
-// the view; clearing the field (keyboard or the clear button) closes it back
-// to the pill bar. Focus on an empty view still shows recents, but a clear
-// while focused stays on the bar. The open surface is one extra-large
-// rounded container (not a stretched pill) with a divider between the field
-// and the list.
+// `presentation="view"` opens a search view: a back control and a suggestions
+// list (the default slot) while open. The list overlays the page — it does
+// not grow the layout. Typing a query opens the view; clearing the field
+// (keyboard or the clear button) closes it back to the pill bar. Focus on an
+// empty view still shows recents, but a clear while focused stays on the bar.
+// The open surface is one extra-large rounded container (bar + overlay list)
+// with a divider between the field and the list.
 //
 // @prop  {string}  label='Search'   — accessible name (and the floating placeholder)
 // @prop  {string}  value=''
@@ -62,6 +62,7 @@ const t = vars('ui-search', {
 const styles = css`
   :host { display: block; position: relative; inline-size: min(100%, 720px); }
   .shell {
+    position: relative;
     overflow: hidden;
     border-radius: ${t.radius};
     background: ${t.bg};
@@ -73,8 +74,13 @@ const styles = css`
     background: ${t.bgActive};
   }
   .shell.open {
+    overflow: visible;
+    z-index: ${sys.z.modal};
     background: ${t.panelBg};
-    border-radius: ${t.panelRadius};
+    border-start-start-radius: ${t.panelRadius};
+    border-start-end-radius: ${t.panelRadius};
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
     box-shadow: ${sys.elevation[2]};
   }
   .bar {
@@ -153,13 +159,20 @@ const styles = css`
   }
   input::placeholder { color: ${t.placeholderFg}; }
   .panel {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 100%;
+    z-index: 1;
     padding-block: ${sys.space(2)};
-    background: transparent;
+    background: ${t.panelBg};
     overflow-y: auto;
     overflow-x: hidden;
     box-sizing: border-box;
     max-block-size: min(70vh, 360px);
     border-block-start: 1px solid ${t.divider};
+    border-end-start-radius: ${t.panelRadius};
+    border-end-end-radius: ${t.panelRadius};
+    box-shadow: ${sys.elevation[2]};
   }
   .disabled { opacity: ${sys.state.disabledContent}; pointer-events: none; }
 `;
@@ -194,8 +207,10 @@ define('ui-search', {
     const closeView = () => { if (open()) open.set(false); };
 
     const onInput = (e) => {
-      // Native `input` is composed; without this, a host @input listener sees
-      // UIEvent.detail (0) and writes `undefined` into the bound value.
+      // Native `input` is composed. Stop it so a host listener is not handed
+      // UIEvent.detail (0). The CustomEvent we emit carries `{ value }`.
+      // Do not bind the host with @input.capture — that runs before this stop
+      // and will see the native event.
       e.stopPropagation();
       value.set(e.target.value);
       host.emit('input', { value: value() });

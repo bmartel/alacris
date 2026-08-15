@@ -2,12 +2,11 @@
 //
 // Every control rebuilds the theme with createTheme and re-applies it in
 // place: one stylesheet rewrite re-skins every component on the page,
-// including the ones inside shadow roots. This panel is the proof that the
-// token system works — nothing on this page knows the theme changed.
+// including the ones inside shadow roots. Two instances (hero + side sheet)
+// share these signals, so they stay in lockstep.
 //
-// The controls themselves are the design system: chips, a slider, selects,
-// an icon button. Two instances (hero + side sheet) share these signals, so
-// they stay in lockstep.
+// Layout is light DOM. Nested ui-stack / ui-chip-set shadows swallow
+// delegated @input/@change; chips and the native color input use .capture.
 
 import { define, html, css, signal } from 'alacris';
 import { sys } from '../src/tokens/sys.js';
@@ -15,7 +14,6 @@ import { createTheme, applyTheme, setScheme, scheme, schemePreference } from '..
 import { base } from '../src/components/base.js';
 import '../src/components/ui-icon-button.js';
 import '../src/components/ui-text.js';
-import '../src/components/ui-stack.js';
 import '../src/components/ui-chip.js';
 import '../src/components/ui-chip-set.js';
 import '../src/components/ui-slider.js';
@@ -78,6 +76,16 @@ export const toggleDark = () => {
 define('demo-theme-controls', {
   styles: [base, css`
     :host { display: block; }
+    .col { display: flex; flex-direction: column; gap: ${sys.space(5)}; }
+    .block { display: flex; flex-direction: column; gap: ${sys.space(2)}; }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: ${sys.space(2)};
+    }
+    .row.end { align-items: flex-end; gap: ${sys.space(5)}; }
+    .between { justify-content: space-between; }
     input[type="color"] {
       inline-size: 40px;
       block-size: 40px;
@@ -90,13 +98,13 @@ define('demo-theme-controls', {
   `],
   setup() {
     return html`
-      <ui-stack gap="5">
-        <ui-stack gap="2">
-          <ui-stack direction="row" gap="3" align="center" justify="space-between" wrap>
+      <div class="col">
+        <div class="block">
+          <div class="row between">
             <ui-text variant="label-md" color="onSurfaceVariant">Seed color</ui-text>
             <ui-text variant="label-sm" color="onSurfaceVariant">${seed}</ui-text>
-          </ui-stack>
-          <ui-stack direction="row" gap="2" align="center" wrap>
+          </div>
+          <div class="row">
             <ui-chip-set label="Seed color">
               ${PRESETS.map((p) => html`
                 <ui-chip variant="filter" value=${p.hex} selected=${() => seed() === p.hex}
@@ -105,17 +113,17 @@ define('demo-theme-controls', {
                 </ui-chip>`)}
             </ui-chip-set>
             <input type="color" .value=${seed} aria-label="Custom seed color"
-                   @input=${(e) => set(seed, e.target.value)}>
-          </ui-stack>
-        </ui-stack>
-        <ui-stack direction="row" gap="5" wrap align="end">
-          <ui-stack gap="2">
+                   @input.capture=${(e) => set(seed, e.target.value)}>
+          </div>
+        </div>
+        <div class="row end">
+          <div class="block">
             <ui-text variant="label-md" color="onSurfaceVariant">Shape</ui-text>
             <ui-slider label="Corner radius" min="0" max="2" step="0.25"
                        value=${radius} ?show-value=${true}
                        style="inline-size:160px"
                        @input=${(e) => set(radius, e.detail.value)}></ui-slider>
-          </ui-stack>
+          </div>
           <ui-select label="Density" variant="outlined"
                      value=${() => String(density())}
                      style="inline-size:148px"
@@ -137,7 +145,7 @@ define('demo-theme-controls', {
             label=${() => (scheme() === 'dark' ? 'Switch to light' : 'Switch to dark')}
             @click=${toggleDark}></ui-icon-button>
           <ui-button variant="text" @click=${reset}>Reset</ui-button>
-        </ui-stack>
-      </ui-stack>`;
+        </div>
+      </div>`;
   },
 });

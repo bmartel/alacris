@@ -960,13 +960,13 @@ while there is text, and an optional trailing slot (avatar, voice, …).
 Enter emits `submit`. The field chrome is the focus indicator — the inner
 input has no extra outline.
 
-`presentation="view"` expands into a docked search view: a back control
-and a suggestions list (the default slot) while open. Typing a query opens
-the view; clearing the field (keyboard or the clear button) closes it back
-to the pill bar. Focus on an empty view still shows recents, but a clear
-while focused stays on the bar. The open surface is one extra-large
-rounded container (not a stretched pill) with a divider between the field
-and the list.
+`presentation="view"` opens a search view: a back control and a suggestions
+list (the default slot) while open. The list overlays the page — it does
+not grow the layout. Typing a query opens the view; clearing the field
+(keyboard or the clear button) closes it back to the pill bar. Focus on an
+empty view still shows recents, but a clear while focused stays on the bar.
+The open surface is one extra-large rounded container (bar + overlay list)
+with a divider between the field and the list.
 
 | | |
 | --- | --- |
