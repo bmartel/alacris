@@ -72,7 +72,7 @@ The published package is plain ESM. Point an import map at pinned CDN builds:
 </script>
 ```
 
-Pin both packages in production (`@alacris/core@0.11.0`, `@alacris/ui@0.1`). Never mix pinned and unpinned URLs in one page.
+Pin both packages in production (`@alacris/core@0.11.0`, `@alacris/ui@0.2`). Never mix pinned and unpinned URLs in one page.
 
 ## Using it from a framework
 
