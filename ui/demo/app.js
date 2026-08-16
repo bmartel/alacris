@@ -5,11 +5,11 @@
 // swallows @click. Slotted chrome (app-bar actions, search hits, drawer rows)
 // uses @click.capture so the host listener fires before that skip.
 
-import { define, html, css, signal, computed, effect, keyed } from '@alacris/core';
+import { define, html, svg, css, signal, computed, effect, keyed } from '@alacris/core';
 import { sys } from '../src/tokens/sys.js';
 import { scheme } from '../src/theme/index.js';
 import { prefersReducedMotion } from '../src/motion/animate.js';
-import { base } from '../src/components/base.js';
+import { base, focusRingOn } from '../src/components/base.js';
 import { slug } from './helpers.js';
 import { toggleDark } from './theme-controls.js';
 import { bindSearchDock } from './search-dock.js';
@@ -70,7 +70,22 @@ const METRICS = [
   { value: '1', label: 'Seed color' },
 ];
 
+// Same fractured A as docs/src/assets/logo.svg. Fills keep the seed's hue and
+// chroma (`oklch from` primary) and only move lightness — peak up, feet down —
+// so a re-seed restyles the two-tone mark without washing it out.
+const brandMark = svg`
+  <svg viewBox="0 0 32 32" aria-hidden="true">
+    <path class="peak" d="M16 3 24.55 20.1 17.62 20.1 16 16.86 14.38 20.1 7.45 20.1Z"></path>
+    <path class="feet" d="M6.55 21.9 13.48 21.9 9.93 29 3 29ZM18.52 21.9 25.45 21.9 29 29 22.07 29Z"></path>
+  </svg>`;
+
 const COMPACT = '(max-width: 839px)';
+
+const hashId = () => {
+  try { return location.hash.replace(/^#/, ''); } catch { return ''; }
+};
+
+const familyId = (id) => (FAMILIES.some((f) => f.id === id) ? id : '');
 
 const hay = (item) =>
   `${item.title} ${item.blurb} ${item.rail || ''} ${item.keywords}`.toLowerCase();
@@ -81,9 +96,27 @@ const styles = css`
     min-block-size: 100vh;
     background: ${sys.color.surface};
     color: ${sys.color.onSurface};
+    --demo-bar-size: 64px;
   }
-  .shell { display: flex; min-block-size: 100vh; }
+  .shell {
+    display: flex;
+    min-block-size: 100vh;
+    padding-block-start: var(--demo-bar-size);
+  }
   .pane { flex: 1; min-inline-size: 0; }
+  .pane > ui-app-bar {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline: 0;
+  }
+  .rail {
+    position: sticky;
+    inset-block-start: var(--demo-bar-size);
+    align-self: flex-start;
+    block-size: calc(100vh - var(--demo-bar-size));
+    overflow: auto;
+    flex: none;
+  }
   .hero {
     position: relative;
     padding-block: ${sys.space(12)} ${sys.space(10)};
@@ -123,29 +156,63 @@ const styles = css`
   }
   .bar-mid {
     display: grid;
-    grid-template: 1fr / 1fr;
     align-items: center;
     justify-items: start;
     min-inline-size: 0;
     inline-size: 100%;
     block-size: 40px;
   }
-  .bar-mid > * { grid-area: 1 / 1; min-inline-size: 0; }
-  .app-title {
-    white-space: nowrap;
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: ${sys.space(2)};
+    min-inline-size: 0;
+    margin: 0;
+    padding: ${sys.space(1)} ${sys.space(3)};
+    border: none;
+    border-radius: ${sys.radius.sm};
+    background: transparent;
+    color: ${sys.color.primary};
+    cursor: pointer;
+    font: ${sys.type.titleSm};
+    letter-spacing: ${sys.tracking.titleSm};
+  }
+  ${focusRingOn('.brand')}
+  .brand svg {
+    flex: none;
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+  }
+  .brand .peak {
+    fill: oklch(from ${sys.color.primary} calc(l + 0.06) c h);
+  }
+  .brand .feet {
+    fill: oklch(from ${sys.color.primary} calc(l - 0.16) c h);
+  }
+  .brand .wordmark {
     overflow: hidden;
     text-overflow: ellipsis;
-    inline-size: 100%;
-    transition: opacity ${sys.duration.long2} ${sys.easing.emphasized};
+    white-space: nowrap;
   }
-  .app-title.away { opacity: 0; pointer-events: none; }
   .search-dock {
-    justify-self: start;
-    inline-size: min(100%, 36rem);
+    justify-self: stretch;
+    inline-size: 100%;
+    max-inline-size: 36rem;
     block-size: 40px;
     min-block-size: 40px;
     visibility: hidden;
     pointer-events: none;
+  }
+  .drawer-brand {
+    inline-size: 100%;
+    justify-content: flex-start;
+    padding: ${sys.space(2)} ${sys.space(3)};
+    font: ${sys.type.titleMd};
+    letter-spacing: ${sys.tracking.titleMd};
+  }
+  .drawer-brand svg {
+    inline-size: 2rem;
+    block-size: 2rem;
   }
   .pills, .cta, .metrics { display: flex; flex-wrap: wrap; gap: ${sys.space(3)}; }
   .pills { gap: ${sys.space(2)}; }
@@ -179,6 +246,31 @@ const styles = css`
   }
   .playground-head { display: flex; flex-direction: column; gap: ${sys.space(1)}; }
   .section { scroll-margin-block-start: 88px; padding-block: ${sys.space(10)} 0; display: flex; flex-direction: column; gap: ${sys.space(5)}; }
+  .demo-block { container-type: inline-size; }
+  .token-swatches {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: ${sys.space(4)} ${sys.space(3)};
+    min-inline-size: 0;
+  }
+  @container (min-width: 22rem) {
+    .token-swatches { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  .token-swatch { min-inline-size: 0; max-inline-size: 100%; }
+  .token-swatch .token-name { overflow-wrap: anywhere; }
+  /* Fields default to 240px; cards size to content. Grow to fill a wrapping
+     row, and fill a stack, so a lone item spans the card. */
+  .demo-row > :is(ui-text-field, ui-select, ui-autocomplete, ui-date-picker, ui-time-picker, ui-slider, ui-search, ui-card),
+  .demo-col > :is(ui-text-field, ui-select, ui-autocomplete, ui-date-picker, ui-time-picker, ui-slider, ui-search, ui-card) {
+    min-inline-size: min(100%, 16rem);
+    max-inline-size: 100%;
+  }
+  .demo-row > :is(ui-text-field, ui-select, ui-autocomplete, ui-date-picker, ui-time-picker, ui-slider, ui-search, ui-card) {
+    flex: 1 1 16rem;
+  }
+  .demo-col > :is(ui-text-field, ui-select, ui-autocomplete, ui-date-picker, ui-time-picker, ui-slider, ui-search, ui-card) {
+    inline-size: 100%;
+  }
   .footer { padding-block: ${sys.space(12)} ${sys.space(16)}; display: flex; flex-direction: column; gap: ${sys.space(3)}; }
   .icon-grid {
     display: grid;
@@ -217,9 +309,9 @@ define('demo-app', {
     const themeOpen = signal(false);
     const query = signal('');
     const active = signal(0);
-    const current = signal(FAMILIES[0].id);
-    const searchDocked = signal(false);
-    const dockReady = signal(0);
+    const arriving = hashId();
+    const current = signal(familyId(arriving) || FAMILIES[0].id);
+    const searchDocked = signal(!!arriving);
     let searchEl;
     let searchAnchor;
     let searchDock;
@@ -227,8 +319,22 @@ define('demo-app', {
       if (which === 'search') searchEl = el;
       else if (which === 'anchor') searchAnchor = el;
       else searchDock = el;
-      dockReady.update((n) => n + 1);
     };
+
+    const reveal = (id, { smooth = false } = {}) => {
+      if (!id) return null;
+      const el = host.shadowRoot?.getElementById(id);
+      if (!el) return null;
+      const sec = el.closest('[data-demo-section]');
+      if (sec?.id) current.set(sec.id);
+      el.scrollIntoView({
+        behavior: smooth && !prefersReducedMotion() ? 'smooth' : 'auto',
+        block: 'start',
+      });
+      return el;
+    };
+
+    try { history.scrollRestoration = 'manual'; } catch { /* non-browser */ }
 
     effect(() => {
       if (typeof matchMedia !== 'function') return;
@@ -242,10 +348,11 @@ define('demo-app', {
     });
 
     const catalog = signal(FAMILIES);
+    let catalogIndexed = false;
 
     const indexCatalog = () => {
       const root = host.shadowRoot;
-      if (!root) return;
+      if (!root || catalogIndexed) return;
       const out = [];
       const seen = new Set();
       const add = (item) => {
@@ -267,59 +374,79 @@ define('demo-app', {
           });
         }
       }
+      catalogIndexed = true;
       catalog.set(out);
     };
 
     const jump = (id) => {
       if (!id) return;
-      current.set(id);
       drawerOpen.set(false);
       query.set('');
       active.set(0);
       const search = searchEl || host.shadowRoot?.querySelector('.hero-search');
       if (search) search.open = false;
-      host.shadowRoot?.getElementById(id)?.scrollIntoView?.({
-        behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-        block: 'start',
-      });
+      reveal(id, { smooth: true });
       try { history.replaceState(null, '', '#' + id); } catch { /* non-browser */ }
     };
 
+    const goHome = () => {
+      drawerOpen.set(false);
+      query.set('');
+      active.set(0);
+      const search = searchEl || host.shadowRoot?.querySelector('.hero-search');
+      if (search) search.open = false;
+      current.set(FAMILIES[0].id);
+      try { history.replaceState(null, '', location.pathname + location.search); } catch { /* non-browser */ }
+      window.scrollTo({
+        top: 0,
+        behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+      });
+    };
+
     effect(() => {
-      let cancelled = false;
-      const onHash = () => {
-        if (cancelled) return;
-        let id = '';
-        try { id = location.hash.slice(1); } catch { return; }
-        if (!id) return;
-        current.set(id);
-        host.shadowRoot?.getElementById(id)?.scrollIntoView?.({ block: 'start' });
-      };
-      queueMicrotask(onHash);
+      const onHash = () => reveal(hashId());
       window.addEventListener('hashchange', onHash);
-      return () => {
-        cancelled = true;
-        window.removeEventListener('hashchange', onHash);
-      };
+      return () => window.removeEventListener('hashchange', onHash);
     });
 
     effect(() => {
       let io;
-      const start = () => {
+      let stopDock;
+      let cancelled = false;
+      queueMicrotask(() => {
+        if (cancelled) return;
+        const restored = !!reveal(hashId());
+        let holdIo = restored;
         indexCatalog();
         const els = [...(host.shadowRoot?.querySelectorAll('[data-demo-section]') || [])];
-        if (!els.length) return;
-        io = new IntersectionObserver((entries) => {
-          const hit = entries
-            .filter((e) => e.isIntersecting)
-            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-          if (hit?.target?.id) current.set(hit.target.id);
-        }, { rootMargin: '-20% 0px -65% 0px', threshold: 0 });
-        for (const el of els) io.observe(el);
-        indexCatalog();
+        if (els.length) {
+          io = new IntersectionObserver((entries) => {
+            if (holdIo) return;
+            const hit = entries
+              .filter((e) => e.isIntersecting)
+              .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+            if (hit?.target?.id) current.set(hit.target.id);
+          }, { rootMargin: '-20% 0px -65% 0px', threshold: 0 });
+          for (const el of els) io.observe(el);
+        }
+        if (holdIo) requestAnimationFrame(() => { holdIo = false; });
+        searchEl = searchEl || host.shadowRoot?.querySelector('.hero-search');
+        searchAnchor = searchAnchor || host.shadowRoot?.querySelector('.search-anchor');
+        searchDock = searchDock || host.shadowRoot?.querySelector('.search-dock');
+        if (!searchEl || !searchAnchor || !searchDock) return;
+        stopDock = bindSearchDock({
+          search: searchEl,
+          anchor: searchAnchor,
+          dock: searchDock,
+          docked: searchDocked,
+          restore: restored,
+        });
+      });
+      return () => {
+        cancelled = true;
+        io?.disconnect();
+        stopDock?.();
       };
-      queueMicrotask(start);
-      return () => io?.disconnect();
     });
 
     const matches = computed(() => {
@@ -359,23 +486,12 @@ define('demo-app', {
       }
     };
 
-    effect(() => {
-      dockReady();
-      if (!searchEl || !searchAnchor || !searchDock) return;
-      return bindSearchDock({
-        search: searchEl,
-        anchor: searchAnchor,
-        dock: searchDock,
-        docked: searchDocked,
-      });
-    });
-
     const rail = () => html`
       <ui-nav-rail class="rail" value=${current} label="Sections"
-                   style="position:sticky;inset-block-start:0;align-self:flex-start;block-size:100vh;overflow:auto;flex:none"
                    @change.capture=${(e) => jump(e.detail.value)}>
         ${FAMILIES.map((f) => html`
-          <ui-nav-item value=${f.id} icon=${f.icon} label=${f.rail}></ui-nav-item>`)}
+          <ui-nav-item value=${f.id} icon=${f.icon} label=${f.rail}
+                       selected=${() => current() === f.id}></ui-nav-item>`)}
       </ui-nav-rail>`;
 
     const appBar = () => html`
@@ -383,16 +499,19 @@ define('demo-app', {
         ${() => compact()
           ? html`<ui-icon-button slot="navigation" icon="menu" label="Open navigation"
                                  @click.capture=${() => drawerOpen.set(true)}></ui-icon-button>`
-          : null}
+          : html`<button slot="navigation" type="button" class="brand" aria-label="Alacris UI home"
+                         @click.capture=${goHome}>
+              ${brandMark}
+              <span class="wordmark">Alacris UI</span>
+            </button>`}
         <div class="bar-mid">
-          <span class=${() => `app-title${searchDocked() ? ' away' : ''}`}>Alacris UI</span>
           <div class="search-dock" ref=${markDock('dock')}></div>
         </div>
         <ui-icon-button slot="actions" icon="tune" label="Open theme"
                         @click.capture=${() => themeOpen.set(true)}></ui-icon-button>
-        <ui-icon-button slot="actions"
-          icon=${() => (scheme() === 'dark' ? 'light-mode' : 'dark-mode')}
-          label=${() => (scheme() === 'dark' ? 'Switch to light' : 'Switch to dark')}
+        <ui-icon-button slot="actions" class="scheme-toggle"
+          icon=${() => (scheme() === 'dark' ? 'dark-mode' : 'light-mode')}
+          label=${() => (scheme() === 'dark' ? 'Dark mode' : 'Light mode')}
           @click.capture=${toggleDark}></ui-icon-button>
       </ui-app-bar>`;
 
@@ -494,7 +613,11 @@ define('demo-app', {
       <ui-drawer open=${drawerOpen} label="Sections"
                  @close=${() => drawerOpen.set(false)}>
         <div style=${{ display: 'flex', flexDirection: 'column', gap: sys.space(2) }}>
-          <ui-text variant="title-lg" style=${{ padding: sys.space(3) }}>Alacris UI</ui-text>
+          <button type="button" class="brand drawer-brand" aria-label="Alacris UI home"
+                  @click.capture=${() => { goHome(); drawerOpen.set(false); }}>
+            ${brandMark}
+            <span class="wordmark">Alacris UI</span>
+          </button>
           ${FAMILIES.map((f) => html`
             <ui-list-item interactive headline=${f.rail} supporting=${f.blurb}
                           selected=${() => current() === f.id}

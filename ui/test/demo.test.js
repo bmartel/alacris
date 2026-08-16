@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { html, render, signal } from '@alacris/core';
 import { applyCurrentTheme } from '../demo/theme-controls.js';
 import { bindSearchDock } from '../demo/search-dock.js';
+import { scheme } from '../src/theme/index.js';
 import '../demo/app.js';
 import { unmountAll, tick, fire } from './helpers.js';
 
@@ -26,12 +27,43 @@ test('demo-app boots an app shell built from ui-* components', async () => {
   assert.equal(panel.querySelectorAll('ui-toggle-group').length, 3, 'density, motion, appearance');
   assert.ok(panel.querySelector('ui-slider'), 'shape slider');
   assert.ok(root.querySelector('#theme-tokens'), 'tokens section');
+  const swatches = root.querySelector('.token-swatches');
+  assert.ok(swatches, 'token swatch grid');
+  assert.equal(getComputedStyle(swatches).display, 'grid');
+  const typeSample = [...root.querySelectorAll('#type-roles ui-text')]
+    .find((el) => el.variant === 'display-lg');
+  assert.ok(typeSample, 'type-role specimen');
+  assert.equal(typeSample.style.minInlineSize, '0');
+  assert.equal(typeSample.style.overflowWrap, 'anywhere');
   assert.ok(root.querySelector('#basics'), 'family sections render');
+  const field = root.querySelector('#text-fields ui-text-field');
+  assert.ok(field, 'text field demo');
+  assert.equal(getComputedStyle(field).flexGrow, '1');
+  const card = root.querySelector('#cards ui-card');
+  assert.ok(card, 'card demo');
+  assert.equal(getComputedStyle(card).flexGrow, '1');
   assert.ok(root.querySelector('ui-button'), 'family demos project into the shell');
   assert.ok(root.querySelector('.pill'), 'feature labels are static, not chips');
   assert.ok([...root.querySelectorAll('.pill')].some((el) => el.textContent === 'ESM-only'));
   assert.ok(root.querySelector('.search-anchor > .hero-search'), 'hero search has a layout anchor');
   assert.ok(root.querySelector('.search-dock'), 'app bar has a search dock target');
+  const schemeBtn = root.querySelector('.scheme-toggle');
+  assert.ok(schemeBtn, 'appearance toggle');
+  assert.equal(schemeBtn.icon, scheme() === 'dark' ? 'dark-mode' : 'light-mode',
+    'appearance icon matches the active scheme');
+  assert.match(schemeBtn.label, scheme() === 'dark' ? /dark/i : /light/i);
+  const brand = root.querySelector('ui-drawer .brand') || root.querySelector('.brand');
+  assert.ok(brand?.querySelector('svg'), 'brand mark');
+  assert.match(brand.textContent, /Alacris UI/);
+  const probe = document.createElement('span');
+  probe.style.color = 'var(--ui-color-primary)';
+  document.body.append(probe);
+  assert.equal(getComputedStyle(brand).color, getComputedStyle(probe).color,
+    'brand lockup tracks the seed primary');
+  probe.remove();
+  const peak = getComputedStyle(brand.querySelector('.peak')).fill;
+  const feet = getComputedStyle(brand.querySelector('.feet')).fill;
+  assert.notEqual(peak, feet, 'peak is a lighter mix of primary than the feet');
   unmountAll();
   await tick();
 });
@@ -120,6 +152,41 @@ test('search dock pins and unpins when the hero field crosses the app bar', asyn
   } finally {
     stop();
     window.matchMedia = restore;
+    unmountAll();
+  }
+});
+
+test('search dock restore pins immediately without a fly-in', async () => {
+  const restoreMq = window.matchMedia;
+  window.matchMedia = (q) => ({
+    matches: String(q).includes('prefers-reduced-motion'),
+    addEventListener() {},
+    removeEventListener() {},
+    addListener() {},
+    removeListener() {},
+  });
+
+  const search = document.createElement('div');
+  const anchor = document.createElement('div');
+  const dock = document.createElement('div');
+  document.body.append(search, anchor, dock);
+  const docked = signal(false);
+
+  const hero = { top: 240, left: 24, width: 400, height: 56 };
+  const bar = { top: 12, left: 96, width: 640, height: 40 };
+  search.getBoundingClientRect = () => box(hero);
+  anchor.getBoundingClientRect = () => box(hero);
+  dock.getBoundingClientRect = () => box(bar);
+
+  const stop = bindSearchDock({ search, anchor, dock, docked, restore: true });
+  try {
+    assert.equal(docked(), true, 'restore pins before the first paint');
+    assert.equal(search.style.position, 'fixed');
+    assert.ok(search.classList.contains('is-pinned'));
+    assert.equal(search.style.transform, '');
+  } finally {
+    stop();
+    window.matchMedia = restoreMq;
     unmountAll();
   }
 });
