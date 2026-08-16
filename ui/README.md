@@ -6,7 +6,7 @@ A complete, themeable design system built with **[Alacris](https://github.com/bm
 
 The tags are real custom elements, so they work in plain HTML and inside React, Vue, Svelte, Angular, Rails, Django, and [Alacris-Go](https://github.com/bmartel/alacris-go) — anywhere that renders a tag.
 
-**Docs:** [Getting started](https://bmartel.github.io/alacris/ui/getting-started/)
+**Docs:** [Live catalog](https://bmartel.github.io/alacris/ui/) · [Getting started](https://bmartel.github.io/alacris/ui/getting-started/)
 
 ## Install
 
@@ -134,6 +134,8 @@ ui/
   test/          node smoke tests
   CONVENTIONS.md rules every component follows
 ```
+
+The live catalog is [bmartel.github.io/alacris/ui](https://bmartel.github.io/alacris/ui/) — every component plus a theme playground, no clone required.
 
 From a clone of the repo:
 

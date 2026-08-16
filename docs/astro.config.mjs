@@ -63,6 +63,7 @@ export default defineConfig({
         {
           label: 'Alacris UI',
           items: [
+            { label: 'Component catalog', link: '/ui/', badge: 'Live' },
             { label: 'Getting started', slug: 'ui/getting-started' },
             { label: 'Using it from a framework', slug: 'ui/frameworks' },
           ],

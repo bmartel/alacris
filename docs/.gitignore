@@ -2,8 +2,9 @@
 dist/
 .astro/
 
-# generated: synced from ../dist by scripts/sync-lib.mjs
+# generated: synced from ../dist and ../ui by scripts/sync-lib.mjs
 public/lib/
+public/ui/
 
 # dependencies
 node_modules/

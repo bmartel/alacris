@@ -10,7 +10,7 @@
     {
       "name": "docs",
       "command": "npm --prefix docs run dev -- --host",
-      "description": "Astro + Starlight docs site at http://localhost:4321/alacris (predev copies the freshly built bundle into docs/public/lib)."
+      "description": "Astro + Starlight docs site at http://localhost:4321/alacris (predev copies the library bundle and the UI kitchen sink so /alacris/ui/ is the live catalog)."
     }
   ],
   "ports": [

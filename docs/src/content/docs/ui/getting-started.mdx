@@ -11,6 +11,12 @@ Alacris is the runtime. **Alacris UI** (`@alacris/ui` on npm) is a complete desi
 
 The tags are real custom elements. They work in a static HTML file, inside React, Vue, Svelte, Angular, Rails, Django, and — later — [Alacris-Go](https://github.com/bmartel/alacris-go) live views. There is no adapter package.
 
+<LinkCard
+  title="Open the live catalog"
+  href="/alacris/ui/"
+  description="Every component and a live theme playground. Click, type, re-seed — nothing to clone or install."
+/>
+
 ## Install
 
 ```sh
@@ -73,7 +79,7 @@ The published package is plain ESM. An import map lets you write the same bare s
 </html>
 ```
 
-Pin both packages in production (`@alacris/core@0.11.0`, `@alacris/ui@0.1`). Never mix pinned and unpinned URLs in one page.
+Pin both packages in production (`@alacris/core@0.11.0`, `@alacris/ui@0.2`). Never mix pinned and unpinned URLs in one page.
 
 <Tabs>
   <TabItem label="jsDelivr">
@@ -262,24 +268,23 @@ Component modules have side effects (they call `define()`). Theme, motion and to
 
 ## Kitchen sink and starter
 
-From a clone of the [Alacris repo](https://github.com/bmartel/alacris):
+The [live catalog](/alacris/ui/) is the kitchen sink: every component plus a theme playground, composed from the same tags you import from npm. It is a real page on this site — link people there.
 
-```sh
-npm install
-npm run demo
-```
-
-- `http://localhost:5173/ui/` — every component plus a live theme playground, composed from the same tags you import from npm.
-- `http://localhost:5173/starter/` — a small app that **uses** those tags. Copy that folder as an install guide; it is not the published package.
+A small app that **uses** those tags lives in [`starter/`](https://github.com/bmartel/alacris/tree/main/starter) of the repo. Copy that folder as an install guide; it is not the published package. From a clone, `npm run demo` serves the catalog at `http://localhost:5173/ui/` and the starter at `http://localhost:5173/starter/`.
 
 <CardGrid>
+  <LinkCard
+    title="Live catalog"
+    href="/alacris/ui/"
+    description="Every component, a live theme playground. Nothing to install."
+  />
   <LinkCard
     title="Using it from a framework"
     href="./frameworks/"
     description="React, Vue, Svelte, Angular, Next, Rails, Django, Laravel, Phoenix, HTMX, and the rest."
   />
   <LinkCard
-    title="Component catalog"
+    title="Tag reference"
     href="https://github.com/bmartel/alacris/blob/main/ui/docs/components.md"
     description="Props, events, slots, parts, and theme vars for every tag."
   />
@@ -302,6 +307,7 @@ npm run demo
 
 ## Next
 
+- [Live catalog](/alacris/ui/) — every component, a theme playground, nothing to clone
 - [Using it from a framework](../frameworks/) — attributes vs properties, Next, Nuxt, Rails, Django, HTMX
 - [Your first component](../../start/first-component/) — the Alacris model, if you are writing elements of your own
 - [Theming for consumers](../../guides/theming/) — `vars()`, `::part`, and `adoptGlobal`

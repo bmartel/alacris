@@ -27,6 +27,11 @@ const routeOf = (p) => {
 };
 const routes = new Set(pages.map(routeOf));
 
+if (!routes.has('/ui/')) {
+  console.error('\n  kitchen-sink catalog missing at /ui/ — docs/scripts/sync-lib.mjs should copy ui/ into public/ui.\n');
+  process.exit(1);
+}
+
 const broken = [];
 for (const page of pages) {
   const html = await readFile(page, 'utf8');
