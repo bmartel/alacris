@@ -79,7 +79,9 @@ applyTheme({ seed: '#0b57d0' });
 ```
 
 `@alacris/ui` depends on `@alacris/core` and must share that one copy. Do not also
-load a CDN build of Alacris on the same page. Docs:
+load a CDN build of Alacris on the same page. Live catalog:
+https://bmartel.github.io/alacris/ui/
+Docs:
 https://bmartel.github.io/alacris/ui/getting-started/
 https://bmartel.github.io/alacris/ui/frameworks/
 

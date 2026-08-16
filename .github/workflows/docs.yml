@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    paths: ['docs/**', 'src/**', '.github/workflows/docs.yml']
+    paths: ['docs/**', 'src/**', 'ui/**', '.github/workflows/docs.yml']
   # semantic-release pushes its version bump as `chore(release): x.y.z [skip
   # ci]`, and GitHub honours that marker by not running push workflows for it.
   # Without this trigger the site would keep serving the tree from *before* the

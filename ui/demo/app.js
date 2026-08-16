@@ -556,7 +556,7 @@ define('demo-app', {
             </ui-search>
           </div>
           <div class="cta">
-            <ui-button href="https://bmartel.github.io/alacris/" target="_blank">
+            <ui-button href="https://bmartel.github.io/alacris/ui/getting-started/" target="_blank">
               Docs<ui-icon slot="trailing" name="arrow-forward"></ui-icon>
             </ui-button>
             <ui-button variant="outlined" href="https://github.com/bmartel/alacris" target="_blank">

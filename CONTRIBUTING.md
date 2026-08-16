@@ -87,7 +87,10 @@ Every example on the site is **live**. Demo sources live in `docs/src/demos/`
 and are rendered by `<Demo>` as both a highlighted code block and a module
 script, from the same string — so what a reader sees is what executed, and the
 two cannot drift. The site carries an import map pointing `@alacris/core` at the
-built bundle, which `npm run build` syncs into `docs/public/lib`.
+built bundle, which the docs `prebuild` syncs into `docs/public/lib`. The same
+step copies the Alacris UI kitchen sink into `docs/public/ui`, so
+[the live catalog](https://bmartel.github.io/alacris/ui/) is a real page — not
+something a reader has to clone the repo to see.
 
 `npm run build` in `docs/` also checks every internal link and fails on a broken
 one.

@@ -66,7 +66,7 @@
     "url": "git+https://github.com/bmartel/alacris.git",
     "directory": "ui"
   },
-  "homepage": "https://bmartel.github.io/alacris/ui/getting-started/",
+  "homepage": "https://bmartel.github.io/alacris/ui/",
   "bugs": {
     "url": "https://github.com/bmartel/alacris/issues"
   },

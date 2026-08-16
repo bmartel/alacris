@@ -115,7 +115,7 @@ npm install @alacris/ui
 ```
 
 That is a separate package with its own version. It depends on `@alacris/core` and
-does not bundle a second copy. [Getting started →](https://bmartel.github.io/alacris/ui/getting-started/)
+does not bundle a second copy. [Live catalog →](https://bmartel.github.io/alacris/ui/) · [Getting started →](https://bmartel.github.io/alacris/ui/getting-started/)
 
 ## Signals
 

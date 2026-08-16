@@ -2,9 +2,9 @@
 
 A small app that **uses** [`@alacris/ui`](https://www.npmjs.com/package/@alacris/ui). It is not the design system.
 
-The published package lives in [`ui/`](../ui/) of this repo. This folder is the copy-paste starting point: install, theme, render tags, submit a form. The kitchen sink (every component plus a live theme playground) is `http://localhost:5173/ui/` after `npm run demo`.
+The published package lives in [`ui/`](../ui/) of this repo. This folder is the copy-paste starting point: install, theme, render tags, submit a form. The kitchen sink (every component plus a live theme playground) is on the docs site at [bmartel.github.io/alacris/ui](https://bmartel.github.io/alacris/ui/), and at `http://localhost:5173/ui/` after `npm run demo`.
 
-**Docs:** [Getting started](https://bmartel.github.io/alacris/ui/getting-started/) · [Using it from a framework](https://bmartel.github.io/alacris/ui/frameworks/)
+**Docs:** [Live catalog](https://bmartel.github.io/alacris/ui/) · [Getting started](https://bmartel.github.io/alacris/ui/getting-started/) · [Using it from a framework](https://bmartel.github.io/alacris/ui/frameworks/)
 
 ## Run this example
 
