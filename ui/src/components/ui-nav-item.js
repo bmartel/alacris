@@ -90,6 +90,7 @@ const styles = css`
     font: ${t.font};
     letter-spacing: ${t.tracking};
     color: ${t.labelFg};
+    white-space: nowrap;
     transition: color ${sys.duration.short4} ${sys.easing.standard};
   }
   .selected .label { color: ${t.labelFgActive}; }

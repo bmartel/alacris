@@ -175,8 +175,8 @@ scheme();               // signal: 'light' | 'dark' — what is in effect NOW
 schemePreference();     // signal: 'light' | 'dark' | 'auto'
 ```
 
-`scheme` is a signal — bind it: the demo's dark-mode button renders its icon
-from `${() => scheme() === 'dark' ? 'light-mode' : 'dark-mode'}`.
+`scheme` is a signal — bind it: the demo's appearance button renders its icon
+from `${() => scheme() === 'dark' ? 'dark-mode' : 'light-mode'}`.
 
 ### No-JS / static theming
 

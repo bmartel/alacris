@@ -44,19 +44,19 @@ export const section = () => html`
     <ui-icon-button icon="send" label="Send" disabled></ui-icon-button>`)}
 
   ${block('Cards', html`
-    <ui-card style="inline-size:200px">
+    <ui-card>
       <ui-text variant="title-md">Elevated</ui-text>
       <ui-text variant="body-sm" color="onSurfaceVariant">The default card.</ui-text>
     </ui-card>
-    <ui-card variant="filled" style="inline-size:200px">
+    <ui-card variant="filled">
       <ui-text variant="title-md">Filled</ui-text>
       <ui-text variant="body-sm" color="onSurfaceVariant">Highest surface tone.</ui-text>
     </ui-card>
-    <ui-card variant="outlined" style="inline-size:200px">
+    <ui-card variant="outlined">
       <ui-text variant="title-md">Outlined</ui-text>
       <ui-text variant="body-sm" color="onSurfaceVariant">Hairline instead of shadow.</ui-text>
     </ui-card>
-    <ui-card variant="elevated" interactive style="inline-size:200px">
+    <ui-card variant="elevated" interactive>
       <ui-text variant="title-md">Interactive</ui-text>
       <ui-text variant="body-sm" color="onSurfaceVariant">Hover, focus, ripple.</ui-text>
     </ui-card>`)}

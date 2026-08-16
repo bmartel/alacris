@@ -22,6 +22,7 @@ const surface = {
   display: 'flex',
   flexDirection: 'column',
   gap: sys.space(4),
+  minInlineSize: 0,
 };
 
 const wrapRow = {
@@ -29,6 +30,7 @@ const wrapRow = {
   flexWrap: 'wrap',
   alignItems: 'flex-start',
   gap: sys.space(4),
+  minInlineSize: 0,
 };
 
 const wrapCol = {
@@ -36,21 +38,22 @@ const wrapCol = {
   flexDirection: 'column',
   alignItems: 'stretch',
   gap: sys.space(4),
+  minInlineSize: 0,
 };
 
 /** A labeled demo block: a caption and a wrapping row of examples. */
 export const block = (label, body) => html`
   <div class="demo-block" id=${slug(label)} data-search-title=${label} style=${surface}>
     <ui-text variant="title-sm" color="onSurfaceVariant">${label}</ui-text>
-    <div style=${wrapRow}>${body}</div>
+    <div class="demo-row" style=${wrapRow}>${body}</div>
   </div>`;
 
 /** Like block, but examples stack vertically. */
 export const stackBlock = (label, body) => html`
   <div class="demo-block" id=${slug(label)} data-search-title=${label} style=${surface}>
     <ui-text variant="title-sm" color="onSurfaceVariant">${label}</ui-text>
-    <div style=${wrapCol}>${body}</div>
+    <div class="demo-col" style=${wrapCol}>${body}</div>
   </div>`;
 
 /** A wrapping row — for nested groups inside a stackBlock. */
-export const row = (body) => html`<div style=${wrapRow}>${body}</div>`;
+export const row = (body) => html`<div class="demo-row" style=${wrapRow}>${body}</div>`;

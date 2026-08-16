@@ -69,7 +69,8 @@ const swatch = (role) => {
               flexDirection: 'column',
               alignItems: 'stretch',
               gap: sys.space(2),
-              minInlineSize: '9rem',
+              inlineSize: '100%',
+              minInlineSize: 0,
               padding: 0,
               border: 'none',
               background: 'transparent',
@@ -90,7 +91,7 @@ const swatch = (role) => {
         font: sys.type.titleSm,
       }}>Aa</span>
       <span>${role}</span>
-      <span style=${{ color: sys.color.onSurfaceVariant }}>
+      <span class="token-name" style=${{ color: sys.color.onSurfaceVariant }}>
         ${() => copied() === name ? 'Copied' : name}
       </span>
     </button>`;
@@ -112,15 +113,24 @@ export const section = () => html`
 
   ${COLOR_GROUPS.map((g) => stackBlock(g.label + ' color', html`
     <ui-text variant="body-sm" color="onSurfaceVariant">Click a swatch to copy its custom property.</ui-text>
-    <div style=${{ display: 'flex', flexWrap: 'wrap', gap: sys.space(2) }}>
-      ${g.roles.map(swatch)}
-    </div>`))}
+    <div class="token-swatches">${g.roles.map(swatch)}</div>`))}
 
   ${stackBlock('Type roles', html`
     ${TYPE_ROLES.map((role) => html`
-      <div style=${{ display: 'flex', alignItems: 'baseline', gap: sys.space(4), flexWrap: 'wrap' }}>
-        <ui-text variant="label-sm" color="onSurfaceVariant" style="inline-size:7rem">${role}</ui-text>
-        <ui-text variant=${role}>Hamburgefonstiv</ui-text>
+      <div style=${{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'baseline',
+        gap: `${sys.space(1)} ${sys.space(4)}`,
+        minInlineSize: 0,
+      }}>
+        <ui-text variant="label-sm" color="onSurfaceVariant"
+                 style="flex:none;inline-size:7rem">${role}</ui-text>
+        <ui-text variant=${role} style=${{
+          flex: '1 1 12rem',
+          minInlineSize: 0,
+          overflowWrap: 'anywhere',
+        }}>Hamburgefonstiv</ui-text>
       </div>`)}`)}
 
   ${block('Shape', html`
