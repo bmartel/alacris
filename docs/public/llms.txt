@@ -15,6 +15,7 @@ for deep state, `selector` for O(1) selection.
 - [Installation](https://bmartel.github.io/alacris/start/installation/): npm, or a CDN import with no install at all
 - [Your first component](https://bmartel.github.io/alacris/start/first-component/): define, props, events, in one page
 - [Alacris UI](https://bmartel.github.io/alacris/ui/getting-started/): buttons, fields, and a theme — `npm install @alacris/ui`
+- [Alacris UI from a framework](https://bmartel.github.io/alacris/ui/frameworks/): React, Vue, Svelte, Angular, Next, Rails, Django, Laravel, Phoenix
 - [Playground](https://bmartel.github.io/alacris/playground/): every example running in an editor, no install
 
 ## Guides

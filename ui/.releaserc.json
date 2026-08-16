@@ -4,7 +4,7 @@
   "plugins": [
     [
       "../scripts/release-filter-scopes.js",
-      { "include": ["ui", "starter"] }
+      { "include": ["ui"] }
     ],
     [
       "@semantic-release/commit-analyzer",

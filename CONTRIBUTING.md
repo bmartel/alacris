@@ -29,7 +29,7 @@ it directly.
 | `npm run typecheck` | compiles the type-level tests against the shipped `.d.ts` files |
 | `npm run size` | re-measures `dist/` without rebuilding |
 | `npm run demo` | serves the demo, the browser test suite, the benchmark, and Alacris UI on :5173 |
-| `npm run test:ui` | Alacris UI smoke tests (`starter/`, happy-dom) |
+| `npm run test:ui` | Alacris UI smoke tests (`ui/`, happy-dom) |
 
 Before opening a pull request, run all three of `npm test`, `npm run build` and
 `npm run typecheck`.
@@ -172,15 +172,18 @@ is the normal outcome for a docs-only or CI-only change.
 
 ### Alacris UI is a separate package
 
-`starter/` is the **@alacris/ui** npm package. It depends on `@alacris/core` and must
+`ui/` is the **@alacris/ui** npm package. It depends on `@alacris/core` and must
 never bundle a copy of it. It has its own version, changelog
-(`starter/CHANGELOG.md`), git tags (`ui-v*`), and workflow
+(`ui/CHANGELOG.md`), git tags (`ui-v*`), and workflow
 (`.github/workflows/release-ui.yml`).
 
-A commit scoped `ui` (or the legacy `starter`) publishes `@alacris/ui` and does
+`starter/` is a usage example and install guide. It is not a package and does
+not publish.
+
+A commit scoped `ui` publishes `@alacris/ui` and does
 **not** publish `@alacris/core`. A commit scoped anything else publishes `@alacris/core`
 and does not publish `@alacris/ui`. CI fails a pull request that changes
-`src/`/`types/` and `starter/src/`/`starter/types/` together — split those.
+`src/`/`types/` and `ui/src/`/`ui/types/` together — split those.
 
 ```
 feat(ui): add a combobox          → @alacris/ui minor, @alacris/core unchanged
@@ -198,7 +201,7 @@ package starts at 0.1.0 rather than 1.0.0.
      must not be rewritten by the rule. -->
 
 `package.json` is the only place a **library** version is set (`@alacris/core`);
-`starter/package.json` is the only place a **UI** version is set (`@alacris/ui`).
+`ui/package.json` is the only place a **UI** version is set (`@alacris/ui`).
 `SIZE.md` is the only place a size is measured. Everything the docs say about
 either is derived from those files by `scripts/sync-docs.mjs`.
 

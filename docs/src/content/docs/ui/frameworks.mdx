@@ -1,0 +1,366 @@
+---
+title: Using it from a framework
+description: Install Alacris UI once, then render the same tags from React, Vue, Svelte, Angular, Next, Rails, Django, Laravel, Phoenix, and the rest — no adapter package.
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+The tags are real custom elements. There is no adapter package, no wrapper, and nothing to install on the other side. Register them once at the app entry, then render HTML.
+
+A copy-paste starter that does exactly that lives in [`starter/`](https://github.com/bmartel/alacris/tree/main/starter) of the repo. This page is the same recipes, grouped by frontend and backend.
+
+Every Alacris prop is both an attribute and a property. Frameworks disagree about which they set — React 18 sets attributes; Vue, Svelte, Angular, and Solid set properties. Both paths work.
+
+```js
+el.setAttribute('age', '36');  // attribute path — parsed to a number
+el.age = 36;                   // property path — used as-is
+```
+
+<Aside type="caution" title="One copy of Alacris">
+`@alacris/ui` imports `@alacris/core` by specifier. Do not also load a CDN URL of Alacris on the same page as an npm install. Two copies of the module means two reactive graphs, and updates silently stop crossing the boundary.
+</Aside>
+
+Alacris does **not** server-render shadow trees. Put content that must be visible before JavaScript in a slot. The element upgrades when the script loads; properties assigned before upgrade are replayed.
+
+## Frontend
+
+Call `applyTheme` once in the browser, then render tags. Named controls are form-associated — give them a `name` and they submit like native fields.
+
+<Tabs syncKey="frontend">
+  <TabItem label="HTML">
+    No bundler. Same pattern as the [starter](https://github.com/bmartel/alacris/tree/main/starter):
+
+    ```html
+    <script type="importmap">
+    {
+      "imports": {
+        "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.0/dist/alacris.js",
+        "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui/src/index.js"
+      }
+    }
+    </script>
+    <script type="module">
+      import { applyTheme } from '@alacris/ui';
+      applyTheme({ seed: '#e8ad18' });
+    </script>
+
+    <ui-button>Save</ui-button>
+    <ui-text-field name="email" label="Email"></ui-text-field>
+    ```
+
+    Vite, esbuild, and Rollup resolve `@alacris/ui` with no extra config — `npm install @alacris/ui` and import from the entry module.
+  </TabItem>
+
+  <TabItem label="React">
+    React 19 sets properties on unknown tags and maps `onX` to custom events:
+
+    ```jsx
+    import { applyTheme } from '@alacris/ui';
+    applyTheme({ seed: '#e8ad18' });
+
+    export function Form() {
+      return (
+        <>
+          <ui-text-field label="Email" name="email" />
+          <ui-button onClick={() => {}}>Save</ui-button>
+        </>
+      );
+    }
+    ```
+
+    On React 18, primitives go through as attributes; use a ref for objects and custom events:
+
+    ```jsx
+    const ref = useRef();
+    useEffect(() => {
+      const on = (e) => console.log(e.detail);
+      ref.current.addEventListener('input', on);
+      return () => ref.current.removeEventListener('input', on);
+    }, []);
+    return <ui-text-field ref={ref} label="Email" name="email" />;
+    ```
+  </TabItem>
+
+  <TabItem label="Next.js">
+    Mark the module that imports `@alacris/ui` as a Client Component. Custom elements do not SSR:
+
+    ```jsx
+    'use client';
+    import { applyTheme } from '@alacris/ui';
+    applyTheme({ seed: '#e8ad18' });
+
+    export function Form() {
+      return <ui-button>Save</ui-button>;
+    }
+    ```
+
+    ```js
+    // next.config.js
+    const nextConfig = {
+      transpilePackages: ['@alacris/core', '@alacris/ui'],
+    };
+    export default nextConfig;
+    ```
+
+    Put visible-before-JS copy in a slot, or in a sibling of the custom element.
+  </TabItem>
+
+  <TabItem label="Vue / Nuxt">
+    ```vue
+    <script setup>
+    import { applyTheme } from '@alacris/ui';
+    applyTheme({ seed: '#e8ad18' });
+    </script>
+
+    <template>
+      <ui-text-field label="Email" name="email" @input="onInput" />
+      <ui-button @click="onSave">Save</ui-button>
+    </template>
+    ```
+
+    Tell Vue the tag is a custom element:
+
+    ```js
+    // vite.config.js
+    vue({ template: { compilerOptions: { isCustomElement: (t) => t.startsWith('ui-') } } })
+    ```
+
+    ```ts
+    // nuxt.config.ts
+    export default defineNuxtConfig({
+      vue: { compilerOptions: { isCustomElement: (t) => t.startsWith('ui-') } },
+    });
+    ```
+
+    Call `applyTheme` from a client-only plugin, not from a server plugin.
+  </TabItem>
+
+  <TabItem label="Svelte">
+    ```svelte
+    <script>
+      import { applyTheme } from '@alacris/ui';
+      applyTheme({ seed: '#e8ad18' });
+    </script>
+
+    <ui-text-field label="Email" name="email" />
+    <ui-button on:click={onSave}>Save</ui-button>
+    ```
+
+    Svelte 5 uses `onclick` instead of `on:click`. In SvelteKit, import `@alacris/ui` from a browser-only module (`onMount`, or `export const ssr = false` on that subtree).
+  </TabItem>
+
+  <TabItem label="Angular">
+    Import once in `main.ts`, add `CUSTOM_ELEMENTS_SCHEMA`, then:
+
+    ```html
+    <ui-text-field label="Email" name="email"></ui-text-field>
+    <ui-button (click)="onSave()">Save</ui-button>
+    ```
+
+    ```ts
+    import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+
+    @Component({
+      standalone: true,
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
+      template: `<ui-button (click)="onSave()">Save</ui-button>`,
+    })
+    export class FormComponent {}
+    ```
+
+    Property bindings (`[value]="x"`) set properties; attribute bindings set attributes. Both work.
+  </TabItem>
+
+  <TabItem label="Solid">
+    Solid sets properties.
+
+    ```jsx
+    import { applyTheme } from '@alacris/ui';
+    applyTheme({ seed: '#e8ad18' });
+
+    export function Form() {
+      return (
+        <>
+          <ui-text-field label="Email" name="email" />
+          <ui-button onClick={onSave}>Save</ui-button>
+        </>
+      );
+    }
+    ```
+
+    In SolidStart, import `@alacris/ui` from a client-only island so `applyTheme` does not run on the server.
+  </TabItem>
+
+  <TabItem label="Astro">
+    ```astro
+    ---
+    ---
+    <ui-button>Hello</ui-button>
+
+    <script>
+      import { applyTheme } from '@alacris/ui';
+      applyTheme({ seed: '#e8ad18' });
+    </script>
+    ```
+
+    The `<script>` is bundled and runs in the browser. Server-rendered markup around the tag is slotted content and is visible before the script runs.
+  </TabItem>
+</Tabs>
+
+Preact matches React 19 (properties on custom elements). Lit can host the tags in its own templates — share **one** `@alacris/core` on the page; do not load a second copy from a CDN. Remix and React Router 7 follow the React 19 path inside client modules.
+
+## Backend
+
+Emit the tags from the template. Load the module once on the layout. Do not call `applyTheme` on the server — it writes a document stylesheet.
+
+<Tabs syncKey="backend">
+  <TabItem label="Rails">
+    ```ruby
+    # config/importmap.rb
+    pin "@alacris/core", to: "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.0/dist/alacris.js"
+    pin "@alacris/ui", to: "https://cdn.jsdelivr.net/npm/@alacris/ui/src/index.js"
+    ```
+
+    ```erb
+    <%= javascript_importmap_tags %>
+    <script type="module">
+      import { applyTheme } from '@alacris/ui';
+      applyTheme({ seed: '#e8ad18' });
+    </script>
+
+    <ui-button><%= t('save') %></ui-button>
+    <ui-text-field name="email" label="Email" value="<%= user.email %>"></ui-text-field>
+    ```
+
+    With jsbundling-rails or Vite Ruby, `npm install @alacris/ui` and import from the pack.
+  </TabItem>
+
+  <TabItem label="Django">
+    ```html
+    <script type="importmap">
+    {
+      "imports": {
+        "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.0/dist/alacris.js",
+        "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui/src/index.js"
+      }
+    }
+    </script>
+    <script type="module">
+      import { applyTheme } from '@alacris/ui';
+      applyTheme({ seed: '#e8ad18' });
+    </script>
+
+    <ui-text-field name="email" label="Email" value="{{ user.email }}"></ui-text-field>
+    <ui-button type="submit">{% trans "Save" %}</ui-button>
+    ```
+
+    Form-associated `ui-*` controls post like `<input>` when they have `name`. A small `Widget` subclass can render the tag from `forms.py`.
+  </TabItem>
+
+  <TabItem label="Laravel">
+    ```js
+    // resources/js/app.js
+    import { applyTheme } from '@alacris/ui';
+    applyTheme({ seed: '#e8ad18' });
+    ```
+
+    ```blade
+    @vite(['resources/js/app.js'])
+
+    <ui-button>{{ __('Save') }}</ui-button>
+    <ui-text-field name="email" label="Email" value="{{ old('email', $user->email) }}"></ui-text-field>
+    ```
+  </TabItem>
+
+  <TabItem label="Phoenix">
+    ```html
+    <script type="importmap">
+    {
+      "imports": {
+        "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.0/dist/alacris.js",
+        "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui/src/index.js"
+      }
+    }
+    </script>
+    <script type="module">
+      import { applyTheme } from '@alacris/ui';
+      applyTheme({ seed: '#e8ad18' });
+    </script>
+    ```
+
+    ```heex
+    <ui-button>Save</ui-button>
+    <ui-text-field name="email" label="Email" value={@user.email}></ui-text-field>
+    ```
+
+    LiveView: patch attributes and keep the node's identity. Avoid `innerHTML` replacements that destroy the element. For a LiveView-native runtime, see [Alacris-Go](https://github.com/bmartel/alacris-go).
+  </TabItem>
+
+  <TabItem label="Node">
+    Express, Fastify, and the rest serve the same static HTML as the [starter](https://github.com/bmartel/alacris/tree/main/starter). Template the tags with any engine:
+
+    ```html
+    <ui-button><%= label %></ui-button>
+    ```
+
+    Do not call `applyTheme` in Node.
+  </TabItem>
+
+  <TabItem label="Go / .NET / Java">
+    The pattern is the same: emit attributes from the template, load the module on the layout.
+
+    **Go** (`html/template`):
+
+    ```html
+    <ui-text-field name="email" label="Email" value="{{.Email}}"></ui-text-field>
+    ```
+
+    **ASP.NET / Razor:**
+
+    ```cshtml
+    <ui-text-field name="Email" label="Email" value="@Model.Email"></ui-text-field>
+    ```
+
+    **Spring / Thymeleaf:**
+
+    ```html
+    <ui-text-field name="email" label="Email" th:attr="value=${user.email}"></ui-text-field>
+    ```
+  </TabItem>
+
+  <TabItem label="HTMX">
+    Keep `@alacris/ui` on the layout. Swap only the body fragment. Custom elements in the swapped HTML upgrade when they connect.
+
+    ```html
+    <form hx-post="/save" hx-swap="outerHTML">
+      <ui-text-field name="email" label="Email"></ui-text-field>
+      <ui-button type="submit">Save</ui-button>
+    </form>
+    ```
+
+    Named `ui-*` controls submit like native fields. Do not reload the import map or `@alacris/core` on every request.
+  </TabItem>
+</Tabs>
+
+## Why attributes and properties both matter
+
+A component that only handles one of them works in half the ecosystem. The default's type drives coercion, so `props: { age: 0 }` turns `"36"` into `36`, and `props: { tags: [] }` parses `'["a"]'` as JSON.
+
+<Aside type="tip" title="Complex values">
+Attributes are strings. For objects, arrays and functions, prefer the property:
+
+```js
+el.rows = bigArray;
+el.onSelect = handleSelect;
+```
+</Aside>
+
+The same contract is documented for components you write yourself on [Using it from a framework](../../guides/frameworks/).
+
+## Next
+
+- [Getting started](../getting-started/) — install, theming, entry points
+- [Starter in the repo](https://github.com/bmartel/alacris/tree/main/starter) — a page you can run with `npm run demo`
+- [Kitchen sink](https://github.com/bmartel/alacris/tree/main/ui) — every component, live theme playground

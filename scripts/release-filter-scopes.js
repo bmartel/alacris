@@ -5,8 +5,9 @@
 // bump `@alacris/ui`. Each pipeline loads this plugin first and keeps only the
 // commits that belong to it.
 //
-//   { exclude: ['ui', 'starter'] }   — library release
-//   { include: ['ui', 'starter'] }   — UI release (`starter` is the legacy scope)
+//   { exclude: ['ui', 'starter'] }   — library release (`starter` is a usage
+//                                       guide and must not cut @alacris/core)
+//   { include: ['ui'] }              — UI release from ui/
 
 const SCOPE = /^[a-z]+(?:\(([^)]+)\))?/i;
 

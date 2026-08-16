@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alacris UI</title>
+  <!--
+    Inside this repo the import map points at the local Alacris build
+    (`npm run demo` from the repo root serves this page at
+    http://localhost:5173/ui/).
+
+    In your own project, `npm install @alacris/ui` and import from
+    '@alacris/ui', or point an import map at pinned CDN builds of both
+    `@alacris/core` and `@alacris/ui`. See the package README.
+  -->
+  <script type="importmap">
+  {
+    "imports": {
+      "@alacris/core": "../dist/alacris.js",
+      "@alacris/core/store": "../dist/store.js",
+      "@alacris/core/context": "../dist/context.js"
+    }
+  }
+  </script>
+  <style>
+    /* Document chrome only — the demo app and every component theme themselves. */
+    html { height: 100%; scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--ui-color-surface);
+      color: var(--ui-color-on-surface);
+      font: var(--ui-type-body-md);
+      letter-spacing: var(--ui-type-body-md-tracking);
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="./demo/main.js"></script>
+</body>
+</html>

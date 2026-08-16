@@ -64,6 +64,7 @@ export default defineConfig({
           label: 'Alacris UI',
           items: [
             { label: 'Getting started', slug: 'ui/getting-started' },
+            { label: 'Using it from a framework', slug: 'ui/frameworks' },
           ],
         },
         {

@@ -14,7 +14,7 @@
 //
 // SIZE.md is the one place a size is measured; the two package.json files are
 // the places versions are set (`@alacris/core` at the root, `@alacris/ui` in
-// starter/). Everything below is derived from those.
+// ui/). Everything below is derived from those.
 //
 // Run by hand with `npm run sync-docs`, from semantic-release's prepare step so
 // the release commit carries the update, and with `--check` in CI so a pull
@@ -44,7 +44,7 @@ const SCANNED = new Set(['.md', '.mdx', '.html', '.txt', '.astro', '.ts', '.js']
 // CHANGELOG.md is a record of what *was* true at each release; rewriting a
 // version or a size into it would be falsifying history. SIZE.md belongs to
 // scripts/size.js, which measures rather than copies.
-const OWNED_ELSEWHERE = new Set(['CHANGELOG.md', 'starter/CHANGELOG.md', 'SIZE.md']);
+const OWNED_ELSEWHERE = new Set(['CHANGELOG.md', 'ui/CHANGELOG.md', 'SIZE.md']);
 
 // A file that documents *how* any of this works needs to name a version or a
 // size without having it rewritten out from under the sentence. It says so.
@@ -59,7 +59,7 @@ const parts = version.split('.');
 /** Rewrite a pin to the current version, keeping however precise it was. */
 const reshape = (pin) => parts.slice(0, pin.split('.').length).join('.');
 
-const uiVersion = JSON.parse(readFileSync(join(root, 'starter/package.json'), 'utf8')).version;
+const uiVersion = JSON.parse(readFileSync(join(root, 'ui/package.json'), 'utf8')).version;
 const uiParts = uiVersion.split('.');
 const reshapeUi = (pin) => uiParts.slice(0, pin.split('.').length).join('.');
 

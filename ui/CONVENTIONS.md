@@ -216,7 +216,7 @@ Each component family has:
   from `demo/helpers.js` (they wrap examples in `<ui-surface>` + `<ui-stack>`).
 - `test/<family>.test.js` — node smoke tests on the repo's happy-dom setup:
   each element defines, renders, responds to a prop write and an interaction.
-  Import `./helpers.js` (starter test helpers) for `mount()`. Note happy-dom
+  Import `./helpers.js` (UI test helpers) for `mount()`. Note happy-dom
   has no layout — do not assert geometry, and dispatch events with
   `{ bubbles: true }`.
 

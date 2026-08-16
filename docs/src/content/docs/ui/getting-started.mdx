@@ -104,7 +104,7 @@ Pin both packages in production (`@alacris/core@0.11.0`, `@alacris/ui@0.1`). Nev
 
 ## In a framework
 
-Register the elements once at the app entry, then render tags. Props are both attributes and properties, so React 19, Vue, Svelte, Angular, and server-rendered HTML all work without wrappers. Details and older-React notes are on [Using it from a framework](../../guides/frameworks/).
+Register the elements once at the app entry, then render tags. Props are both attributes and properties, so React 19, Vue, Svelte, Angular, and server-rendered HTML all work without wrappers. The full recipes — Next, Nuxt, SvelteKit, Rails, Django, Laravel, Phoenix, HTMX — are on [Using it from a framework](../frameworks/).
 
 <Tabs syncKey="framework">
   <TabItem label="HTML">
@@ -260,7 +260,7 @@ html`${presence(open, () => html`<div class="sheet">…</div>`, {
 
 Component modules have side effects (they call `define()`). Theme, motion and token modules do not, so a bundler can tree-shake them.
 
-## Kitchen sink
+## Kitchen sink and starter
 
 From a clone of the [Alacris repo](https://github.com/bmartel/alacris):
 
@@ -269,33 +269,39 @@ npm install
 npm run demo
 ```
 
-Open `http://localhost:5173/starter/`. That page is every component plus a live theme playground, composed from the same tags you import from npm.
+- `http://localhost:5173/ui/` — every component plus a live theme playground, composed from the same tags you import from npm.
+- `http://localhost:5173/starter/` — a small app that **uses** those tags. Copy that folder as an install guide; it is not the published package.
 
 <CardGrid>
   <LinkCard
+    title="Using it from a framework"
+    href="./frameworks/"
+    description="React, Vue, Svelte, Angular, Next, Rails, Django, Laravel, Phoenix, HTMX, and the rest."
+  />
+  <LinkCard
     title="Component catalog"
-    href="https://github.com/bmartel/alacris/blob/main/starter/docs/components.md"
+    href="https://github.com/bmartel/alacris/blob/main/ui/docs/components.md"
     description="Props, events, slots, parts, and theme vars for every tag."
   />
   <LinkCard
     title="Theming"
-    href="https://github.com/bmartel/alacris/blob/main/starter/docs/theming.md"
+    href="https://github.com/bmartel/alacris/blob/main/ui/docs/theming.md"
     description="Token tiers, createTheme, and how to make this not-Material."
   />
   <LinkCard
     title="Motion"
-    href="https://github.com/bmartel/alacris/blob/main/starter/docs/motion.md"
+    href="https://github.com/bmartel/alacris/blob/main/ui/docs/motion.md"
     description="animate, presence, FLIP, ripple, and reduced-motion."
   />
   <LinkCard
     title="Conventions"
-    href="https://github.com/bmartel/alacris/blob/main/starter/CONVENTIONS.md"
+    href="https://github.com/bmartel/alacris/blob/main/ui/CONVENTIONS.md"
     description="The rules to follow before adding a ui-* component."
   />
 </CardGrid>
 
 ## Next
 
+- [Using it from a framework](../frameworks/) — attributes vs properties, Next, Nuxt, Rails, Django, HTMX
 - [Your first component](../../start/first-component/) — the Alacris model, if you are writing elements of your own
 - [Theming for consumers](../../guides/theming/) — `vars()`, `::part`, and `adoptGlobal`
-- [Using it from a framework](../../guides/frameworks/) — attributes vs properties, older React, SSR

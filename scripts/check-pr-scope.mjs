@@ -18,7 +18,7 @@ const files = execFileSync('git', ['diff', '--name-only', `${base}...HEAD`], {
   .filter(Boolean);
 
 const librarySrc = files.filter((f) => f.startsWith('src/') || f.startsWith('types/'));
-const uiSrc = files.filter((f) => f.startsWith('starter/src/') || f.startsWith('starter/types/'));
+const uiSrc = files.filter((f) => f.startsWith('ui/src/') || f.startsWith('ui/types/'));
 
 if (librarySrc.length && uiSrc.length) {
   console.error('This pull request changes Alacris library source and Alacris UI source together.');

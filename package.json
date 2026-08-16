@@ -39,7 +39,7 @@
     "build": "node scripts/build.js",
     "test": "node --import ./test/setup.js --test test/*.test.js",
     "pretest:ui": "node -e \"if(!require('fs').existsSync('dist/alacris.js'))require('child_process').execSync('npm run build',{stdio:'inherit'})\"",
-    "test:ui": "npm test --prefix starter",
+    "test:ui": "npm test --prefix ui",
     "typecheck": "tsc -p tsconfig.json",
     "size": "node scripts/size.js",
     "sync-docs": "node scripts/sync-docs.mjs",
