@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.2.1](https://github.com/bmartel/alacris/compare/ui-v0.2.0...ui-v0.2.1) (2026-08-18)
+
+### Bug Fixes
+
+* **ui:** resolve Material icon names and bind slider values from templates ([78e5e93](https://github.com/bmartel/alacris/commit/78e5e936c4d3a9ff82f2b4d2536a8d4e7d47d8c3))
+
 ## [0.2.0](https://github.com/bmartel/alacris/compare/ui-v0.1.1...ui-v0.2.0) (2026-08-16)
 
 ### Features
