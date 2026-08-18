@@ -166,7 +166,8 @@ and typechecks the exact commit, then runs semantic-release, which:
 1. reads the commits since the last `v*` tag and decides the next version,
 2. publishes to npm,
 3. writes `CHANGELOG.md` and bumps `package.json`,
-4. runs `npm run sync-docs` so the docs quote the version and sizes being cut,
+4. runs `npm run sync-docs` so CDN URLs, version pins, and size figures match
+   the release being cut,
 5. commits those back to `main` as `chore(release): x.y.z [skip ci]`,
 6. tags the commit and opens a GitHub release with the notes.
 
@@ -184,7 +185,9 @@ never bundle a copy of it. It has its own version, changelog
 not publish.
 
 A commit scoped `ui` publishes `@alacris/ui` and does
-**not** publish `@alacris/core`. A commit scoped anything else publishes `@alacris/core`
+**not** publish `@alacris/core`. The UI prepare step still runs `sync-docs` (with
+`--ui` set to the version being cut) so CDN pins in the docs move with the UI
+package. A commit scoped anything else publishes `@alacris/core`
 and does not publish `@alacris/ui`. CI fails a pull request that changes
 `src/`/`types/` and `ui/src/`/`ui/types/` together — split those.
 
@@ -208,13 +211,13 @@ package starts at 0.1.0 rather than 1.0.0.
 `SIZE.md` is the only place a size is measured. Everything the docs say about
 either is derived from those files by `scripts/sync-docs.mjs`.
 
-**Versions.** Most examples on the site are deliberately unpinned —
-`unpkg.com/@alacris/core` always resolves to the newest release. The ones that *are*
-pinned exist to show how pinning works, so the number in them is illustrative
-and should be whatever shipped last. The script rewrites every `@alacris/core@x.y.z`
-in the tracked prose. The shape of a pin is its intent, so it survives:
+**Versions.** CDN examples always pin an exact `x.y.z`. An unpinned URL tracks
+latest and can break a page that was written against yesterday's API; a missing
+pin is a bug, and the script inserts the current release. CDN pins are always
+rewritten in full. Prose `@alacris/core@x.y.z` pins keep their shape:
 `@alacris/core@0.2` stays a minor pin and only becomes `@alacris/core@0.3`, while
-`@alacris/core@0.2.1` is rewritten in full.
+`@alacris/core@0.2.1` is rewritten in full. The same rewrite applies to
+`@alacris/ui`.
 
 **Sizes.** The figures in the size tables and in the README's size badge are
 rewritten from `SIZE.md`. The tables are anchored on themselves rather than on

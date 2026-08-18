@@ -95,8 +95,8 @@ anything you merge into state.
 - **No install scripts.** The package has no `postinstall` or lifecycle hooks.
 - `dist/` is built in CI from the sources in the same package — `src/` ships
   alongside it, so you can diff what you serve against what you read.
-- Pin CDN URLs to an exact version in production
-  (`https://cdn.jsdelivr.net/npm/@alacris/core@0.11.0/dist/alacris.js`), or use
+- CDN URLs pin an exact version
+  (`https://cdn.jsdelivr.net/npm/@alacris/core@0.11.0/dist/alacris.js`). Use
   [subresource-integrity-capable tooling](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity)
   if your pipeline supports it.
 

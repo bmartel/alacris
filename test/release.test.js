@@ -142,10 +142,29 @@ test('the release config still declares the plugins the workflow relies on', () 
     '@semantic-release/release-notes-generator',
     '@semantic-release/changelog',
     '@semantic-release/npm',
+    '@semantic-release/exec',
     '@semantic-release/github',
     '@semantic-release/git',
   ]) {
     assert.ok(names.includes(required), `${required} must stay in the release pipeline`);
+  }
+  assert.match(
+    named('@semantic-release/exec').prepareCmd,
+    /sync-docs\.mjs \$\{nextRelease\.version\}/
+  );
+  for (const file of [
+    'README.md',
+    'docs/public/AGENTS.md',
+    'docs/src/content/docs/**/*.mdx',
+    'docs/src/lib/stackblitz.ts',
+    'starter/README.md',
+    'ui/README.md',
+    'demo/index.html',
+  ]) {
+    assert.ok(
+      named('@semantic-release/git').assets.includes(file),
+      `release commit must pick up ${file} after sync-docs rewrites it`
+    );
   }
   assert.deepEqual(config.branches, ['main']);
 

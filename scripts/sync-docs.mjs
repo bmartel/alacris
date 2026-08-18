@@ -2,10 +2,11 @@
 //
 // Two kinds of fact go stale on their own, and both had:
 //
-// - **Pinned versions.** Most examples are deliberately unpinned —
-//   `unpkg.com/@alacris/core` always resolves to the newest release. The pinned ones
-//   exist to *show* how to pin, so the number in them is illustrative. The
-//   README pinned 0.1.0 and the docs pinned 0.2.1 while npm served 0.2.2.
+// - **Pinned versions.** CDN examples are always pinned to an exact version —
+//   an unpinned `unpkg.com/@alacris/core` tracks latest and can break a page
+//   that was written against yesterday's API. The number in every pin is the
+//   current release, not an illustration. A missing pin is a bug; this script
+//   inserts one. The README once pinned 0.1.0 while npm served 0.2.2.
 //
 // - **Size figures.** `SIZE.md` is generated from the built bundles, but the
 //   same numbers were retyped by hand into four tables, a shields.io badge and
@@ -28,8 +29,9 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 
 const args = process.argv.slice(2);
 const check = args.includes('--check');
+const uiFlag = args.indexOf('--ui');
 const version =
-  args.find((a) => !a.startsWith('-')) ??
+  args.find((a, i) => !a.startsWith('-') && args[i - 1] !== '--ui') ??
   JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
 
 if (!/^\d+\.\d+\.\d+/.test(version)) {
@@ -55,13 +57,26 @@ const IGNORE = 'sync-docs:ignore';
 const PIN = /@alacris\/core@(\d+(?:\.\d+){0,2})\b/g;
 const UI_PIN = /@alacris\/ui@(\d+(?:\.\d+){0,2})\b/g;
 
+// Copy-paste CDN URLs. An unpinned host tracks latest and can break a page;
+// a minor pin (`@0.11`) still floats. Examples always use the exact x.y.z.
+const CDN =
+  /https:\/\/(?:unpkg\.com|cdn\.jsdelivr\.net\/npm|esm\.sh)\/@alacris\/(core|ui)(?:@(\d+(?:\.\d+){0,2}))?(?=[/"'`\s<>]|$)/g;
+
 const parts = version.split('.');
 /** Rewrite a pin to the current version, keeping however precise it was. */
 const reshape = (pin) => parts.slice(0, pin.split('.').length).join('.');
 
-const uiVersion = JSON.parse(readFileSync(join(root, 'ui/package.json'), 'utf8')).version;
+const uiVersion =
+  uiFlag >= 0
+    ? args[uiFlag + 1]
+    : JSON.parse(readFileSync(join(root, 'ui/package.json'), 'utf8')).version;
 const uiParts = uiVersion.split('.');
 const reshapeUi = (pin) => uiParts.slice(0, pin.split('.').length).join('.');
+
+if (!/^\d+\.\d+\.\d+/.test(uiVersion)) {
+  console.error(`  sync-docs: ui '${uiVersion}' is not a version.`);
+  process.exit(1);
+}
 
 function syncPins(text, note) {
   text = text.replace(PIN, (match, pin) => {
@@ -74,6 +89,23 @@ function syncPins(text, note) {
     if (next !== pin) note(`ui ${pin} -> ${next}`);
     return `@alacris/ui@${next}`;
   });
+}
+
+/** CDN URLs always pin the full current version, including ones that had none. */
+function syncCdn(text, note) {
+  return text.replace(CDN, (match, pkg, pin) => {
+    const next = pkg === 'ui' ? uiVersion : version;
+    if (pin === next) return match;
+    note(`${pkg} cdn ${pin ?? 'unpinned'} -> ${next}`);
+    return pin ? match.replace(/@\d+(?:\.\d+){0,2}$/, `@${next}`) : `${match}@${next}`;
+  });
+}
+
+/** Leftover unpinned CDN URLs — a host this script does not rewrite, or a regex miss. */
+function unpinnedCdn(text) {
+  return [...text.matchAll(new RegExp(CDN.source, 'g'))]
+    .filter((m) => !m[2])
+    .map((m) => m[0]);
 }
 
 // --------------------------------------------------------------------- sizes
@@ -238,6 +270,7 @@ const files = execFileSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'ut
 
 const stale = [];
 const strays = [];
+const unpinned = [];
 
 for (const file of files) {
   const path = join(root, file);
@@ -248,7 +281,8 @@ for (const file of files) {
   const changes = new Set();
   const note = (what) => changes.add(what);
 
-  let after = syncPins(before, note);
+  let after = syncCdn(before, note);
+  after = syncPins(after, note);
   after = syncTables(after, note);
   after = syncBadge(after, note);
 
@@ -259,6 +293,9 @@ for (const file of files) {
 
   const loose = strayFigures(after);
   if (loose.length) strays.push({ file, loose: [...new Set(loose)] });
+
+  const floating = unpinnedCdn(after);
+  if (floating.length) unpinned.push({ file, urls: [...new Set(floating)] });
 }
 
 if (stale.length) {
@@ -277,9 +314,16 @@ if (strays.length) {
   }
 }
 
-if (check && (stale.length || strays.length)) {
+if (unpinned.length) {
+  console.error('\n  These CDN URLs are unpinned, so a later publish can break the page:');
+  for (const { file, urls } of unpinned) {
+    console.error(`    ${file}\n      ${urls.join('\n      ')}`);
+  }
+}
+
+if (check && (stale.length || strays.length || unpinned.length)) {
   if (stale.length) console.error('\n  Run `npm run sync-docs` and commit the result.');
   process.exit(1);
 }
 
-if (strays.length) process.exit(1);
+if (strays.length || unpinned.length) process.exit(1);

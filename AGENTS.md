@@ -70,7 +70,7 @@ docs/public/ui/      GENERATED — kitchen-sink catalog copied from ui/
 | `npm run build` | writes `dist/`, syncs `docs/public/lib/`, regenerates `SIZE.md` |
 | `npm run typecheck` | compiles the type-level tests against the shipped `.d.ts` |
 | `npm run size` | re-measures `dist/` without rebuilding |
-| `npm run sync-docs` | rewrites pinned versions and quoted sizes in the tracked prose |
+| `npm run sync-docs` | rewrites CDN pins, prose versions, and quoted sizes in the tracked prose |
 | `npm run demo` | serves the demo, the browser tests, the benchmark and Alacris UI on :5173 |
 | `npm run bench:bundle` | production React / Vue / Solid / Svelte / Lit / Stencil into `bench/vendor/` |
 | `npm run test:ui` | Alacris UI smoke tests in `ui/` |
@@ -200,8 +200,11 @@ not that what is said about it is true:
 `SIZE.md` is the only place a size is measured. Everything else is derived by
 `scripts/sync-docs.mjs`, which scans every tracked text file:
 
-- `@alacris/core@0.2` stays a minor pin, `@alacris/core@0.2.1` is rewritten in full — the
-  shape of a pin is its intent, so it survives.
+- CDN URLs always pin the full current `x.y.z`, including ones that had no
+  version; an unpinned URL is a bug and the script inserts one.
+- `@alacris/core@0.2` in prose stays a minor pin, `@alacris/core@0.2.1` is rewritten
+  in full — the shape of a pin is its intent, so it survives. The same rewrite
+  applies to `@alacris/ui`.
 - Size tables are anchored on themselves: the header names the metrics, the first
   cell names the bundle.
 - A figure loose in a sentence cannot be placed automatically, so it is *checked*

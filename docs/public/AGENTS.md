@@ -32,17 +32,19 @@ npm path — code stays portable between the two setups:
 <script type="importmap">
 {
   "imports": {
-    "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11/dist/alacris.js",
-    "@alacris/core/store": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11/dist/store.js",
-    "@alacris/core/context": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11/dist/context.js"
+    "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.0/dist/alacris.js",
+    "@alacris/core/store": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.0/dist/store.js",
+    "@alacris/core/context": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.0/dist/context.js",
+    "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.2.0/src/index.js",
+    "@alacris/ui/theme": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.2.0/src/theme/index.js"
   }
 }
 </script>
 <script type="module" src="./src/main.js"></script>
 ```
 
-Pin the version in production. Never mix pinned and unpinned URLs in one page —
-two copies of the module means two reactive graphs that cannot see each other.
+The URLs pin the current release. Never mix two versions of the module on one
+page — two copies means two reactive graphs that cannot see each other.
 
 ### With a build system
 

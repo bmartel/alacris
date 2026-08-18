@@ -16,7 +16,7 @@ install:
 
 ```html
 <script type="module">
-  import { define, html, signal } from 'https://unpkg.com/@alacris/core';
+  import { define, html, signal } from 'https://unpkg.com/@alacris/core@0.11.0';
 
   define('hello-world', () => html`<p>hello</p>`);
 </script>
@@ -24,26 +24,23 @@ install:
 <hello-world></hello-world>
 ```
 
-<Aside type="tip" title="Pin the version in production">
-`https://unpkg.com/@alacris/core` always resolves to the newest release. For anything
-you ship, pin it so an upgrade cannot surprise you:
-
-```js
-import { define } from 'https://unpkg.com/@alacris/core@0.11.0/dist/alacris.js';
-```
+<Aside type="caution" title="Keep the version in the URL">
+These URLs pin `@alacris/core@0.11.0`. Dropping the version tracks whatever npm
+published last, and a later release can break the page. Bump the pin when you
+upgrade.
 </Aside>
 
 <Tabs>
   <TabItem label="unpkg">
     ```js
-    import { define, html, signal } from 'https://unpkg.com/@alacris/core';
-    import { store } from 'https://unpkg.com/@alacris/core/dist/store.js';
-    import { createContext } from 'https://unpkg.com/@alacris/core/dist/context.js';
+    import { define, html, signal } from 'https://unpkg.com/@alacris/core@0.11.0';
+    import { store } from 'https://unpkg.com/@alacris/core@0.11.0/dist/store.js';
+    import { createContext } from 'https://unpkg.com/@alacris/core@0.11.0/dist/context.js';
     ```
   </TabItem>
   <TabItem label="jsDelivr">
     ```js
-    import { define, html, signal } from 'https://cdn.jsdelivr.net/npm/@alacris/core/+esm';
+    import { define, html, signal } from 'https://cdn.jsdelivr.net/npm/@alacris/core@0.11.0/+esm';
     ```
   </TabItem>
   <TabItem label="import map">

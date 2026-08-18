@@ -63,8 +63,8 @@ The published package is plain ESM. An import map lets you write the same bare s
     <script type="importmap">
     {
       "imports": {
-        "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11/dist/alacris.js",
-        "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui/src/index.js"
+        "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.0/dist/alacris.js",
+        "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.2.0/src/index.js"
       }
     }
     </script>
@@ -79,7 +79,8 @@ The published package is plain ESM. An import map lets you write the same bare s
 </html>
 ```
 
-Pin both packages in production (`@alacris/core@0.11.0`, `@alacris/ui@0.2`). Never mix pinned and unpinned URLs in one page.
+The URLs pin `@alacris/core@0.11.0` and `@alacris/ui@0.2.0`. Never mix two versions of
+`@alacris/core` on one page — two copies means two reactive graphs.
 
 <Tabs>
   <TabItem label="jsDelivr">
@@ -88,7 +89,7 @@ Pin both packages in production (`@alacris/core@0.11.0`, `@alacris/ui@0.2`). Nev
     {
       "imports": {
         "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.0/dist/alacris.js",
-        "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui/src/index.js"
+        "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.2.0/src/index.js"
       }
     }
     </script>
@@ -100,7 +101,7 @@ Pin both packages in production (`@alacris/core@0.11.0`, `@alacris/ui@0.2`). Nev
     {
       "imports": {
         "@alacris/core": "https://unpkg.com/@alacris/core@0.11.0/dist/alacris.js",
-        "@alacris/ui": "https://unpkg.com/@alacris/ui/src/index.js"
+        "@alacris/ui": "https://unpkg.com/@alacris/ui@0.2.0/src/index.js"
       }
     }
     </script>
@@ -193,7 +194,7 @@ Register the elements once at the app entry, then render tags. Props are both at
     {
       "imports": {
         "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.0/dist/alacris.js",
-        "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui/src/index.js"
+        "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.2.0/src/index.js"
       }
     }
     </script>

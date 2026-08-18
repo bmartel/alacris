@@ -46,10 +46,10 @@ The published package is plain ESM. Point an import map at a pinned CDN build of
 <script type="importmap">
 {
   "imports": {
-    "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11/dist/alacris.js",
-    "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui/src/index.js",
-    "@alacris/ui/theme": "https://cdn.jsdelivr.net/npm/@alacris/ui/src/theme/index.js",
-    "@alacris/ui/components/": "https://cdn.jsdelivr.net/npm/@alacris/ui/src/components/"
+    "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.0/dist/alacris.js",
+    "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.2.0/src/index.js",
+    "@alacris/ui/theme": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.2.0/src/theme/index.js",
+    "@alacris/ui/components/": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.2.0/src/components/"
   }
 }
 </script>
@@ -61,7 +61,7 @@ The published package is plain ESM. Point an import map at a pinned CDN build of
 <ui-button>Hello</ui-button>
 ```
 
-Pin both packages in production.
+Never mix two versions of `@alacris/core` on one page — two copies means two reactive graphs.
 
 ## Theming
 

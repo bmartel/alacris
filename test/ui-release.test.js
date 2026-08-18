@@ -30,7 +30,18 @@ test('UI releases are tagged and named apart from @alacris/core', () => {
   assert.equal(ui.tagFormat, 'ui-v${version}');
   assert.deepEqual(ui.branches, ['main']);
   assert.equal(named('@semantic-release/github').releaseNameTemplate, '@alacris/ui ${nextRelease.version}');
-  assert.deepEqual(named('@semantic-release/git').assets, ['package.json', 'CHANGELOG.md']);
+  assert.deepEqual(named('@semantic-release/git').assets, [
+    'package.json',
+    'CHANGELOG.md',
+    'README.md',
+    '../README.md',
+    '../starter/README.md',
+    '../docs/public/AGENTS.md',
+    '../docs/src/content/docs/**/*.md',
+    '../docs/src/content/docs/**/*.mdx',
+    '../docs/src/lib/stackblitz.ts',
+    '../demo/index.html',
+  ]);
   assert.match(named('@semantic-release/git').message, /chore\(ui-release\)/);
 });
 
@@ -78,6 +89,12 @@ test('the UI changelog title matches ui/CHANGELOG.md', () => {
 test('the UI npm plugin publishes the ui package, not the library', () => {
   const names = ui.plugins.map((p) => (Array.isArray(p) ? p[0] : p));
   assert.ok(names.includes('@semantic-release/npm'));
+  assert.ok(names.includes('@semantic-release/exec'));
+  assert.match(
+    named('@semantic-release/exec').prepareCmd,
+    /sync-docs\.mjs --ui \$\{nextRelease\.version\}/,
+    'UI prepare must pass --ui so a UI version cannot retarget @alacris/core'
+  );
   const npm = named('@semantic-release/npm');
   assert.equal(npm.pkgRoot, undefined);
 });

@@ -64,7 +64,7 @@
     [
       "@semantic-release/exec",
       {
-        "//": "Repoint the pinned versions and the quoted size figures in the README and the docs at the release being cut, before the commit below picks the files up.",
+        "//": "Repoint CDN pins, prose versions, and quoted size figures at the release being cut, before the commit below picks the files up. Missing pins are inserted; CDN URLs always get the full x.y.z.",
         "prepareCmd": "node scripts/sync-docs.mjs ${nextRelease.version}"
       }
     ],
@@ -86,7 +86,11 @@
           "README.md",
           "docs/public/AGENTS.md",
           "docs/src/content/docs/**/*.md",
-          "docs/src/content/docs/**/*.mdx"
+          "docs/src/content/docs/**/*.mdx",
+          "docs/src/lib/stackblitz.ts",
+          "starter/README.md",
+          "ui/README.md",
+          "demo/index.html"
         ],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
