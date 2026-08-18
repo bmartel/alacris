@@ -85,6 +85,12 @@ Docs:
 https://bmartel.github.io/alacris/ui/getting-started/
 https://bmartel.github.io/alacris/ui/frameworks/
 
+Icon names are kebab-case (`arrow-forward`); underscores (`arrow_forward`)
+resolve to the same glyph. `iconNames()` lists the registry, `registerIcons()`
+adds more, and an unknown name warns instead of rendering a blank button.
+Controls report through `e.detail.value` — for a slider that is a number, and
+`value=${signal}` on the tag is a live property binding like any other control.
+
 ## Project organization
 
 ```

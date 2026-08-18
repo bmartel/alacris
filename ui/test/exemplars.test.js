@@ -8,7 +8,9 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { themeVars as iconThemeVars } from '../src/components/ui-icon.js';
+import { iconPath, iconNames } from '../src/util/icons.js';
 import '../src/components/ui-button.js';
+import '../src/components/ui-icon.js';
 import '../src/components/ui-icon-button.js';
 import '../src/components/ui-card.js';
 import '../src/components/ui-text.js';
@@ -81,6 +83,41 @@ test('ui-icon-button toggles and emits change', async () => {
   assert.equal(detail.selected, true);
   assert.equal(btn.getAttribute('aria-pressed'), 'true');
   unmountAll();
+});
+
+test('ui-icon resolves underscore names and has directional arrows', async () => {
+  assert.equal(iconPath('arrow_forward'), iconPath('arrow-forward'));
+  assert.ok(iconPath('arrow-back'));
+  assert.ok(iconPath('arrow-downward'));
+  assert.ok(iconPath('chevron-left'));
+  assert.ok(iconNames().includes('arrow-forward'));
+  const el = mount('<ui-icon name="arrow_forward"></ui-icon>');
+  await tick();
+  const svg = el.shadowRoot.querySelector('svg');
+  assert.ok(svg, 'renders an svg for an underscore name');
+  assert.notEqual(svg.getAttribute('data-icon'), 'unknown');
+  unmountAll();
+});
+
+test('ui-icon warns once and shows a placeholder for an unknown name', async () => {
+  const warnings = [];
+  const orig = console.warn;
+  console.warn = (...a) => warnings.push(a.join(' '));
+  try {
+    const el = mount('<ui-icon name="definitely-not-an-icon"></ui-icon>');
+    await tick();
+    const svg = el.shadowRoot.querySelector('svg');
+    assert.ok(svg, 'unknown name still renders a glyph');
+    assert.equal(svg.getAttribute('data-icon'), 'unknown');
+    assert.match(warnings.join('\n'), /definitely-not-an-icon/);
+    warnings.length = 0;
+    mount('<ui-icon name="definitely-not-an-icon"></ui-icon>');
+    await tick();
+    assert.equal(warnings.length, 0, 'the same unknown name warns only once');
+  } finally {
+    console.warn = orig;
+    unmountAll();
+  }
 });
 
 test('ui-switch flips, emits, and participates in forms', async () => {

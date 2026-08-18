@@ -147,8 +147,11 @@ export function formBind(
   }
 ): void;
 
+/** Register SVG path data. Names are stored kebab-case; underscores are equivalent. */
 export function registerIcons(icons: Record<string, string>): void;
+/** Path data for a name, or undefined. Underscores and hyphens are equivalent. */
 export function iconPath(name: string): string | undefined;
+/** Registered names (built-ins included, kebab-case). */
 export function iconNames(): string[];
 
 export function processTable(opts: Record<string, unknown>): Record<string, unknown>;

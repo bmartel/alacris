@@ -646,9 +646,14 @@ Source: [`src/components/ui-icon-button.js`](../src/components/ui-icon-button.js
 
 an icon from the registry, or any slotted SVG.
 
+Names are kebab-case (`arrow-forward`). Underscores are accepted
+(`arrow_forward`). `iconNames()` lists the built-in set; apps add more
+with `registerIcons({ name: 'M…' })`. An unknown name logs a warning
+once and renders a placeholder instead of an empty hole.
+
 | | |
 | --- | --- |
-| `@prop` | {string} name=''  — registry name (see util/icons.js); empty renders the slot |
+| `@prop` | {string} name=''  — registry name; empty renders the slot |
 | `@prop` | {string} label='' — accessible name; empty marks the icon decorative |
 | `@prop` | {string} size=''  — CSS length; overrides --ui-icon-size for this element |
 | `@slot` | (default) — a custom &lt;svg&gt; when no name is given |
@@ -1117,6 +1122,15 @@ Source: [`src/components/ui-skeleton.js`](../src/components/ui-skeleton.js)
 
 a Material slider on native &lt;input type="range"&gt;s for
 keyboard and screen-reader behavior.
+
+  &lt;ui-slider label="Volume" value=${volume}
+             @input=${(e) =&gt; volume.set(e.detail.value)}&gt;&lt;/ui-slider&gt;
+
+Bind `value` (or `.value`) to a signal like any other control. `input` /
+`change` report a number in `detail.value` (or `detail.start` / `detail.end`
+when `range`). The host `.value` is a string, matching a native range
+input, so composed-path helpers that look for `typeof node.value ===
+'string'` work the same as they do for text fields.
 
 The active track portion is painted with `--ui-slider-fill` (or start/end
 when `range`) bound from the template into a gradient; the thumb's

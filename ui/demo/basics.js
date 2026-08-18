@@ -120,7 +120,9 @@ export const section = () => html`
 
   ${stackBlock('Icons', html`
     <ui-text variant="body-sm" color="onSurfaceVariant">
-      Material filled 24×24. Add more with <code>registerIcons()</code>.
+      Material filled 24×24, kebab-case names (<code>arrow-forward</code>;
+      underscores work too). <code>iconNames()</code> lists these; add more with
+      <code>registerIcons()</code>.
     </ui-text>
     <div class="icon-grid">
       ${iconNames().map((n) => html`

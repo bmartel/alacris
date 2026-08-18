@@ -3,6 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mount, unmountAll, tick, fire } from './helpers.js';
+import { define, html, signal } from '@alacris/core';
 
 import '../src/components/ui-button.js';
 import '../src/components/ui-fab.js';
@@ -252,6 +253,8 @@ test('ui-slider wraps a native range input and emits input/change', async () => 
 
   el.value = 55;
   assert.equal(String(input.value), '55', 'value prop is live');
+  assert.equal(el.value, '55');
+  assert.equal(el.getAttribute('value'), '55', 'value is reflected');
 
   const events = [];
   el.addEventListener('input', (e) => events.push(['input', e.detail.value]));
@@ -259,11 +262,39 @@ test('ui-slider wraps a native range input and emits input/change', async () => 
   input.value = '42';
   fire(input, 'input');
   fire(input, 'change');
-  assert.equal(el.value, 42);
+  assert.equal(el.value, '42');
+  assert.equal(typeof el.value, 'string');
   assert.deepEqual(events, [['input', 42], ['change', 42]]);
   const hidden = el.querySelector('input[type=hidden]');
   assert.ok(hidden, 'named slider mirrors a hidden input');
   assert.equal(hidden.value, '42');
+  unmountAll();
+});
+
+test('ui-slider value and @input bind from a parent template', async () => {
+  const heard = [];
+  if (!customElements.get('x-slider-host')) {
+    define('x-slider-host', {
+      setup() {
+        const scale = signal(1.7);
+        return html`<ui-slider min="0.5" max="2.5" step="0.005" label="Card size"
+          .value=${scale}
+          @input=${(e) => { heard.push(e.detail.value); scale.set(e.detail.value); }}></ui-slider>`;
+      },
+    });
+  }
+  const el = mount('<x-slider-host></x-slider-host>');
+  await tick();
+  const slider = el.shadowRoot.querySelector('ui-slider');
+  const input = slider.shadowRoot.querySelector('input');
+  assert.equal(slider.value, '1.7');
+  assert.equal(String(input.value), '1.7');
+  assert.equal(typeof slider.value, 'string');
+
+  input.value = '2.1';
+  fire(input, 'input');
+  assert.equal(slider.value, '2.1');
+  assert.deepEqual(heard, [2.1]);
   unmountAll();
 });
 
