@@ -50,7 +50,9 @@ jobs:
       - run: npm test
       - run: npm run typecheck
 
+      # Wrapped so that losing a push race to the UI release is a retry rather
+      # than a failed release. See .github/release-retry.sh.
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: bash .github/release-retry.sh npx semantic-release
