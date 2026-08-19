@@ -61,7 +61,12 @@ test('ui-select opens on click, selects an option, emits change, and closes', as
   fire(field, 'click');
   const panel = el.shadowRoot.querySelector('.panel');
   assert.ok(panel, 'panel opens synchronously');
-  assert.equal(panel.getAttribute('role'), 'listbox');
+  // The listbox is the options container rather than the panel itself: a
+  // panel that can also hold a filter field must not claim a role whose only
+  // permitted children are options.
+  const listbox = el.shadowRoot.querySelector('[role="listbox"]');
+  assert.ok(listbox, 'the panel contains a listbox');
+  assert.equal(listbox.id, field.getAttribute('aria-controls'));
   assert.equal(field.getAttribute('aria-expanded'), 'true');
 
   let detail = null;
@@ -451,4 +456,113 @@ test('ui-select leaves Escape alone while its panel is closed', async () => {
   } finally {
     document.removeEventListener('keydown', enclosing, true);
   }
+});
+
+// ------------------------------------------------------- select: filtering
+
+// Scrolling is not a way to find one set among nine hundred, so past a
+// handful of options the panel grows a filter field.
+const manyOptions = (n) =>
+  Array.from({ length: n }, (_, i) => `<ui-option value="v${i}">Option ${i}</ui-option>`).join('');
+
+test('ui-select shows a filter once there are enough options', async () => {
+  const few = mount(`<ui-select label="Few">${manyOptions(3)}</ui-select>`);
+  await tick();
+  few.shadowRoot.querySelector('.field').click();
+  await tick();
+  assert.equal(few.shadowRoot.querySelector('.search'), null, 'three options need no filter');
+
+  const many = mount(`<ui-select label="Many">${manyOptions(20)}</ui-select>`);
+  await tick();
+  many.shadowRoot.querySelector('.field').click();
+  await tick();
+  assert.ok(many.shadowRoot.querySelector('.search input'), 'twenty options get one');
+  unmountAll();
+});
+
+test('ui-select search=always and never override the count', async () => {
+  const always = mount(`<ui-select label="A" search="always">${manyOptions(2)}</ui-select>`);
+  await tick();
+  always.shadowRoot.querySelector('.field').click();
+  await tick();
+  assert.ok(always.shadowRoot.querySelector('.search input'), 'always means always');
+
+  const never = mount(`<ui-select label="N" search="never">${manyOptions(40)}</ui-select>`);
+  await tick();
+  never.shadowRoot.querySelector('.field').click();
+  await tick();
+  assert.equal(never.shadowRoot.querySelector('.search'), null, 'never means never');
+  unmountAll();
+});
+
+// The options are light-DOM children, so filtering marks them and they hide
+// themselves. The keyboard has to skip them too — an arrow key that steps
+// onto a hidden option looks broken.
+test('ui-select filters options and keeps the keyboard on the visible ones', async () => {
+  const el = mount(`
+    <ui-select label="Set" search="always">
+      <ui-option value="dom">Dominaria</ui-option>
+      <ui-option value="mid">Innistrad: Midnight Hunt</ui-option>
+      <ui-option value="neo">Kamigawa: Neon Dynasty</ui-option>
+    </ui-select>`);
+  await tick();
+  el.shadowRoot.querySelector('.field').click();
+  await tick();
+
+  const input = el.shadowRoot.querySelector('.search input');
+  input.value = 'innistrad';
+  fire(input, 'input');
+  await tick();
+
+  const opts = [...el.querySelectorAll('ui-option')];
+  const hidden = opts.filter((o) => o.hasAttribute('data-ui-filtered')).map((o) => o.value);
+  assert.deepEqual(hidden.sort(), ['dom', 'neo'], 'only the match survives');
+
+  // Enter commits the one still showing, not whatever index it used to be.
+  let detail = null;
+  el.addEventListener('change', (e) => (detail = e.detail));
+  input.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, composed: true }));
+  assert.deepEqual(detail, { value: 'mid' });
+  unmountAll();
+});
+
+test('ui-select matching folds case and accents', async () => {
+  const el = mount(`
+    <ui-select label="Set" search="always">
+      <ui-option value="a">Æther Revolt</ui-option>
+      <ui-option value="b">Théros</ui-option>
+    </ui-select>`);
+  await tick();
+  el.shadowRoot.querySelector('.field').click();
+  await tick();
+  const input = el.shadowRoot.querySelector('.search input');
+  input.value = 'theros';
+  fire(input, 'input');
+  await tick();
+  const shown = [...el.querySelectorAll('ui-option')].filter((o) => !o.hasAttribute('data-ui-filtered'));
+  assert.deepEqual(shown.map((o) => o.value), ['b'], 'theros finds Théros');
+  unmountAll();
+});
+
+// Reopening to a list still narrowed by last time's query reads as a select
+// that has lost its options.
+test('ui-select drops the query when the panel closes', async () => {
+  const el = mount(`<ui-select label="Set" search="always">${manyOptions(12)}</ui-select>`);
+  await tick();
+  el.shadowRoot.querySelector('.field').click();
+  await tick();
+  const input = el.shadowRoot.querySelector('.search input');
+  input.value = 'Option 11';
+  fire(input, 'input');
+  await tick();
+  assert.equal(
+    [...el.querySelectorAll('ui-option')].filter((o) => !o.hasAttribute('data-ui-filtered')).length,
+    1);
+
+  el.shadowRoot.querySelector('.field').click();  // close
+  await tick();
+  assert.equal(
+    [...el.querySelectorAll('ui-option')].filter((o) => o.hasAttribute('data-ui-filtered')).length,
+    0, 'every option is back');
+  unmountAll();
 });
