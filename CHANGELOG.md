@@ -4,6 +4,17 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.11.2](https://github.com/bmartel/alacris/compare/v0.11.1...v0.11.2) (2026-08-19)
+
+### Features
+
+* **ui:** filter a select's options when there are many ([#19](https://github.com/bmartel/alacris/issues/19)) ([245d559](https://github.com/bmartel/alacris/commit/245d55913d2ceebabc96de172391d3295967c54e))
+
+### Bug Fixes
+
+* a number field's stepper no longer sits on its own label ([dadc841](https://github.com/bmartel/alacris/commit/dadc8414167a6946c7d066e93bbb36fd1d64a6ca))
+* **ui:** stop padding a number field's inline end ([#18](https://github.com/bmartel/alacris/issues/18)) ([b2e8489](https://github.com/bmartel/alacris/commit/b2e848953c87ce79f27706ff20cbb5f9e1da4c81))
+
 ## [0.11.1](https://github.com/bmartel/alacris/compare/v0.11.0...v0.11.1) (2026-08-19)
 
 ### Features

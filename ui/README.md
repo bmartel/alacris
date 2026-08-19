@@ -46,7 +46,7 @@ The published package is plain ESM. Point an import map at a pinned CDN build of
 <script type="importmap">
 {
   "imports": {
-    "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.1/dist/alacris.js",
+    "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.2/dist/alacris.js",
     "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.2.4/src/index.js",
     "@alacris/ui/theme": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.2.4/src/theme/index.js",
     "@alacris/ui/components/": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.2.4/src/components/"
