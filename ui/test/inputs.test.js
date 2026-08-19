@@ -533,3 +533,36 @@ test('ui-text-field is not numeric when it is not a number', async () => {
   const input = el.shadowRoot.querySelector('input');
   assert.equal(parseFloat(getComputedStyle(input).paddingInlineEnd || '0'), 0);
 });
+
+// A query box, a code field and a licence key all have the same problem: the
+// platform tries to help. Chrome's saved-value list opens over the page and
+// takes the arrow keys and Enter with it, and a WKWebView capitalises the
+// first letter — which is how `t:sliver` reached a case-sensitive search box
+// as `T:sliver`. A field has to be able to say "hands off", and an ordinary
+// field must keep the defaults it has today.
+test('ui-text-field forwards the hands-off attributes only when asked', async () => {
+  const plain = mount('<ui-text-field label="Name"></ui-text-field>');
+  await tick();
+  const bare = plain.shadowRoot.querySelector('input');
+  for (const a of ['autocomplete', 'autocapitalize', 'autocorrect', 'spellcheck', 'inputmode']) {
+    assert.equal(bare.getAttribute(a), null, `${a} must be absent unless asked for`);
+  }
+
+  const el = mount(`<ui-text-field label="Search" autocomplete="off" autocapitalize="off"
+    autocorrect="off" spellcheck="false" inputmode="search"></ui-text-field>`);
+  await tick();
+  const input = el.shadowRoot.querySelector('input');
+  assert.equal(input.getAttribute('autocomplete'), 'off');
+  assert.equal(input.getAttribute('autocapitalize'), 'off');
+  assert.equal(input.getAttribute('autocorrect'), 'off');
+  assert.equal(input.getAttribute('spellcheck'), 'false');
+  assert.equal(input.getAttribute('inputmode'), 'search');
+  unmountAll();
+});
+
+test('a textarea takes them too', async () => {
+  const el = mount('<ui-text-field label="Notes" type="textarea" spellcheck="false"></ui-text-field>');
+  await tick();
+  assert.equal(el.shadowRoot.querySelector('textarea').getAttribute('spellcheck'), 'false');
+  unmountAll();
+});
