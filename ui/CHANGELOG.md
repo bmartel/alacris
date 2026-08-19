@@ -4,6 +4,16 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.4.0](https://github.com/bmartel/alacris/compare/ui-v0.3.0...ui-v0.4.0) (2026-08-19)
+
+### Features
+
+* **ui:** let a text field tell the platform hands off ([#21](https://github.com/bmartel/alacris/issues/21)) ([89ea332](https://github.com/bmartel/alacris/commit/89ea332c280a65af769a0328d5d0d6905150c293))
+
+### Bug Fixes
+
+* **ci:** land the docs pins and survive a release push race ([#20](https://github.com/bmartel/alacris/issues/20)) ([5a4b3ea](https://github.com/bmartel/alacris/commit/5a4b3ea9f87c5bb4d398dcd04a083de74ec5238a))
+
 ## [0.3.0](https://github.com/bmartel/alacris/compare/ui-v0.2.4...ui-v0.3.0) (2026-08-19)
 
 ### Features
