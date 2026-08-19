@@ -4,6 +4,13 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.2.3](https://github.com/bmartel/alacris/compare/ui-v0.2.2...ui-v0.2.3) (2026-08-19)
+
+### Bug Fixes
+
+* a number field's stepper no longer sits on its own label ([dadc841](https://github.com/bmartel/alacris/commit/dadc8414167a6946c7d066e93bbb36fd1d64a6ca))
+* pin the docs CDN URLs to the published ui release ([1abbf53](https://github.com/bmartel/alacris/commit/1abbf535ab29c3341a3999f35e9da4b6586d3f3a))
+
 ## [0.2.2](https://github.com/bmartel/alacris/compare/ui-v0.2.1...ui-v0.2.2) (2026-08-19)
 
 ### Bug Fixes
