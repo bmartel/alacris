@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.3.0](https://github.com/bmartel/alacris/compare/ui-v0.2.4...ui-v0.3.0) (2026-08-19)
+
+### Features
+
+* **ui:** filter a select's options when there are many ([#19](https://github.com/bmartel/alacris/issues/19)) ([245d559](https://github.com/bmartel/alacris/commit/245d55913d2ceebabc96de172391d3295967c54e))
+
 ## [0.2.4](https://github.com/bmartel/alacris/compare/ui-v0.2.3...ui-v0.2.4) (2026-08-19)
 
 ### Bug Fixes
