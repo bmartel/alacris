@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.2.2](https://github.com/bmartel/alacris/compare/ui-v0.2.1...ui-v0.2.2) (2026-08-19)
+
+### Bug Fixes
+
+* **ui:** a popup takes Escape from the dialog around it ([b2cf058](https://github.com/bmartel/alacris/commit/b2cf058dc02fe5b1773b6cdebc64534193d08bc3))
+
 ## [0.2.1](https://github.com/bmartel/alacris/compare/ui-v0.2.0...ui-v0.2.1) (2026-08-18)
 
 ### Bug Fixes
