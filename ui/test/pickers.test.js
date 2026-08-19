@@ -398,3 +398,57 @@ test('ui-time-picker keyboard button toggles dial and input faces', async () => 
   await tick();
 });
 
+
+// A dialog listens for Escape in the capture phase at the document, so that
+// the key works wherever focus is. A select opened inside one therefore has to
+// claim the key first, or a single press dismisses the panel and the dialog
+// together — which reads as the dialog being broken.
+test('ui-select takes Escape from an enclosing capture-phase listener', async () => {
+  const el = mount(`
+    <ui-select label="Flavor">
+      <ui-option value="vanilla">Vanilla</ui-option>
+      <ui-option value="mint">Mint</ui-option>
+    </ui-select>`);
+  await tick();
+
+  // Stands in for ui-dialog: document, capture, registered first.
+  let enclosingSawEscape = 0;
+  const enclosing = (e) => { if (e.key === 'Escape') enclosingSawEscape++; };
+  document.addEventListener('keydown', enclosing, true);
+
+  try {
+    const control = el.shadowRoot.querySelector('[part=control]');
+    control.click();
+    await tick();
+    assert.equal(el.shadowRoot.querySelector('.panel') != null, true, 'panel should be open');
+
+    document.body.dispatchEvent(
+      new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true, cancelable: true }),
+    );
+    await tick();
+
+    assert.equal(el.shadowRoot.querySelector('.panel'), null, 'Escape should close the panel');
+    assert.equal(enclosingSawEscape, 0, 'the enclosing listener must never see the key');
+  } finally {
+    document.removeEventListener('keydown', enclosing, true);
+  }
+});
+
+// With nothing open the key is nobody's, and a dialog must still get it.
+test('ui-select leaves Escape alone while its panel is closed', async () => {
+  mount(`<ui-select label="Flavor"><ui-option value="a">A</ui-option></ui-select>`);
+  await tick();
+
+  let seen = 0;
+  const enclosing = (e) => { if (e.key === 'Escape') seen++; };
+  document.addEventListener('keydown', enclosing, true);
+  try {
+    document.body.dispatchEvent(
+      new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true }),
+    );
+    await tick();
+    assert.equal(seen, 1, 'a closed select must not swallow Escape');
+  } finally {
+    document.removeEventListener('keydown', enclosing, true);
+  }
+});
