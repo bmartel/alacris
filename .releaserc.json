@@ -65,7 +65,7 @@
       "@semantic-release/exec",
       {
         "//": "Repoint CDN pins, prose versions, and quoted size figures at the release being cut, before the commit below picks the files up. Missing pins are inserted; CDN URLs always get the full x.y.z.",
-        "prepareCmd": "node scripts/sync-docs.mjs ${nextRelease.version}"
+        "prepareCmd": "node scripts/sync-docs.mjs ${nextRelease.version} --stage"
       }
     ],
     [

@@ -56,8 +56,10 @@ jobs:
           git tag ui-v0.0.0 "$seed"
           git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" ui-v0.0.0
 
+      # Wrapped so that losing a push race to the library release is a retry
+      # rather than a failed release. See .github/release-retry.sh.
       - name: Release
         working-directory: ui
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node ../node_modules/semantic-release/bin/semantic-release.js
+        run: bash ../.github/release-retry.sh node ../node_modules/semantic-release/bin/semantic-release.js

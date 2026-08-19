@@ -29,6 +29,15 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 
 const args = process.argv.slice(2);
 const check = args.includes('--check');
+// semantic-release runs this from the prepare step, and for @alacris/ui it
+// runs it with cwd=ui/. @semantic-release/git lists candidates with
+// `git ls-files -m -o`, which from a subdirectory reports only that
+// subdirectory — so every `../docs/...` asset in ui/.releaserc.json was
+// silently dropped and three UI releases in a row left the pins behind and
+// main red. The files are staged here instead, where their paths are already
+// known and rooted at the repository. The plugin's own `git commit` carries
+// no pathspec, so whatever is in the index goes into the release commit.
+const stage = args.includes('--stage');
 const uiFlag = args.indexOf('--ui');
 const version =
   args.find((a, i) => !a.startsWith('-') && args[i - 1] !== '--ui') ??
@@ -302,6 +311,10 @@ if (stale.length) {
   console.log(`  sync-docs: ${stale.length} file(s) ${check ? 'stale' : 'updated'} for ${version}`);
   for (const { file, changes } of stale) {
     console.log(`    ${file}\n      ${changes.join('\n      ')}`);
+  }
+  if (stage && !check) {
+    execFileSync('git', ['add', '--', ...stale.map(({ file }) => file)], { cwd: root });
+    console.log(`  sync-docs: staged ${stale.length} file(s) for the release commit`);
   }
 } else {
   console.log(`  sync-docs: every version and size already reads ${version}`);

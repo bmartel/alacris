@@ -53,8 +53,8 @@
     [
       "@semantic-release/exec",
       {
-        "//": "Rewrite @alacris/ui CDN pins in the docs. Pass --ui so a UI version cannot retarget @alacris/core.",
-        "prepareCmd": "node ../scripts/sync-docs.mjs --ui ${nextRelease.version}"
+        "//": "Rewrite @alacris/ui CDN pins in the docs. Pass --ui so a UI version cannot retarget @alacris/core. --stage is what gets them into the release commit: this runs with cwd=ui, and @semantic-release/git finds candidates with git ls-files from there, so it never sees the ../ assets below.",
+        "prepareCmd": "node ../scripts/sync-docs.mjs --ui ${nextRelease.version} --stage"
       }
     ],
     [

@@ -112,3 +112,47 @@ test('the published package lives in ui/; starter/ is not a package', () => {
   const html = readFileSync(new URL('../starter/index.html', import.meta.url), 'utf8');
   assert.match(html, /"@alacris\/ui": "\.\.\/ui\/src\/index\.js"/);
 });
+
+// Three UI releases in a row published, then left the CDN pins in the docs
+// reading the *previous* version — and CI's sync-docs --check turned that into
+// a red main until somebody carried the pins forward by hand.
+//
+// The cause is not the config's asset list, which names the files correctly.
+// It is that this release runs with cwd=ui, and @semantic-release/git collects
+// candidates with `git ls-files -m -o`, which from a subdirectory reports only
+// that subdirectory. Every `../` asset was therefore invisible to it: the
+// release commits contained ui/package.json, ui/CHANGELOG.md and ui/README.md
+// and nothing else, however the globs were written.
+//
+// So sync-docs stages what it rewrote, from the repository root, and the
+// plugin's own `git commit` — which carries no pathspec — picks it up.
+test('the UI prepare stages the docs it rewrites, because ../ assets are invisible from ui/', () => {
+  assert.match(
+    named('@semantic-release/exec').prepareCmd,
+    /--stage\b/,
+    'without --stage the out-of-tree docs are rewritten and then thrown away'
+  );
+});
+
+test('both release workflows run semantic-release through the retry wrapper', () => {
+  const read = (p) => readFileSync(new URL(p, import.meta.url), 'utf8');
+  const retry = read('../.github/release-retry.sh');
+  assert.match(retry, /reset --hard FETCH_HEAD/, 'a retry has to start from the branch tip');
+
+  // The two workflows deliberately do not share a concurrency group, so they
+  // can push to main at the same moment and one will be rejected
+  // non-fast-forward. That is safe to retry — @semantic-release/git pushes
+  // during prepare, ahead of the npm publish — but only from the tip.
+  for (const wf of ['../.github/workflows/release.yml', '../.github/workflows/release-ui.yml']) {
+    assert.match(read(wf), /release-retry\.sh/, `${wf} must not call semantic-release bare`);
+  }
+});
+
+test('the two release workflows keep their own concurrency groups', () => {
+  const read = (p) => readFileSync(new URL(p, import.meta.url), 'utf8');
+  const group = (s) => s.match(/concurrency:\s*\n\s*group:\s*(\S+)/)?.[1];
+  const lib = group(read('../.github/workflows/release.yml'));
+  const uiWf = group(read('../.github/workflows/release-ui.yml'));
+  assert.ok(lib && uiWf);
+  assert.notEqual(lib, uiWf, 'a UI publish waiting on a library publish is the coupling release-ui.yml exists to avoid');
+});
