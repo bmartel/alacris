@@ -4,6 +4,20 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.11.1](https://github.com/bmartel/alacris/compare/v0.11.0...v0.11.1) (2026-08-19)
+
+### Features
+
+* **ui:** brand the catalog shell and keep demos readable on mobile ([#11](https://github.com/bmartel/alacris/issues/11)) ([ffdd201](https://github.com/bmartel/alacris/commit/ffdd201c97d5e230583ef173cf551851f7b1a3e2))
+* **ui:** publish the design system as @alacris/ui ([#9](https://github.com/bmartel/alacris/issues/9)) ([9f25a37](https://github.com/bmartel/alacris/commit/9f25a37dfcc2bc915593f113e76f6b476f702737))
+
+### Bug Fixes
+
+* pin the docs CDN URLs to the published ui release ([1abbf53](https://github.com/bmartel/alacris/commit/1abbf535ab29c3341a3999f35e9da4b6586d3f3a))
+* **starter:** morph docked search as a compact pill ([#8](https://github.com/bmartel/alacris/issues/8)) ([d203ea3](https://github.com/bmartel/alacris/commit/d203ea3182fd073459106ae4f76e8dcbc1babece))
+* **ui:** a popup takes Escape from the dialog around it ([b2cf058](https://github.com/bmartel/alacris/commit/b2cf058dc02fe5b1773b6cdebc64534193d08bc3))
+* **ui:** resolve Material icon names and bind slider values from templates ([78e5e93](https://github.com/bmartel/alacris/commit/78e5e936c4d3a9ff82f2b4d2536a8d4e7d47d8c3))
+
 ## [0.11.0](https://github.com/bmartel/alacris/compare/v0.10.0...v0.11.0) (2026-08-15)
 
 ### Features

@@ -103,7 +103,7 @@ job:
 
 \`\`\`html
 <script type="importmap">
-  { "imports": { "@alacris/core": "https://esm.sh/@alacris/core@0.11.0" } }
+  { "imports": { "@alacris/core": "https://esm.sh/@alacris/core@0.11.1" } }
 </script>
 <script type="module" src="./${VITE_ENTRY}"></script>
 \`\`\`

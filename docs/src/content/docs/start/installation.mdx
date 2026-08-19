@@ -16,7 +16,7 @@ install:
 
 ```html
 <script type="module">
-  import { define, html, signal } from 'https://unpkg.com/@alacris/core@0.11.0';
+  import { define, html, signal } from 'https://unpkg.com/@alacris/core@0.11.1';
 
   define('hello-world', () => html`<p>hello</p>`);
 </script>
@@ -25,7 +25,7 @@ install:
 ```
 
 <Aside type="caution" title="Keep the version in the URL">
-These URLs pin `@alacris/core@0.11.0`. Dropping the version tracks whatever npm
+These URLs pin `@alacris/core@0.11.1`. Dropping the version tracks whatever npm
 published last, and a later release can break the page. Bump the pin when you
 upgrade.
 </Aside>
@@ -33,14 +33,14 @@ upgrade.
 <Tabs>
   <TabItem label="unpkg">
     ```js
-    import { define, html, signal } from 'https://unpkg.com/@alacris/core@0.11.0';
-    import { store } from 'https://unpkg.com/@alacris/core@0.11.0/dist/store.js';
-    import { createContext } from 'https://unpkg.com/@alacris/core@0.11.0/dist/context.js';
+    import { define, html, signal } from 'https://unpkg.com/@alacris/core@0.11.1';
+    import { store } from 'https://unpkg.com/@alacris/core@0.11.1/dist/store.js';
+    import { createContext } from 'https://unpkg.com/@alacris/core@0.11.1/dist/context.js';
     ```
   </TabItem>
   <TabItem label="jsDelivr">
     ```js
-    import { define, html, signal } from 'https://cdn.jsdelivr.net/npm/@alacris/core@0.11.0/+esm';
+    import { define, html, signal } from 'https://cdn.jsdelivr.net/npm/@alacris/core@0.11.1/+esm';
     ```
   </TabItem>
   <TabItem label="import map">
@@ -51,9 +51,9 @@ upgrade.
     <script type="importmap">
       {
         "imports": {
-          "@alacris/core": "https://unpkg.com/@alacris/core@0.11.0/dist/alacris.js",
-          "@alacris/core/store": "https://unpkg.com/@alacris/core@0.11.0/dist/store.js",
-          "@alacris/core/context": "https://unpkg.com/@alacris/core@0.11.0/dist/context.js"
+          "@alacris/core": "https://unpkg.com/@alacris/core@0.11.1/dist/alacris.js",
+          "@alacris/core/store": "https://unpkg.com/@alacris/core@0.11.1/dist/store.js",
+          "@alacris/core/context": "https://unpkg.com/@alacris/core@0.11.1/dist/context.js"
         }
       }
     </script>
