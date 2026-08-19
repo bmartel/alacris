@@ -488,11 +488,18 @@ test('ui-fab-menu toggles related actions from the trigger', async () => {
   unmountAll();
 });
 
-// The browser draws a number field's spin buttons inside the input's content
-// box and paints them over whatever is there: the floating label, the
-// placeholder, and the value itself once it is long enough. On a narrow field
-// the chevron lands squarely on the word it is meant to sit beside.
-test('ui-text-field reserves a lane for a number stepper', async () => {
+// The browser lays a number field's spin buttons out at the inline end of the
+// input's *content* box, not at the edge of the field. Padding the input to
+// reserve a lane for them therefore drags them inward, onto the label they
+// were supposed to clear — which is what 0.2.3 shipped.
+//
+// What these tests can check is the class and the label cap. They cannot check
+// the thing that actually went wrong: the spin buttons are a pseudo-element
+// this environment never lays out, so their position is invisible here and a
+// test asserting the padding passed happily while the control was visibly
+// broken on screen. The padding assertion below is inverted for that reason —
+// it is a regression guard against re-adding the fix that caused the bug.
+test('ui-text-field marks a number field and shortens its label', async () => {
   const el = mount('<ui-text-field type="number" label="Generic"></ui-text-field>');
   await tick();
 
@@ -501,20 +508,23 @@ test('ui-text-field reserves a lane for a number stepper', async () => {
 
   const input = el.shadowRoot.querySelector('input');
   assert.equal(input.type, 'number');
-  const pad = getComputedStyle(input).paddingInlineEnd;
-  assert.ok(parseFloat(pad) > 0, `the input reserves trailing space, got ${pad}`);
 
-  // The label is shortened by the same amount, so a long one ellipsises
-  // before it reaches the buttons rather than sliding under them.
+  // Do not reserve trailing space: it moves the buttons, it does not make
+  // room for them. See the note above.
+  const pad = parseFloat(getComputedStyle(input).paddingInlineEnd || '0');
+  assert.equal(pad, 0, `a number input must not pad its inline end, got ${pad}`);
+
+  // The label is capped instead, so a long one ellipsises before it reaches
+  // the buttons rather than sliding under them.
   const label = el.shadowRoot.querySelector('.label');
   assert.equal(getComputedStyle(label).textOverflow, 'ellipsis');
   assert.equal(getComputedStyle(label).whiteSpace, 'nowrap');
-
+  assert.match(getComputedStyle(label).maxInlineSize, /calc/, 'label is capped short of the buttons');
 });
 
 // Nothing changes for the ordinary case: a text field has no stepper and must
-// not lose the end of its line to one.
-test('ui-text-field reserves nothing when it is not a number', async () => {
+// not be marked as though it had one.
+test('ui-text-field is not numeric when it is not a number', async () => {
   const el = mount('<ui-text-field label="Name"></ui-text-field>');
   await tick();
 
