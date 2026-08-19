@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.2.4](https://github.com/bmartel/alacris/compare/ui-v0.2.3...ui-v0.2.4) (2026-08-19)
+
+### Bug Fixes
+
+* **ui:** stop padding a number field's inline end ([#18](https://github.com/bmartel/alacris/issues/18)) ([b2e8489](https://github.com/bmartel/alacris/commit/b2e848953c87ce79f27706ff20cbb5f9e1da4c81))
+
 ## [0.2.3](https://github.com/bmartel/alacris/compare/ui-v0.2.2...ui-v0.2.3) (2026-08-19)
 
 ### Bug Fixes

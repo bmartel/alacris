@@ -1,6 +1,6 @@
 {
   "name": "@alacris/ui",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Themeable design system for Alacris — Material defaults, sixty-eight custom elements, ESM-only, no build step.",
   "type": "module",
   "exports": {
