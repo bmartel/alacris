@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.11.3](https://github.com/bmartel/alacris/compare/v0.11.2...v0.11.3) (2026-08-19)
+
+### Bug Fixes
+
+* **ci:** land the docs pins and survive a release push race ([#20](https://github.com/bmartel/alacris/issues/20)) ([5a4b3ea](https://github.com/bmartel/alacris/commit/5a4b3ea9f87c5bb4d398dcd04a083de74ec5238a))
+
 ## [0.11.2](https://github.com/bmartel/alacris/compare/v0.11.1...v0.11.2) (2026-08-19)
 
 ### Features
