@@ -6,6 +6,7 @@ import { mount, unmountAll, tick, fire } from './helpers.js';
 import { define, html, signal } from '@alacris/core';
 
 import '../src/components/ui-button.js';
+import '../src/components/ui-text-field.js';
 import '../src/components/ui-fab.js';
 import '../src/components/ui-button-group.js';
 import '../src/components/ui-toggle-button.js';
@@ -485,4 +486,40 @@ test('ui-fab-menu toggles related actions from the trigger', async () => {
   fire(el.querySelector('ui-fab[icon="edit"]'), 'click');
   assert.equal(el.open, false);
   unmountAll();
+});
+
+// The browser draws a number field's spin buttons inside the input's content
+// box and paints them over whatever is there: the floating label, the
+// placeholder, and the value itself once it is long enough. On a narrow field
+// the chevron lands squarely on the word it is meant to sit beside.
+test('ui-text-field reserves a lane for a number stepper', async () => {
+  const el = mount('<ui-text-field type="number" label="Generic"></ui-text-field>');
+  await tick();
+
+  const root = el.shadowRoot.querySelector('.root');
+  assert.ok(root.classList.contains('numeric'), 'a number field is marked numeric');
+
+  const input = el.shadowRoot.querySelector('input');
+  assert.equal(input.type, 'number');
+  const pad = getComputedStyle(input).paddingInlineEnd;
+  assert.ok(parseFloat(pad) > 0, `the input reserves trailing space, got ${pad}`);
+
+  // The label is shortened by the same amount, so a long one ellipsises
+  // before it reaches the buttons rather than sliding under them.
+  const label = el.shadowRoot.querySelector('.label');
+  assert.equal(getComputedStyle(label).textOverflow, 'ellipsis');
+  assert.equal(getComputedStyle(label).whiteSpace, 'nowrap');
+
+});
+
+// Nothing changes for the ordinary case: a text field has no stepper and must
+// not lose the end of its line to one.
+test('ui-text-field reserves nothing when it is not a number', async () => {
+  const el = mount('<ui-text-field label="Name"></ui-text-field>');
+  await tick();
+
+  const root = el.shadowRoot.querySelector('.root');
+  assert.ok(!root.classList.contains('numeric'));
+  const input = el.shadowRoot.querySelector('input');
+  assert.equal(parseFloat(getComputedStyle(input).paddingInlineEnd || '0'), 0);
 });
