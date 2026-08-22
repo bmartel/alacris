@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.4.1](https://github.com/bmartel/alacris/compare/ui-v0.4.0...ui-v0.4.1) (2026-08-22)
+
+### Bug Fixes
+
+* **ui:** stop popup close from dismissing an enclosing overlay ([#22](https://github.com/bmartel/alacris/issues/22)) ([58e2d42](https://github.com/bmartel/alacris/commit/58e2d42a87214130100afb2529fa2b9f671c4424))
+
 ## [0.4.0](https://github.com/bmartel/alacris/compare/ui-v0.3.0...ui-v0.4.0) (2026-08-19)
 
 ### Features
