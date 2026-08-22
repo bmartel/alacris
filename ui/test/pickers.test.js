@@ -10,6 +10,8 @@ import '../src/components/ui-chip.js';
 import '../src/components/ui-chip-set.js';
 import '../src/components/ui-date-picker.js';
 import '../src/components/ui-time-picker.js';
+import '../src/components/ui-dialog.js';
+import '../src/components/ui-side-sheet.js';
 
 const key = (el, k) =>
   el.dispatchEvent(new window.KeyboardEvent('keydown', { key: k, bubbles: true, composed: true, cancelable: true }));
@@ -77,6 +79,52 @@ test('ui-select opens on click, selects an option, emits change, and closes', as
   await tick();
   await tick();
   assert.equal(el.shadowRoot.querySelector('.panel'), null, 'selection closes the panel');
+  unmountAll();
+  await tick();
+});
+
+test('ui-select close does not bubble to an enclosing dialog or side sheet', async () => {
+  // close/open are also what overlays emit. A bubbling select-close looks like
+  // the sheet dismissed itself — choosing a binder must not shut the card.
+  const dialog = mount(`
+    <ui-dialog open label="Add">
+      <ui-select label="Flavor">
+        <ui-option value="vanilla">Vanilla</ui-option>
+        <ui-option value="mint">Mint</ui-option>
+      </ui-select>
+    </ui-dialog>`);
+  await tick();
+  let dialogClose = 0;
+  dialog.addEventListener('close', () => dialogClose++);
+  const select = dialog.querySelector('ui-select');
+  let selectClose = 0;
+  select.addEventListener('close', () => selectClose++);
+  fire(select.shadowRoot.querySelector('[role="combobox"]'), 'click');
+  fire(select.querySelector('ui-option'), 'click');
+  await tick();
+  await tick();
+  assert.equal(selectClose, 1, 'the select still emits close on its host');
+  assert.equal(dialogClose, 0, 'choosing an option must not close the dialog');
+  assert.ok(dialog.shadowRoot.querySelector('.overlay'), 'dialog stays open');
+  unmountAll();
+
+  const sheet = mount(`
+    <ui-side-sheet open label="Card">
+      <ui-select label="Binder">
+        <ui-option value="1">Inbox</ui-option>
+        <ui-option value="2">Trades</ui-option>
+      </ui-select>
+    </ui-side-sheet>`);
+  await tick();
+  let sheetClose = 0;
+  sheet.addEventListener('close', () => sheetClose++);
+  const inner = sheet.querySelector('ui-select');
+  fire(inner.shadowRoot.querySelector('[role="combobox"]'), 'click');
+  fire(inner.querySelector('ui-option'), 'click');
+  await tick();
+  await tick();
+  assert.equal(sheetClose, 0, 'choosing an option must not close the side sheet');
+  assert.ok(sheet.shadowRoot.querySelector('.overlay'), 'side sheet stays open');
   unmountAll();
   await tick();
 });

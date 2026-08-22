@@ -84,6 +84,7 @@ export interface AnimateOptions extends KeyframeAnimationOptions {
 }
 
 export function animate(el: Element, keyframes: Keyframes, opts?: AnimateOptions): Pick<Animation, 'finished' | 'cancel' | 'finish' | 'play' | 'pause'>;
+export function releaseFill<T extends { finished: Promise<unknown>; cancel(): void }>(anim: T): T;
 export function settled(anim: { finished: Promise<unknown> }): Promise<void>;
 export function duration(key: number | string): number;
 export function easing(key: string): string;
