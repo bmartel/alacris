@@ -146,7 +146,12 @@ compresses every control by 4px per step:
 - Upward communication is **only** `host.emit(type, detail)`:
   - `input` — every keystroke/drag (live value in `detail.value`)
   - `change` — committed value change (`detail.value` / `detail.checked`)
-  - `open` / `close` — overlay visibility changed (after animation completes)
+  - `open` / `close` — overlay visibility changed (after animation completes).
+    Dialogs, sheets and drawers *do* bubble these, so a parent can listen on
+    the overlay host. Popups that sit *inside* those overlays (select, menu,
+    autocomplete, search, date/time pickers, fab-menu) emit `{ bubbles: false }`
+    — they share the same event names, and a bubbling select-close looks like
+    the sheet dismissed itself. Listen on the popup host; that still fires.
   - `dismiss` — user dismissed a chip/alert/snackbar
 - Two-way flow: parent passes a signal as a prop and listens for the event; the
   component **never** writes to its own props except in direct response to user

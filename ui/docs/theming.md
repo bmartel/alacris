@@ -30,7 +30,7 @@ Semantic roles on `:root`, inheriting through every shadow boundary:
 | Space | `space-1…24` (4px grid) |
 | State | `state-hover/focus/pressed/dragged`, `state-disabled-content/container` |
 | Focus | `focus-ring`, `focus-ring-width/offset/color` |
-| Misc | `density` (0…-2), `z-app-bar/drawer/modal/snackbar/tooltip` |
+| Misc | `density` (0…-2), `z-app-bar/drawer/modal/popup/snackbar/tooltip` |
 
 Components never write these names as strings — they go through the `sys`
 accessor (`src/tokens/sys.js`): `sys.color.primary`, `sys.radius.md`,

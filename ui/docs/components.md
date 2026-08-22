@@ -487,8 +487,8 @@ Set `range` to pick a start and end; `change` then reports
 | `@prop` | {string}  placeholder='' |
 | `@event` | change — committed; detail: { value } or { start, end, value } when range |
 | `@event` | input  — field keystroke; detail: { value } (the raw text) |
-| `@event` | open   — calendar visible (after the enter animation) |
-| `@event` | close  — calendar removed (after the exit animation) |
+| `@event` | open   — calendar visible (after the enter animation); does not bubble |
+| `@event` | close  — calendar removed (after the exit animation); does not bubble |
 | `@part` | field, input, label, panel, day |
 | `@vars` | see `t` below (`themeVars.names`) |
 
@@ -592,8 +592,8 @@ Escape closes and returns focus to the trigger.
 | --- | --- |
 | `@prop` | {boolean} open=false |
 | `@prop` | {string}  label='' — accessible name for the action list |
-| `@event` | open  — menu visible (after the enter animation) |
-| `@event` | close — menu removed (after the exit animation) |
+| `@event` | open  — menu visible (after the enter animation); does not bubble |
+| `@event` | close — menu removed (after the exit animation); does not bubble |
 | `@slot` | trigger  — the &lt;ui-fab&gt; that toggles the menu |
 | `@slot` | (default) — related &lt;ui-fab&gt; actions |
 | `@part` | actions, trigger |
@@ -762,8 +762,8 @@ and closes.
 | `@prop` | {boolean} open=false |
 | `@prop` | {string}  placement='bottom-start' — side[-alignment] (see util/position.js) |
 | `@event` | select — an item was chosen; detail: { value } |
-| `@event` | open   — panel visible (after the enter animation) |
-| `@event` | close  — panel removed (after the exit animation) |
+| `@event` | open   — panel visible (after the enter animation); does not bubble |
+| `@event` | close  — panel removed (after the exit animation); does not bubble |
 | `@slot` | anchor    — the trigger element |
 | `@slot` | (default) — &lt;ui-menu-item&gt; children |
 | `@part` | panel — the floating menu surface |
@@ -986,8 +986,8 @@ with a divider between the field and the list.
 | `@event` | change — committed (blur/Enter); detail: { value } |
 | `@event` | submit — Enter pressed; detail: { value } |
 | `@event` | clear  — the clear affordance was used |
-| `@event` | open   — suggestions visible (after the enter animation) |
-| `@event` | close  — suggestions removed (after the exit animation) |
+| `@event` | open   — suggestions visible (after the enter animation); does not bubble |
+| `@event` | close  — suggestions removed (after the exit animation); does not bubble |
 | `@slot` | leading  — replaces the search icon |
 | `@slot` | trailing — after the clear button (avatar, extra actions) |
 | `@slot` | (default) — suggestion rows (ui-list-item, …). The panel is a list so those rows keep role="listitem"; it is not a listbox. |
@@ -1007,9 +1007,18 @@ listbox of slotted &lt;ui-option&gt;s.
   &lt;/ui-select&gt;
 
 Keyboard (APG select-only combobox): Enter/Space/ArrowDown/ArrowUp open;
-arrows move the active option, Enter/Space selects it, Escape closes,
+arrows move the active option, Enter/Space selects it, Escape closes the
+panel only — an enclosing dialog keeps its own Escape for a second press,
 typing jumps to the next option starting with that letter. The panel closes
-on outside pointerdown and returns focus to the field.
+on outside pointerdown and returns focus to the field. `open`/`close` do
+not bubble: they share those names with dialogs and sheets, and a bubbling
+select-close looks like the sheet dismissed itself.
+
+Past a handful of options the panel gets a filter field, because scrolling
+is not a way to find one entry among several hundred. It takes focus when
+the panel opens, the arrows and Enter work from it, and the options it
+hides are hidden from the keyboard too. The query is dropped when the panel
+closes.
 
 | | |
 | --- | --- |
@@ -1020,9 +1029,12 @@ on outside pointerdown and returns focus to the field.
 | `@prop` | {boolean} required=false |
 | `@prop` | {string}  name=''          — form participation |
 | `@prop` | {string}  placeholder=''   — shown while nothing is selected |
+| `@prop` | {string}  search='auto'    — auto \| always \| never; 'auto' shows the filter once there are searchThreshold options or more |
+| `@prop` | {number}  searchThreshold=8 |
+| `@prop` | {string}  searchPlaceholder='Search' |
 | `@event` | change — an option was chosen; detail: { value } |
-| `@event` | open   — panel enter animation finished |
-| `@event` | close  — panel exit animation finished |
+| `@event` | open   — panel enter animation finished; does not bubble |
+| `@event` | close  — panel exit animation finished; does not bubble |
 | `@slot` | (default) — &lt;ui-option&gt; children (projected into the panel) |
 | `@part` | control — the field button (role="combobox") |
 | `@part` | label, panel |
@@ -1553,7 +1565,13 @@ Material text field, filled and outlined, floating label.
 | `@prop` | {boolean} clearable=false  — trailing ✕ while there is content |
 | `@prop` | {string}  name=''          — form participation |
 | `@prop` | {number}  maxlength=0      — &gt;0 shows a character counter and enforces it |
-| `@prop` | {number}  rows=3           — textarea rows |
+| `@prop` | {number}  rows=3 |
+| `@prop` | {string}  autocomplete=''   — absent unless set; 'off' keeps the browser's saved-value list out of a field whose contents are not a name, an address or a password |
+| `@prop` | {string}  autocapitalize='' — 'off' for anything case-sensitive |
+| `@prop` | {string}  autocorrect=''    — 'off' to stop substitutions |
+| `@prop` | {string}  spellcheck=''     — 'false' for code and query syntax |
+| `@prop` | {string}  inputmode='' |
+| `@prop` | {string}  enterkeyhint=''           — textarea rows |
 | `@event` | input  — every keystroke;   detail: { value } |
 | `@event` | change — committed (blur/Enter); detail: { value } |
 | `@event` | clear  — the clear affordance was used |
@@ -1606,8 +1624,8 @@ faces crossfade; the clock hand rotates with the motion tokens.
 | `@prop` | {string}  placeholder='' |
 | `@event` | change — committed; detail: { value } |
 | `@event` | input  — field keystroke; detail: { value } (the raw text) |
-| `@event` | open   — panel visible (after the enter animation) |
-| `@event` | close  — panel removed (after the exit animation) |
+| `@event` | open   — panel visible (after the enter animation); does not bubble |
+| `@event` | close  — panel removed (after the exit animation); does not bubble |
 | `@part` | field, input, label, panel, dial |
 | `@vars` | see `t` below (`themeVars.names`) |
 
