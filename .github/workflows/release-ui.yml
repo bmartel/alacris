@@ -63,3 +63,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash ../.github/release-retry.sh node ../node_modules/semantic-release/bin/semantic-release.js
+
+      - name: Trigger alacris-go vendor sync
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.DISPATCH_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          gh api repos/bmartel/alacris-go/dispatches \
+            -f event_type=upstream-release \
+            -F client_payload[repo]=alacris \
+            -F client_payload[package]=ui || true
