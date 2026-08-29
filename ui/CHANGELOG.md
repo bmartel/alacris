@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.4.3](https://github.com/bmartel/alacris/compare/ui-v0.4.2...ui-v0.4.3) (2026-08-29)
+
+### Bug Fixes
+
+* **ui:** apply inert to collapsed standard sheets, drawers, accordions, and dismissing elements ([ee730bc](https://github.com/bmartel/alacris/commit/ee730bc0010cf23ba1b717ca4a49ac34fdcb098c))
+
 ## [0.4.2](https://github.com/bmartel/alacris/compare/ui-v0.4.1...ui-v0.4.2) (2026-08-29)
 
 ### Bug Fixes
