@@ -4,14 +4,14 @@
 
 # Alacris
 
-**Web components with signals and fine-grained DOM updates — in 6.56 kB.**
+**Web components with signals and fine-grained DOM updates — in 6.60 kB.**
 
 ESM-only · zero dependencies · no build step required · works inside any framework
 
 [![CI](https://github.com/bmartel/alacris/actions/workflows/ci.yml/badge.svg)](https://github.com/bmartel/alacris/actions/workflows/ci.yml)
 [![Docs](https://github.com/bmartel/alacris/actions/workflows/docs.yml/badge.svg)](https://bmartel.github.io/alacris/)
 [![npm](https://img.shields.io/npm/v/@alacris/core.svg)](https://www.npmjs.com/package/@alacris/core)
-[![core size](https://img.shields.io/badge/core-6.56%20kB%20gzip-blue)](#size)
+[![core size](https://img.shields.io/badge/core-6.61%20kB%20gzip-blue)](#size)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ***alacris*** *(Latin)* — brisk, lively, quick.
@@ -63,7 +63,7 @@ See [Performance](#performance) for the numbers and for where Alacris still pays
 
 | file | raw | gzip | brotli |
 | --- | ---: | ---: | ---: |
-| `dist/alacris.js` — signals + templates + styles + elements | 16.79 KB | **6.56 KB** | 5.96 KB |
+| `dist/alacris.js` — signals + templates + styles + elements | 16.90 KB | **6.61 KB** | 6.01 KB |
 | `dist/store.js` — deep reactive state | 2.14 KB | **1.03 KB** | 0.95 KB |
 | `dist/context.js` — cross-component context | 0.91 KB | **0.54 KB** | 0.46 KB |
 | `dist/signal.js` — reactivity alone, no DOM | 2.34 KB | **1.03 KB** | 0.96 KB |

@@ -332,3 +332,33 @@ test('a binding swallowed by raw text throws a clear SyntaxError', () => {
     { name: 'SyntaxError', message: /nested <template>/ }
   );
 });
+
+test('svg class binding does not throw and updates attribute', () => {
+  const el = host();
+  const cls = signal('active-svg');
+  render(svg`<svg class=${cls}><circle class=${cls} r="10"></circle></svg>`, el);
+  const svgEl = el.querySelector('svg');
+  const circleEl = el.querySelector('circle');
+  assert.equal(svgEl.getAttribute('class'), 'active-svg');
+  assert.equal(circleEl.getAttribute('class'), 'active-svg');
+  cls('inactive-svg');
+  assert.equal(svgEl.getAttribute('class'), 'inactive-svg');
+  assert.equal(circleEl.getAttribute('class'), 'inactive-svg');
+  cls(null);
+  assert.equal(svgEl.hasAttribute('class'), false);
+  assert.equal(circleEl.hasAttribute('class'), false);
+});
+
+test('nested render does not duplicate delegated events on ancestor root', () => {
+  const el = host();
+  let clicks = 0;
+  // Outer render
+  render(html`<div class="outer"><span class="anchor"></span></div>`, el);
+  const anchor = el.querySelector('.anchor');
+  // Sub-render into child container (like presence or portals)
+  render(html`<button @click=${() => clicks++}>btn</button>`, anchor);
+  const btn = el.querySelector('button');
+  btn.click();
+  assert.equal(clicks, 1);
+});
+

@@ -68,11 +68,16 @@ function delegate(root, type) {
     // has already been offered the event by its own listener.
     let lo = 0;
     for (let i = 0; i < ri; i++) if (path[i].nodeType === 11) lo = i + 1;
+    const d = e.$$h || (e.$$h = new Set());
     for (let i = lo; i < ri; i++) {
-      const h = path[i][key];
-      if (h) {
-        h.call(path[i], e);
-        if (e.cancelBubble) return;
+      const node = path[i];
+      if (!d.has(node)) {
+        const h = node[key];
+        if (h) {
+          d.add(node);
+          h.call(node, e);
+          if (e.cancelBubble) return;
+        }
       }
     }
   });
@@ -322,7 +327,7 @@ function prepare(p) {
   if (n === 'class') {
     p.set = (el, v) => {
       const t = classText(v);
-      t ? (el.className = t) : el.removeAttribute('class');
+      t ? (typeof el.className === 'string' ? (el.className = t) : el.setAttribute('class', t)) : el.removeAttribute('class');
     };
     return p;
   }
