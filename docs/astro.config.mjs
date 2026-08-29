@@ -65,6 +65,7 @@ export default defineConfig({
           items: [
             { label: 'Component catalog', link: '/ui/', badge: 'Live' },
             { label: 'Getting started', slug: 'ui/getting-started' },
+            { label: 'Components reference', slug: 'ui/components' },
             { label: 'Using it from a framework', slug: 'ui/frameworks' },
           ],
         },

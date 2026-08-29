@@ -67,21 +67,27 @@ export const section = () => html`
     <ui-switch label="With icons" icons checked></ui-switch>
     <ui-switch label="Off limits" disabled></ui-switch>`)}
 
-  ${stackBlock('Text fields', html`
+  ${stackBlock('Text fields & Textareas', html`
     ${row(html`
       <ui-text-field label="Filled" helper="Supporting text"></ui-text-field>
-      <ui-text-field variant="outlined" label="Outlined"></ui-text-field>
+      <ui-text-field variant="outlined" label="Outlined" helper="Supporting text"></ui-text-field>
       <ui-text-field label="Password" type="password" value="hunter2"></ui-text-field>`)}
     ${row(html`
       <ui-text-field label="Email" value=${email} clearable
                      helper=${() => (email() ? `Hello, ${email()}` : 'We never spam')}>
         <ui-icon slot="leading" name="person"></ui-icon>
       </ui-text-field>
-      <ui-text-field variant="outlined" label="Username" error="Already taken"></ui-text-field>
-      <ui-text-field label="Bio" type="textarea" maxlength="80" placeholder="A few words…"></ui-text-field>`)}
+      <ui-text-field variant="outlined" label="Account" clearable>
+        <ui-icon slot="leading" name="person"></ui-icon>
+      </ui-text-field>
+      <ui-text-field variant="outlined" label="Username" error="Already taken"></ui-text-field>`)}
+    ${row(html`
+      <ui-text-field label="Filled Bio" type="textarea" maxlength="80" placeholder="A few words…"></ui-text-field>
+      <ui-text-field variant="outlined" label="Outlined Notes" type="textarea" maxlength="120" placeholder="Multiline outlined notes…"></ui-text-field>
+      <ui-text-field variant="outlined" label="Required" required></ui-text-field>`)}
     ${row(html`
       <ui-text-field label="Disabled" disabled value="Read only-ish"></ui-text-field>
-      <ui-text-field variant="outlined" label="Required" required></ui-text-field>`)}`)}
+      <ui-text-field variant="outlined" label="Disabled Outlined" disabled value="Read only-ish"></ui-text-field>`)}`)}
 
   ${block('Dialog', html`
     <ui-button variant="tonal" @click=${() => dialogOpen(true)}>Open dialog</ui-button>

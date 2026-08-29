@@ -1,0 +1,138 @@
+---
+title: Components reference
+description: Overview and reference for all 68 Material Design 3 custom elements in @alacris/ui.
+sidebar:
+  order: 2
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+Alacris UI ships **68 custom elements** conforming to the Material Design 3 specification. Every component is zero-dependency, works with standard HTML/ESM, and integrates reactively with `@alacris/core` signals.
+
+<LinkCard
+  title="Open the Interactive Live Catalog"
+  href="/ui/"
+  description="Explore, test, and theme every component live in your browser."
+/>
+
+---
+
+## 1. Buttons & Actions
+
+| Tag | Summary | Key Props & Slots |
+| :--- | :--- | :--- |
+| `<ui-button>` | Material button with ripples and state layers | `variant="filled|tonal|outlined|text|elevated"`, `disabled`, `href`, `target`, slots: `default`, `icon`, `trailing` |
+| `<ui-icon-button>` | Circular icon button | `icon`, `selected-icon`, `variant="standard|filled|tonal|outlined"`, `toggle`, `disabled`, `label` |
+| `<ui-fab>` | Floating action button | `icon`, `label`, `size="sm|md|lg"`, `variant="surface|primary|secondary|tertiary"`, `disabled` |
+| `<ui-fab-menu>` | Speed dial expandable FAB menu | `label`, `direction="up|down|left|right"`, slots: `trigger`, `default` |
+| `<ui-button-group>` | Visual clustering for buttons | `label`, slots: `default` |
+| `<ui-toggle-button>` | Segmented button item | `value`, `icon`, `disabled`, slots: `default` |
+| `<ui-toggle-group>` | Segmented button coordination | `value`, `multi`, `disabled`, `label`, `@change` |
+| `<ui-split-button>` | Primary action + dropdown trigger | `variant="filled|tonal|outlined|elevated"`, slots: `default`, `menu` |
+
+---
+
+## 2. Text Fields, Inputs & Pickers
+
+| Tag | Summary | Key Props & Events |
+| :--- | :--- | :--- |
+| `<ui-text-field>` | Floating label text field and textarea | `variant="filled|outlined"`, `label`, `value`, `type="text|password|number|textarea"`, `rows`, `clearable`, `required`, `disabled`, `error`, `helper`, `maxlength`, `@input`, `@change` |
+| `<ui-autocomplete>` | Combobox with live filtering | `options`, `value`, `label`, `freeSolo`, `variant="filled|outlined"`, `@input`, `@change` |
+| `<ui-select>` | Material select dropdown | `options`, `value`, `label`, `variant="filled|outlined"`, `search="auto|always|never"`, `multi`, `@change` |
+| `<ui-option>` | Custom option item for select | `value`, `label`, `disabled`, slots: `leading`, `trailing` |
+| `<ui-checkbox>` | Three-state checkbox | `checked`, `indeterminate`, `disabled`, `error`, `@change` |
+| `<ui-radio>` | Radio button | `value`, `checked`, `disabled`, slots: `default` |
+| `<ui-radio-group>` | Radio group manager | `value`, `name`, `disabled`, `@change` |
+| `<ui-switch>` | Animated switch with MD3 physics | `checked`, `icons`, `disabled`, `label`, `@change` |
+| `<ui-slider>` | Continuous / discrete / range slider | `value`, `min`, `max`, `step`, `discrete`, `range`, `rangeStart`, `rangeEnd`, `@change` |
+| `<ui-rating>` | Star rating with hover preview | `value`, `max=5`, `half`, `disabled`, `readonly`, `@change` |
+| `<ui-search>` | Search bar and expanding search view | `value`, `placeholder`, `active`, `@input`, `@search`, `@clear` |
+| `<ui-date-picker>` | Calendar and date range picker | `value`, `range`, `rangeStart`, `rangeEnd`, `variant="docked|modal"`, `@change` |
+| `<ui-time-picker>` | Radial dial and numeric time picker | `value`, `format="12h|24h"`, `variant="docked|modal"`, `@change` |
+
+---
+
+## 3. Containment & Overlays
+
+| Tag | Summary | Key Props & Behavior |
+| :--- | :--- | :--- |
+| `<ui-dialog>` | Modal dialog with focus trap | `open`, `headline`, `persistent`, `@close` (`reason: 'esc'|'scrim'|'action'`) |
+| `<ui-sheet>` | Modal & standard bottom sheet | `open`, `variant="modal|standard"`, `label`, `persistent`, `@close` |
+| `<ui-side-sheet>` | Modal & standard side sheet | `open`, `variant="modal|standard"`, `anchor="start|end"`, `@close` |
+| `<ui-drawer>` | Navigation drawer | `open`, `variant="modal|standard"`, `anchor="start|end"`, `@close` |
+| `<ui-card>` | Elevated, filled, and outlined cards | `variant="elevated|filled|outlined"`, `interactive`, slots: `default` |
+| `<ui-accordion>` | Expansion panels manager | `multi`, `@change` |
+| `<ui-accordion-item>` | Expandable panel with smooth height | `value`, `headline`, `expanded`, `disabled`, `@ui-accordion-toggle` |
+| `<ui-carousel>` | Touch and snap carousel | `index`, `variant="multi-browse|uncontained|hero"`, `@change` |
+| `<ui-carousel-item>` | Slide item for carousel | slots: `default` |
+| `<ui-menu>` | Anchored popup menu | `open`, `placement`, slots: `anchor`, `default`, `@select` |
+| `<ui-menu-item>` | Menu action item | `value`, `icon`, `disabled`, `danger`, slots: `default`, `trailing` |
+| `<ui-surface>` | MD3 elevation surface container | `role="surface|surface-dim|surface-bright|..."`, `elevation="0..5"`, `radius` |
+| `<ui-backdrop>` | Modal scrim backdrop | `open`, `@click` |
+| `<ui-container>` | Responsive page container | `size="sm|md|lg|xl|fluid"` |
+| `<ui-stack>` | Flex layout helper | `direction="row|column"`, `gap`, `align`, `justify` |
+| `<ui-divider>` | Semantic horizontal or vertical line | `inset`, `vertical` |
+
+---
+
+## 4. Navigation
+
+| Tag | Summary | Key Props & Features |
+| :--- | :--- | :--- |
+| `<ui-app-bar>` | Top app bar | `variant="small|center|medium|large"`, `elevated`, `scrollElevate`, slots: `navigation`, `actions`, `default` |
+| `<ui-bottom-app-bar>` | Bottom toolbar with action slots | `fab`, slots: `default`, `actions` |
+| `<ui-toolbar>` | Compact action toolbar | slots: `default` |
+| `<ui-bottom-nav>` | Bottom destination bar | `value`, `@change`, slots: `default` |
+| `<ui-nav-rail>` | Vertical navigation rail | `value`, `alignment="top|center|bottom"`, slots: `fab`, `default` |
+| `<ui-nav-item>` | Destination item for nav bars and rails | `value`, `icon`, `selected-icon`, `label`, `badge` |
+| `<ui-tabs>` | Scrollable tab strip | `value`, `variant="primary|secondary"`, `@change`, slots: `default`, `panels` |
+| `<ui-tab>` | Individual tab heading | `value`, `icon`, slots: `default` |
+| `<ui-tab-panel>` | Paired content panel for tab | `value`, `active`, slots: `default` |
+| `<ui-breadcrumbs>` | Breadcrumb trail | `separator`, slots: `default` |
+| `<ui-pagination>` | Page number windowing | `page`, `count`, `siblingCount`, `@change` |
+| `<ui-stepper>` | Multi-step progress tracker | `active`, `vertical`, slots: `default` |
+| `<ui-step>` | Step item | `state="active|completed|inactive|error"`, `label`, `description` |
+
+---
+
+## 5. Communication & Feedback
+
+| Tag | Summary | Key Props & Features |
+| :--- | :--- | :--- |
+| `<ui-badge>` | Numeric or dot badge | `value`, `max=99`, `dot`, slots: `default` |
+| `<ui-alert>` | Status notification banner | `severity="info|success|warning|error"`, `variant="tonal|filled|outlined"`, `dismissible`, `title`, `@dismiss` |
+| `<ui-snackbar>` | Toast message with queue support | `open`, `message`, `action`, `duration=4000`, `closeButton`, `@close` |
+| `<ui-tooltip>` | Anchored popup tooltip | `content`, `placement`, `rich`, `title`, slots: `default` |
+| `<ui-progress>` | Linear progress indicator | `value` (0..100 or indeterminate), `fourColor`, `buffer` |
+| `<ui-spinner>` | Circular progress spinner | `size`, `strokeWidth` |
+| `<ui-loading-indicator>` | Containerized loading indicator | `label`, `fullscreen` |
+
+---
+
+## 6. Data Presentation & Utilities
+
+| Tag | Summary | Key Props & Features |
+| :--- | :--- | :--- |
+| `<ui-table>` | Full-featured data table | `columns`, `rows`, `sortable`, `filterable`, `groupable`, `paginate`, `pageSize`, `@change` |
+| `<ui-table-toolbar>` | Search, column toggles, and export toolbar | `search`, `exportCsv`, `density` |
+| `<ui-table-footer>` | Pagination and aggregation footer | `totalRows`, `page`, `pageSize`, `@page-change` |
+| `<ui-list>` | Material list wrapper | `dense`, `interactive`, slots: `default` |
+| `<ui-list-item>` | List item with 1-3 lines | `headline`, `supporting`, `trailing-supporting`, slots: `leading`, `trailing` |
+| `<ui-chip>` | Assist, filter, and input chips | `variant="assist|filter|input|suggestion"`, `selected`, `dismissible`, `icon`, `@change`, `@dismiss` |
+| `<ui-chip-set>` | Chip collection | `multi`, `value`, `@change` |
+| `<ui-avatar>` | Profile avatar with fallbacks | `src`, `alt`, `name`, `icon`, `size="sm|md|lg|xl"` |
+| `<ui-skeleton>` | Shimmering loading placeholder | `variant="text|circular|rectangular"`, `width`, `height` |
+| `<ui-icon>` | Material Symbols & SVG icon | `name`, `size`, `fill` |
+| `<ui-text>` | Type scale typography | `variant="display-lg..sm|headline-lg..sm|title-lg..sm|body-lg..sm|label-lg..sm"`, `color` |
+
+---
+
+## Interactive Live Demo
+
+To explore live interactive demonstrations with source code for every component and custom theme token controls:
+
+<LinkCard
+  title="Launch Component Catalog & Theme Playground"
+  href="/ui/"
+  description="Real custom elements running in real browser DOM. Test inputs, transitions, and theming live."
+/>
