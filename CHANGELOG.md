@@ -4,6 +4,18 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.11.4](https://github.com/bmartel/alacris/compare/v0.11.3...v0.11.4) (2026-08-29)
+
+### Features
+
+* **ui:** let a text field tell the platform hands off ([#21](https://github.com/bmartel/alacris/issues/21)) ([89ea332](https://github.com/bmartel/alacris/commit/89ea332c280a65af769a0328d5d0d6905150c293))
+
+### Bug Fixes
+
+* **html:** deduplicate nested root event delegation and support SVG class bindings ([e23dd15](https://github.com/bmartel/alacris/commit/e23dd15aa8fe74ebbae141f923a1b8edc26ec4bd))
+* **ui:** restore focus on modal close, support IME composition, and enforce hidden style ([a402a37](https://github.com/bmartel/alacris/commit/a402a370499969e47dd6ecd8560479dff7ee3e3f))
+* **ui:** stop popup close from dismissing an enclosing overlay ([#22](https://github.com/bmartel/alacris/issues/22)) ([58e2d42](https://github.com/bmartel/alacris/commit/58e2d42a87214130100afb2529fa2b9f671c4424))
+
 ## [0.11.3](https://github.com/bmartel/alacris/compare/v0.11.2...v0.11.3) (2026-08-19)
 
 ### Bug Fixes
