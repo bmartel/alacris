@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.4.4](https://github.com/bmartel/alacris/compare/ui-v0.4.3...ui-v0.4.4) (2026-08-29)
+
+### Bug Fixes
+
+* **ui:** normalize outlined floating label positioning across inputs and multiline textareas ([cf63387](https://github.com/bmartel/alacris/commit/cf633877714d519b2d30373948f41953115a937d))
+
 ## [0.4.3](https://github.com/bmartel/alacris/compare/ui-v0.4.2...ui-v0.4.3) (2026-08-29)
 
 ### Bug Fixes
