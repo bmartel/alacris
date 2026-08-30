@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.4.6](https://github.com/bmartel/alacris/compare/ui-v0.4.5...ui-v0.4.6) (2026-08-30)
+
+### Bug Fixes
+
+* **ui:** prevent label obscuring in filled textareas and calibrate legend notch scaling ([1788111](https://github.com/bmartel/alacris/commit/1788111be3311eded2c8cc12562efe3b59ccd60c))
+
 ## [0.4.5](https://github.com/bmartel/alacris/compare/ui-v0.4.4...ui-v0.4.5) (2026-08-30)
 
 ### Bug Fixes
