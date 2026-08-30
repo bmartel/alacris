@@ -35,8 +35,8 @@ npm path — code stays portable between the two setups:
     "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.4/dist/alacris.js",
     "@alacris/core/store": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.4/dist/store.js",
     "@alacris/core/context": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.4/dist/context.js",
-    "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.4.4/src/index.js",
-    "@alacris/ui/theme": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.4.4/src/theme/index.js"
+    "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.4.5/src/index.js",
+    "@alacris/ui/theme": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.4.5/src/theme/index.js"
   }
 }
 </script>
