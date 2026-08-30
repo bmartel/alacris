@@ -67,7 +67,7 @@ export const section = () => html`
     <ui-switch label="With icons" icons checked></ui-switch>
     <ui-switch label="Off limits" disabled></ui-switch>`)}
 
-  ${stackBlock('Text fields & Textareas', html`
+  ${stackBlock('Text fields', html`
     ${row(html`
       <ui-text-field label="Filled" helper="Supporting text"></ui-text-field>
       <ui-text-field variant="outlined" label="Outlined" helper="Supporting text"></ui-text-field>
@@ -81,6 +81,9 @@ export const section = () => html`
         <ui-icon slot="leading" name="person"></ui-icon>
       </ui-text-field>
       <ui-text-field variant="outlined" label="Username" error="Already taken"></ui-text-field>`)}
+    ${row(html`
+      <ui-text-field label="Filled Textarea (no placeholder)" type="textarea" maxlength="100" helper="Click or focus to float label"></ui-text-field>
+      <ui-text-field variant="outlined" label="Outlined Textarea (no placeholder)" type="textarea" maxlength="100" helper="Click or focus to float into notch"></ui-text-field>`)}
     ${row(html`
       <ui-text-field label="Filled Bio" type="textarea" maxlength="80" placeholder="A few words…"></ui-text-field>
       <ui-text-field variant="outlined" label="Outlined Notes" type="textarea" maxlength="120" placeholder="Multiline outlined notes…"></ui-text-field>

@@ -50,6 +50,23 @@ Alacris UI ships **68 custom elements** conforming to the Material Design 3 spec
 | `<ui-date-picker>` | Calendar and date range picker | `value`, `range`, `rangeStart`, `rangeEnd`, `variant="docked|modal"`, `@change` |
 | `<ui-time-picker>` | Radial dial and numeric time picker | `value`, `format="12h|24h"`, `variant="docked|modal"`, `@change` |
 
+### Text Field & Textarea Examples
+
+```html
+<!-- Single-line text field (filled and outlined) -->
+<ui-text-field label="Username" variant="outlined" helper="Choose a unique handle"></ui-text-field>
+
+<!-- Multiline textarea without placeholder: label rests on first line and floats on focus -->
+<ui-text-field label="Comments" variant="outlined" type="textarea" rows="4" helper="Focus to float label"></ui-text-field>
+
+<!-- Multiline textarea with placeholder (label starts docked in floating position) -->
+<ui-text-field label="Bio" variant="outlined" type="textarea" rows="3" placeholder="Tell us about yourself..." maxlength="160"></ui-text-field>
+```
+
+<Aside type="note" title="Floating Label Dynamics">
+When `placeholder` is omitted, the label rests inside the field/textarea and smoothly animates to the top border notch (`outlined`) or top header band (`filled`) upon receiving focus or input. When `placeholder` is provided, the label is docked in the floating position so the placeholder is visible.
+</Aside>
+
 ---
 
 ## 3. Containment & Overlays
