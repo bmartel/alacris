@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.4.7](https://github.com/bmartel/alacris/compare/ui-v0.4.6...ui-v0.4.7) (2026-08-30)
+
+### Bug Fixes
+
+* **ui:** use font-size 0.75rem for floating label and legend notch alignment ([98ca209](https://github.com/bmartel/alacris/commit/98ca209d92f175210defa37eb4a6a678746412ad))
+
 ## [0.4.6](https://github.com/bmartel/alacris/compare/ui-v0.4.5...ui-v0.4.6) (2026-08-30)
 
 ### Bug Fixes
