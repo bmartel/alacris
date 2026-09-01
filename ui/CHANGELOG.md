@@ -4,6 +4,13 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.5.1](https://github.com/bmartel/alacris/compare/ui-v0.5.0...ui-v0.5.1) (2026-09-01)
+
+### Bug Fixes
+
+* **html:** dispatch delegated events on slotted children of shadow components (fixes [#23](https://github.com/bmartel/alacris/issues/23)) ([93d835c](https://github.com/bmartel/alacris/commit/93d835cdb0600b6851097e60a242e8513056325d))
+* **ui:** animate dialog with WAAPI and fix sheet swipe yo-yo and drag restore (fixes [#24](https://github.com/bmartel/alacris/issues/24)) ([b3aeeca](https://github.com/bmartel/alacris/commit/b3aeeca021834c2f2686902a1e37a5ddb25ee88c))
+
 ## [0.5.0](https://github.com/bmartel/alacris/compare/ui-v0.4.7...ui-v0.5.0) (2026-09-01)
 
 ### Features
