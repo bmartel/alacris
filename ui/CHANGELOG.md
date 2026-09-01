@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.5.2](https://github.com/bmartel/alacris/compare/ui-v0.5.1...ui-v0.5.2) (2026-09-01)
+
+### Bug Fixes
+
+* **ui:** promote modal overlays to top layer via popover=manual (fixes [#25](https://github.com/bmartel/alacris/issues/25)) ([d94c0ba](https://github.com/bmartel/alacris/commit/d94c0ba21f82abf5ecd829ddc7572a18f1beeea9))
+
 ## [0.5.1](https://github.com/bmartel/alacris/compare/ui-v0.5.0...ui-v0.5.1) (2026-09-01)
 
 ### Bug Fixes
