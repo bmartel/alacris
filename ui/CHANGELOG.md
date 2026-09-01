@@ -4,6 +4,16 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.5.0](https://github.com/bmartel/alacris/compare/ui-v0.4.7...ui-v0.5.0) (2026-09-01)
+
+### Features
+
+* **ui:** add velocity-controlled swipeable sheets and ui-swipe-row component ([562dc09](https://github.com/bmartel/alacris/commit/562dc094d44a60b84e07f0e53eb8eb6bc7256b86))
+
+### Bug Fixes
+
+* **ui:** query visible days dynamically in date picker range test ([8d2856c](https://github.com/bmartel/alacris/commit/8d2856cc86201f312d87ece26fe0527722875989))
+
 ## [0.4.7](https://github.com/bmartel/alacris/compare/ui-v0.4.6...ui-v0.4.7) (2026-08-30)
 
 ### Bug Fixes
