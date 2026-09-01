@@ -348,19 +348,26 @@ test('ui-date-picker range selects start then end', async () => {
   const panel = el.shadowRoot.querySelector('.panel');
   assert.ok(panel);
 
-  fire(panel.querySelector('[data-iso="2026-08-14"]'), 'click');
+  const days = Array.from(panel.querySelectorAll('button[data-iso]:not([disabled])'));
+  assert.ok(days.length >= 20, 'has days in current month');
+  const firstDay = days[10];
+  const secondDay = days[18];
+  const firstIso = firstDay.getAttribute('data-iso');
+  const secondIso = secondDay.getAttribute('data-iso');
+
+  fire(firstDay, 'click');
   assert.equal(el.start, '', 'first click is a draft; parent start is unchanged');
   assert.equal(el.end, '');
-  assert.equal(panel.querySelector('[data-iso="2026-08-14"]').getAttribute('aria-selected'), 'true');
+  assert.equal(firstDay.getAttribute('aria-selected'), 'true');
   assert.ok(el.shadowRoot.querySelector('.panel'), 'first click keeps the panel open');
 
   let detail = null;
   el.addEventListener('change', (e) => (detail = e.detail));
-  fire(el.shadowRoot.querySelector('[data-iso="2026-08-20"]'), 'click');
-  assert.equal(el.start, '2026-08-14');
-  assert.equal(el.end, '2026-08-20');
-  assert.equal(detail.start, '2026-08-14');
-  assert.equal(detail.end, '2026-08-20');
+  fire(secondDay, 'click');
+  assert.equal(el.start, firstIso);
+  assert.equal(el.end, secondIso);
+  assert.equal(detail.start, firstIso);
+  assert.equal(detail.end, secondIso);
   unmountAll();
   await tick();
 });
