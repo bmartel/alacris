@@ -196,6 +196,16 @@ test('ui-dialog enter animation uses WAAPI scaleIn and releaseFill without CSS k
   unmountAll();
 });
 
+test('ui-dialog overlay has popover=manual attribute for top layer promotion', async () => {
+  const el = mount('<ui-dialog label="Confirm"><p>Body</p></ui-dialog>');
+  el.open = true;
+  await tick();
+  const overlay = el.shadowRoot.querySelector('.overlay');
+  assert.ok(overlay, 'overlay rendered');
+  assert.equal(overlay.getAttribute('popover'), 'manual', 'overlay has popover=manual');
+  unmountAll();
+});
+
 test('ui-sheet mounts on open, emits close on scrim, removes after exit', async () => {
   const el = mount('<ui-sheet label="Share"><p>Body</p></ui-sheet>');
   await tick();
