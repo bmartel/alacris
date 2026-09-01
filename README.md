@@ -63,7 +63,7 @@ See [Performance](#performance) for the numbers and for where Alacris still pays
 
 | file | raw | gzip | brotli |
 | --- | ---: | ---: | ---: |
-| `dist/alacris.js` — signals + templates + styles + elements | 16.89 KB | **6.59 KB** | 6.01 KB |
+| `dist/alacris.js` — signals + templates + styles + elements | 16.89 KB | **6.59 KB** | 5.98 KB |
 | `dist/store.js` — deep reactive state | 2.14 KB | **1.03 KB** | 0.95 KB |
 | `dist/context.js` — cross-component context | 0.91 KB | **0.54 KB** | 0.46 KB |
 | `dist/signal.js` — reactivity alone, no DOM | 2.34 KB | **1.03 KB** | 0.96 KB |

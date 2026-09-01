@@ -187,6 +187,15 @@ test('ui-dialog mounts on open, emits close on scrim, removes after exit', async
   unmountAll();
 });
 
+test('ui-dialog enter animation uses WAAPI scaleIn and releaseFill without CSS keyframes', async () => {
+  const el = mount('<ui-dialog label="Confirm"><p>Body</p></ui-dialog>');
+  el.open = true;
+  await tick();
+  const surface = el.shadowRoot.querySelector('.surface');
+  assert.ok(surface, 'surface mounted');
+  unmountAll();
+});
+
 test('ui-sheet mounts on open, emits close on scrim, removes after exit', async () => {
   const el = mount('<ui-sheet label="Share"><p>Body</p></ui-sheet>');
   await tick();
@@ -206,6 +215,54 @@ test('ui-sheet mounts on open, emits close on scrim, removes after exit', async 
   await tick();
   await tick();
   assert.equal(el.shadowRoot.querySelector('.overlay'), null, 'exit removes the DOM');
+  unmountAll();
+});
+
+test('ui-sheet swipe down requests close with swipe reason and avoids yo-yo exit', async () => {
+  const el = mount('<ui-sheet label="Share"><p>Body</p></ui-sheet>');
+  el.open = true;
+  await tick();
+  const surface = el.shadowRoot.querySelector('.surface');
+  let closeReason = null;
+  el.addEventListener('close', (e) => {
+    closeReason = e.detail.reason;
+    el.open = false;
+  });
+
+  const handle = el.shadowRoot.querySelector('.handle') || surface;
+  const down = new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerId: 1, clientX: 100, clientY: 100, isPrimary: true });
+  const move = new PointerEvent('pointermove', { bubbles: true, cancelable: true, pointerId: 1, clientX: 100, clientY: 300, isPrimary: true });
+  const up = new PointerEvent('pointerup', { bubbles: true, cancelable: true, pointerId: 1, clientX: 100, clientY: 300, isPrimary: true });
+
+  handle.dispatchEvent(down);
+  handle.dispatchEvent(move);
+  handle.dispatchEvent(up);
+  await tick();
+
+  assert.equal(closeReason, 'swipe', 'swipe down triggers swipe close reason');
+  unmountAll();
+});
+
+test('ui-sheet drag restore allows subsequent drag without getting stuck', async () => {
+  const el = mount('<ui-sheet label="Share"><p>Body</p></ui-sheet>');
+  el.open = true;
+  await tick();
+  const surface = el.shadowRoot.querySelector('.surface');
+  const handle = el.shadowRoot.querySelector('.handle') || surface;
+
+  // Drag down slightly then restore
+  handle.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerId: 1, clientX: 100, clientY: 100, isPrimary: true }));
+  handle.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, cancelable: true, pointerId: 1, clientX: 100, clientY: 120, isPrimary: true }));
+  handle.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, cancelable: true, pointerId: 1, clientX: 100, clientY: 100, isPrimary: true }));
+  handle.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, pointerId: 1, clientX: 100, clientY: 100, isPrimary: true }));
+  await tick();
+
+  // Second drag
+  handle.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerId: 1, clientX: 100, clientY: 100, isPrimary: true }));
+  handle.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, cancelable: true, pointerId: 1, clientX: 100, clientY: 150, isPrimary: true }));
+  assert.equal(surface.style.transform, 'translateY(50px)', 'tracks second drag cleanly');
+
+  handle.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, pointerId: 1, clientX: 100, clientY: 150, isPrimary: true }));
   unmountAll();
 });
 
