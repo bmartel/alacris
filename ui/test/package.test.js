@@ -54,7 +54,7 @@ test('component modules are marked as side-effectful so bundlers keep define()',
 test('every ui-* file is importable through the components subpath', () => {
   const files = readdirSync(join(root, 'src', 'components'))
     .filter((f) => f.startsWith('ui-') && f.endsWith('.js'));
-  assert.equal(files.length, 68);
+  assert.equal(files.length, 69);
   for (const file of files) {
     assert.ok(existsSync(join(root, 'src', 'components', file)));
   }

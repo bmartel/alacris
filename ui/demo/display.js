@@ -7,6 +7,7 @@ import '../src/components/ui-badge.js';
 import '../src/components/ui-divider.js';
 import '../src/components/ui-list.js';
 import '../src/components/ui-list-item.js';
+import '../src/components/ui-swipe-row.js';
 import '../src/components/ui-table.js';
 import '../src/components/ui-tooltip.js';
 import '../src/components/ui-carousel.js';
@@ -137,6 +138,32 @@ export const section = () => {
                       supporting="This contact is no longer available">
           <ui-avatar slot="leading" icon="person" label=""></ui-avatar>
         </ui-list-item>
+      </ui-list>
+    </ui-card>`)}
+
+  ${stackBlock('Swipeable row (Android-style reveal)', html`
+    <ui-card variant="outlined" style="--ui-card-padding: 0;">
+      <ui-list label="Swipeable inbox">
+        <ui-swipe-row>
+          <ui-icon-button slot="start" icon="favorite" label="Star"></ui-icon-button>
+          <ui-icon-button slot="end" icon="archive" label="Archive"></ui-icon-button>
+          <ui-icon-button slot="end" icon="delete" label="Delete" danger></ui-icon-button>
+          <ui-list-item interactive headline="Swipe left or right"
+                        supporting="Swipe left for archive/delete, right for star. Flick to snap open.">
+            <ui-avatar slot="leading" icon="mail" label="Message"></ui-avatar>
+            <span slot="trailing">12:30</span>
+          </ui-list-item>
+        </ui-swipe-row>
+        <ui-divider inset></ui-divider>
+        <ui-swipe-row full-swipe>
+          <ui-icon-button slot="start" icon="check" label="Complete"></ui-icon-button>
+          <ui-icon-button slot="end" icon="delete" label="Delete" danger></ui-icon-button>
+          <ui-list-item interactive headline="Full-swipe action support"
+                        supporting="Swipe all the way across to trigger primary action immediately.">
+            <ui-avatar slot="leading" icon="settings" label="Task"></ui-avatar>
+            <span slot="trailing">09:15</span>
+          </ui-list-item>
+        </ui-swipe-row>
       </ui-list>
     </ui-card>`)}
 

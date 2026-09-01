@@ -105,8 +105,8 @@ export const section = () => html`
     <ui-button variant="tonal" @click=${() => sheetOpen(true)}>Open sheet</ui-button>
     <ui-sheet open=${sheetOpen} @close=${() => sheetOpen(false)}>
       <span slot="headline">Share</span>
-      A modal bottom sheet — slides up from the bottom, traps focus, and the
-      parent owns <code>open</code>. Escape or the scrim closes it.
+      A modal bottom sheet — slides up from the bottom, traps focus, and supports
+      controlled swiping down with inertia flick dismissal. Escape or the scrim also closes it.
       <ui-button slot="actions" variant="text" @click.capture=${() => sheetOpen(false)}>Close</ui-button>
     </ui-sheet>`)}
 
@@ -114,8 +114,8 @@ export const section = () => html`
     <ui-button variant="tonal" @click=${() => sideOpen(true)}>Open side sheet</ui-button>
     <ui-side-sheet open=${sideOpen} @close=${() => sideOpen(false)}>
       <span slot="headline">Filters</span>
-      Complementary content — distinct from a navigation drawer. Close via the
-      X, Escape, or the scrim.
+      Complementary content — distinct from a navigation drawer. Controlled swipe
+      to dismiss with velocity flick, X button, Escape, or the scrim.
       <ui-button slot="actions" variant="text" @click.capture=${() => sideOpen(false)}>Apply</ui-button>
     </ui-side-sheet>`)}
 

@@ -108,6 +108,26 @@ export function ripple(
   opts?: { disabled?: boolean | Signal<boolean> | (() => boolean); centered?: boolean }
 ): Element;
 
+export function createSwipeTracker(
+  el: Element,
+  opts?: {
+    axis?: 'x' | 'y' | 'both';
+    threshold?: number;
+    filter?: (e: PointerEvent) => boolean;
+    onStart?: (info: { x: number; y: number; event: PointerEvent }) => void;
+    onMove?: (info: { dx: number; dy: number; x: number; y: number; vx: number; vy: number; event: PointerEvent }) => void;
+    onEnd?: (info: { dx: number; dy: number; vx: number; vy: number; event: PointerEvent; cancelled: boolean }) => void;
+  }
+): { destroy: () => void };
+
+export function calculateVelocity(
+  history: Array<{ x: number; y: number; t: number }>,
+  now?: number,
+  windowMs?: number
+): { vx: number; vy: number };
+
+export function rubberBand(delta: number, factor?: number): number;
+
 export function position(
   panel: HTMLElement,
   anchor: Element,

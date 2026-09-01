@@ -65,7 +65,7 @@ const FAMILIES = [
 ].map((f) => ({ ...f, id: slug(f.title) }));
 
 const METRICS = [
-  { value: '68', label: 'Components' },
+  { value: '69', label: 'Components' },
   { value: '0', label: 'Dependencies' },
   { value: '1', label: 'Seed color' },
 ];

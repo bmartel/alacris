@@ -1,13 +1,13 @@
 ---
 title: Components reference
-description: Overview and reference for all 68 Material Design 3 custom elements in @alacris/ui.
+description: Overview and reference for all 69 Material Design 3 custom elements in @alacris/ui.
 sidebar:
   order: 2
 ---
 
 import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-Alacris UI ships **68 custom elements** conforming to the Material Design 3 specification. Every component is zero-dependency, works with standard HTML/ESM, and integrates reactively with `@alacris/core` signals.
+Alacris UI ships **69 custom elements** conforming to the Material Design 3 specification. Every component is zero-dependency, works with standard HTML/ESM, and integrates reactively with `@alacris/core` signals.
 
 <LinkCard
   title="Open the Interactive Live Catalog"
@@ -74,9 +74,9 @@ When `placeholder` is omitted, the label rests inside the field/textarea and smo
 | Tag | Summary | Key Props & Behavior |
 | :--- | :--- | :--- |
 | `<ui-dialog>` | Modal dialog with focus trap | `open`, `headline`, `persistent`, `@close` (`reason: 'esc'|'scrim'|'action'`) |
-| `<ui-sheet>` | Modal & standard bottom sheet | `open`, `variant="modal|standard"`, `label`, `persistent`, `@close` |
-| `<ui-side-sheet>` | Modal & standard side sheet | `open`, `variant="modal|standard"`, `anchor="start|end"`, `@close` |
-| `<ui-drawer>` | Navigation drawer | `open`, `variant="modal|standard"`, `anchor="start|end"`, `@close` |
+| `<ui-sheet>` | Modal & standard bottom sheet with velocity swipe dismiss | `open`, `variant="modal|standard"`, `swipable`, `persistent`, `@close` (`reason: 'esc'|'scrim'|'swipe'|'method'`) |
+| `<ui-side-sheet>` | Modal & standard side sheet with velocity swipe dismiss | `open`, `variant="modal|standard"`, `anchor="start|end"`, `swipable`, `@close` (`reason: 'esc'|'scrim'|'swipe'|'method'`) |
+| `<ui-drawer>` | Navigation drawer with velocity swipe dismiss | `open`, `variant="modal|standard"`, `anchor="start|end"`, `swipable`, `@close` (`reason: 'esc'|'scrim'|'swipe'`) |
 | `<ui-card>` | Elevated, filled, and outlined cards | `variant="elevated|filled|outlined"`, `interactive`, slots: `default` |
 | `<ui-accordion>` | Expansion panels manager | `multi`, `@change` |
 | `<ui-accordion-item>` | Expandable panel with smooth height | `value`, `headline`, `expanded`, `disabled`, `@ui-accordion-toggle` |
@@ -135,6 +135,7 @@ When `placeholder` is omitted, the label rests inside the field/textarea and smo
 | `<ui-table-footer>` | Pagination and aggregation footer | `totalRows`, `page`, `pageSize`, `@page-change` |
 | `<ui-list>` | Material list wrapper | `dense`, `interactive`, slots: `default` |
 | `<ui-list-item>` | List item with 1-3 lines | `headline`, `supporting`, `trailing-supporting`, slots: `leading`, `trailing` |
+| `<ui-swipe-row>` | Android-style horizontal swipe-to-reveal row container | `open="start|end|''"`, `disabled`, `threshold=0.4`, `fullSwipe`, slots: `default`, `start`, `end`, `@open`, `@close`, `@action` |
 | `<ui-chip>` | Assist, filter, and input chips | `variant="assist|filter|input|suggestion"`, `selected`, `dismissible`, `icon`, `@change`, `@dismiss` |
 | `<ui-chip-set>` | Chip collection | `multi`, `value`, `@change` |
 | `<ui-avatar>` | Profile avatar with fallbacks | `src`, `alt`, `name`, `icon`, `size="sm|md|lg|xl"` |

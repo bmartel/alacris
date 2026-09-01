@@ -60,6 +60,7 @@ declare global {
     'ui-step': HTMLElement;
     'ui-stepper': HTMLElement;
     'ui-surface': HTMLElement;
+    'ui-swipe-row': HTMLElement;
     'ui-switch': HTMLElement;
     'ui-tab': HTMLElement;
     'ui-tab-panel': HTMLElement;
