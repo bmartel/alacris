@@ -64,14 +64,11 @@ function delegate(root, type) {
     const path = e.composedPath();
     const ri = path.indexOf(root);
     if (ri < 0) return;
-    // Anything before an inner shadow boundary belongs to that inner root and
-    // has already been offered the event by its own listener.
-    let lo = 0;
-    for (let i = 0; i < ri; i++) if (path[i].nodeType === 11) lo = i + 1;
     const d = e.$$h || (e.$$h = new Set());
-    for (let i = lo; i < ri; i++) {
+    const r = root.getRootNode();
+    for (let i = 0; i < ri; i++) {
       const node = path[i];
-      if (!d.has(node)) {
+      if (node.getRootNode() === r && !d.has(node)) {
         const h = node[key];
         if (h) {
           d.add(node);

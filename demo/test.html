@@ -86,6 +86,25 @@ test('event modifiers stop/prevent', () => {
   eq(defaulted, true, 'default prevented');
 });
 
+test('delegated events fire on slotted children of shadow components', () => {
+  let slottedHits = 0;
+  define('x-slot-wrap', {
+    setup: () => html`<div class="box" @click=${() => {}}><slot></slot></div>`,
+  });
+  define('x-slot-app', {
+    setup: () => html`
+      <x-slot-wrap>
+        <button id="slotted-btn" @click=${() => slottedHits++}>Click</button>
+      </x-slot-wrap>
+    `,
+  });
+  const el = document.createElement('x-slot-app');
+  fixture.append(el);
+  const btn = el.shadowRoot.querySelector('#slotted-btn');
+  btn.click();
+  eq(slottedHits, 1, 'slotted button click handler executed');
+});
+
 test('svg renders in the right namespace and paints', () => {
   const el = host();
   const r = signal(10);

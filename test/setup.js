@@ -11,3 +11,13 @@ for (const k of [
   globalThis[k] = k === 'window' ? window : window[k];
 }
 globalThis.happyWindow = window;
+
+// Fix happy-dom getRootNode on detached trees (spec mandates returning the root ancestor).
+const origGetRootNode = window.Node.prototype.getRootNode;
+window.Node.prototype.getRootNode = function(options) {
+  if (this.isConnected) return origGetRootNode.call(this, options);
+  let curr = this;
+  while (curr.parentNode) curr = curr.parentNode;
+  return curr;
+};
+

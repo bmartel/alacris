@@ -298,3 +298,33 @@ test('without formAssociated the class stays plain', () => {
   const el = mount(document.createElement(t));
   assert.equal(el.internals, undefined);
 });
+
+test('delegated events on slotted light-DOM children invoke the outer component handler', () => {
+  let slottedClicked = 0;
+  let directClicked = 0;
+  let innerClicked = 0;
+
+  define('x-slotted-delegate-wrap', {
+    setup: () => html`<div class="wrapper-frame" @click=${() => innerClicked++}><slot></slot></div>`,
+  });
+
+  define('x-slotted-delegate-app', {
+    setup: () => html`
+      <button class="direct" @click=${() => directClicked++}>direct</button>
+      <x-slotted-delegate-wrap>
+        <button class="slotted" @click=${() => slottedClicked++}>slotted</button>
+      </x-slotted-delegate-wrap>
+    `,
+  });
+
+  const app = mount(document.createElement('x-slotted-delegate-app'));
+  const directBtn = app.shadowRoot.querySelector('.direct');
+  const slottedBtn = app.shadowRoot.querySelector('.slotted');
+
+  directBtn.dispatchEvent(new CustomEvent('click', { bubbles: true, composed: true }));
+  assert.equal(directClicked, 1, 'direct button fires delegated click');
+
+  slottedBtn.dispatchEvent(new CustomEvent('click', { bubbles: true, composed: true }));
+  assert.equal(slottedClicked, 1, 'slotted button fires delegated click from outer root');
+});
+
