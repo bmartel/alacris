@@ -4,6 +4,22 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.11.5](https://github.com/bmartel/alacris/compare/v0.11.4...v0.11.5) (2026-09-01)
+
+### Features
+
+* **ui:** add velocity-controlled swipeable sheets and ui-swipe-row component ([562dc09](https://github.com/bmartel/alacris/commit/562dc094d44a60b84e07f0e53eb8eb6bc7256b86))
+
+### Bug Fixes
+
+* **html:** dispatch delegated events on slotted children of shadow components (fixes [#23](https://github.com/bmartel/alacris/issues/23)) ([93d835c](https://github.com/bmartel/alacris/commit/93d835cdb0600b6851097e60a242e8513056325d))
+* **ui:** apply inert to collapsed standard sheets, drawers, accordions, and dismissing elements ([ee730bc](https://github.com/bmartel/alacris/commit/ee730bc0010cf23ba1b717ca4a49ac34fdcb098c))
+* **ui:** normalize outlined floating label positioning across inputs and multiline textareas ([cf63387](https://github.com/bmartel/alacris/commit/cf633877714d519b2d30373948f41953115a937d))
+* **ui:** prevent label obscuring in filled textareas and calibrate legend notch scaling ([1788111](https://github.com/bmartel/alacris/commit/1788111be3311eded2c8cc12562efe3b59ccd60c))
+* **ui:** query visible days dynamically in date picker range test ([8d2856c](https://github.com/bmartel/alacris/commit/8d2856cc86201f312d87ece26fe0527722875989))
+* **ui:** smooth floating label transitions for textareas without placeholder ([500bb37](https://github.com/bmartel/alacris/commit/500bb378ade368dce2fd54908b4c7f48140daa06))
+* **ui:** use font-size 0.75rem for floating label and legend notch alignment ([98ca209](https://github.com/bmartel/alacris/commit/98ca209d92f175210defa37eb4a6a678746412ad))
+
 ## [0.11.4](https://github.com/bmartel/alacris/compare/v0.11.3...v0.11.4) (2026-08-29)
 
 ### Features

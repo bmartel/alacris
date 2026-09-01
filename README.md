@@ -22,7 +22,7 @@ ESM-only · zero dependencies · no build step required · works inside any fram
 
 ```html
 <script type="module">
-  import { define, html, signal } from 'https://unpkg.com/@alacris/core@0.11.4';
+  import { define, html, signal } from 'https://unpkg.com/@alacris/core@0.11.5';
 
   define('ala-counter', {
     props: { start: 0 },
@@ -90,15 +90,15 @@ The package used to be the unscoped `alacris`. Same API; the specifier is now
 Or skip installing entirely:
 
 ```js
-import { define, html, signal } from 'https://unpkg.com/@alacris/core@0.11.4/dist/alacris.js';
+import { define, html, signal } from 'https://unpkg.com/@alacris/core@0.11.5/dist/alacris.js';
 // or jsDelivr
-import { define, html, signal } from 'https://cdn.jsdelivr.net/npm/@alacris/core@0.11.4/+esm';
+import { define, html, signal } from 'https://cdn.jsdelivr.net/npm/@alacris/core@0.11.5/+esm';
 ```
 
 Just the reactive core, without the renderer (1.03 KB):
 
 ```js
-import { signal, computed, effect } from 'https://unpkg.com/@alacris/core@0.11.4/dist/signal.js';
+import { signal, computed, effect } from 'https://unpkg.com/@alacris/core@0.11.5/dist/signal.js';
 ```
 
 That build is for non-DOM use (a worker, a server): it carries its own copy of
@@ -589,7 +589,7 @@ the other side.
 **Plain HTML**
 
 ```html
-<script type="module" src="https://unpkg.com/@alacris/core@0.11.4/dist/alacris.js"></script>
+<script type="module" src="https://unpkg.com/@alacris/core@0.11.5/dist/alacris.js"></script>
 <user-card name="Ada" age="36"></user-card>
 ```
 

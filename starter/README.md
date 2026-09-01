@@ -59,7 +59,7 @@ The published package is plain ESM. Point an import map at pinned CDN builds:
 <script type="importmap">
 {
   "imports": {
-    "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.4/dist/alacris.js",
+    "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.5/dist/alacris.js",
     "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.5.0/src/index.js",
     "@alacris/ui/theme": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.5.0/src/theme/index.js",
     "@alacris/ui/components/": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.5.0/src/components/"
@@ -72,7 +72,7 @@ The published package is plain ESM. Point an import map at pinned CDN builds:
 </script>
 ```
 
-The URLs pin `@alacris/core@0.11.4` and `@alacris/ui@0.5.0`. Never mix two versions of `@alacris/core` on one page — two copies means two reactive graphs.
+The URLs pin `@alacris/core@0.11.5` and `@alacris/ui@0.5.0`. Never mix two versions of `@alacris/core` on one page — two copies means two reactive graphs.
 
 ## Using it from a framework
 
@@ -294,7 +294,7 @@ Load **one** copy of `@alacris/core` via an import map (or your bundler), then `
 
 ```ruby
 # config/importmap.rb
-pin "@alacris/core", to: "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.4/dist/alacris.js"
+pin "@alacris/core", to: "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.5/dist/alacris.js"
 pin "@alacris/ui", to: "https://cdn.jsdelivr.net/npm/@alacris/ui@0.5.0/src/index.js"
 ```
 
@@ -321,7 +321,7 @@ Put the import map and module script on the base template. Emit tags from templa
 <script type="importmap">
 {
   "imports": {
-    "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.4/dist/alacris.js",
+    "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.5/dist/alacris.js",
     "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.5.0/src/index.js"
   }
 }
@@ -362,7 +362,7 @@ applyTheme({ seed: '#e8ad18' });
 <script type="importmap">
 {
   "imports": {
-    "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.4/dist/alacris.js",
+    "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.5/dist/alacris.js",
     "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.5.0/src/index.js"
   }
 }
@@ -424,7 +424,7 @@ Add the import map in `_Layout.cshtml`. If you bundle with esbuild or Vite, `npm
 <script type="importmap" th:inline="none">
 {
   "imports": {
-    "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.4/dist/alacris.js",
+    "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.11.5/dist/alacris.js",
     "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.5.0/src/index.js"
   }
 }
