@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.6.0](https://github.com/bmartel/alacris/compare/ui-v0.5.2...ui-v0.6.0) (2026-09-02)
+
+### Features
+
+* **ui:** add native macOS-style MD3 custom scrollbars on desktop ([0852e82](https://github.com/bmartel/alacris/commit/0852e82c5df8349ba5e7766b9532690e7654ea96))
+
 ## [0.5.2](https://github.com/bmartel/alacris/compare/ui-v0.5.1...ui-v0.5.2) (2026-09-01)
 
 ### Bug Fixes
