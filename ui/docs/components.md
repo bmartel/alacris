@@ -1,7 +1,7 @@
 # Component catalog
 
 Assembled from each component's file header by `scripts/catalog.mjs` — the
-headers are the source of truth. 68 components. Every component
+headers are the source of truth. 69 components. Every component
 also exports `themeVars` (when it declares component tokens); `themeVars.names`
 is the machine-readable custom-property list.
 
@@ -562,8 +562,10 @@ no scrim, no trap.
 | `@prop` | {boolean} open=false |
 | `@prop` | {string}  variant='modal' — modal \| standard |
 | `@prop` | {string}  anchor='start'  — start \| end (which edge it slides from) |
+| `@prop` | {boolean} persistent=false — Escape/scrim/swipe do not request closing |
+| `@prop` | {boolean} swipable=true   — swipe in anchor direction to dismiss |
 | `@prop` | {string}  label=''        — accessible name; falls back to "Navigation" |
-| `@event` | close  — modal dismissed; detail: { reason: 'esc' \| 'scrim' } |
+| `@event` | close  — modal dismissed; detail: { reason: 'esc' \| 'scrim' \| 'swipe' } |
 | `@event` | opened — modal enter animation finished |
 | `@event` | closed — modal exit animation finished, DOM removed |
 | `@slot` | (default) — drawer content |
@@ -1062,9 +1064,10 @@ no trap.
 | --- | --- |
 | `@prop` | {boolean} open=false |
 | `@prop` | {string}  variant='modal' — modal \| standard |
-| `@prop` | {boolean} persistent=false — Escape/scrim do not request closing |
+| `@prop` | {boolean} persistent=false — Escape/scrim/swipe do not request closing |
+| `@prop` | {boolean} swipable=true   — swipe down to dismiss |
 | `@prop` | {string}  label=''         — accessible name if no headline slot |
-| `@event` | close  — detail: { reason: 'esc' \| 'scrim' \| 'method' } |
+| `@event` | close  — detail: { reason: 'esc' \| 'scrim' \| 'swipe' \| 'method' } |
 | `@event` | opened — enter animation finished |
 | `@event` | closed — exit animation finished, DOM removed |
 | `@slot` | (default) — body content |
@@ -1095,9 +1098,10 @@ an in-flow panel that animates its inline size — no scrim, no trap.
 | `@prop` | {boolean} open=false |
 | `@prop` | {string}  variant='modal' — modal \| standard |
 | `@prop` | {string}  anchor='end'    — start \| end |
-| `@prop` | {boolean} persistent=false — Escape/scrim do not request closing |
+| `@prop` | {boolean} persistent=false — Escape/scrim/swipe do not request closing |
+| `@prop` | {boolean} swipable=true   — swipe in anchor direction to dismiss |
 | `@prop` | {string}  label=''         — accessible name if no headline slot |
-| `@event` | close  — detail: { reason: 'esc' \| 'scrim' \| 'method' } |
+| `@event` | close  — detail: { reason: 'esc' \| 'scrim' \| 'swipe' \| 'method' } |
 | `@event` | opened — enter animation finished |
 | `@event` | closed — exit animation finished, DOM removed |
 | `@slot` | (default) — body content |
@@ -1317,6 +1321,33 @@ a themable surface (the Paper equivalent).
 | `@vars` | (none — every value resolves through the system tokens) |
 
 Source: [`src/components/ui-surface.js`](../src/components/ui-surface.js)
+
+## `<ui-swipe-row>`
+
+an Android-style horizontal swipe-to-reveal row container.
+
+  &lt;ui-swipe-row&gt;
+    &lt;ui-icon-button slot="end" icon="delete" label="Delete" danger&gt;&lt;/ui-icon-button&gt;
+    &lt;ui-icon-button slot="end" icon="archive" label="Archive"&gt;&lt;/ui-icon-button&gt;
+    &lt;ui-list-item headline="Swipeable message" supporting="Swipe left to reveal actions"&gt;&lt;/ui-list-item&gt;
+  &lt;/ui-swipe-row&gt;
+
+| | |
+| --- | --- |
+| `@prop` | {string}  open=''         — '' \| 'start' \| 'end' |
+| `@prop` | {boolean} disabled=false  — disables gesture tracking |
+| `@prop` | {number}  threshold=0.4   — fraction of action width to snap open |
+| `@prop` | {boolean} fullSwipe=false — swiping past 65% width triggers action |
+| `@event` | open   — detail: { side: 'start' \| 'end' } |
+| `@event` | close  — detail: {} |
+| `@event` | action — detail: { side: 'start' \| 'end' } |
+| `@slot` | (default) — primary row content (e.g. &lt;ui-list-item&gt;, &lt;ui-card&gt;) |
+| `@slot` | start — actions revealed when swiping right |
+| `@slot` | end   — actions revealed when swiping left |
+| `@part` | container, content, start-actions, end-actions |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-swipe-row.js`](../src/components/ui-swipe-row.js)
 
 ## `<ui-switch>`
 

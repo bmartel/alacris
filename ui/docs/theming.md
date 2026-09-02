@@ -30,6 +30,7 @@ Semantic roles on `:root`, inheriting through every shadow boundary:
 | Space | `space-1…24` (4px grid) |
 | State | `state-hover/focus/pressed/dragged`, `state-disabled-content/container` |
 | Focus | `focus-ring`, `focus-ring-width/offset/color` |
+| Scrollbar | `scrollbar-size`, `scrollbar-radius`, `scrollbar-track`, `scrollbar-thumb`, `scrollbar-thumb-hover`, `scrollbar-thumb-active` (applied on desktop via `@media (hover: hover) and (pointer: fine)`) |
 | Misc | `density` (0…-2), `z-app-bar/drawer/modal/popup/snackbar/tooltip` |
 
 Components never write these names as strings — they go through the `sys`

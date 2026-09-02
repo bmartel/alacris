@@ -1,6 +1,4 @@
-// Hand-written types for @alacris/ui. They track starter/src/index.js and the
-// theme / motion / token / util entry points — not generated.
-import type { Signal, Computed, Template } from '@alacris/core';
+import type { Signal, Computed, Template, Sheet } from '@alacris/core';
 import './elements.js';
 
 export type Scheme = 'light' | 'dark';
@@ -60,6 +58,7 @@ export const sys: {
   state: Record<string, string>;
   focus: Record<string, string>;
   z: Record<string, string>;
+  scrollbar: Record<string, string>;
   density: string;
 };
 export function typeRule(role: string): string;
@@ -190,3 +189,10 @@ export function showSnackbar(
   message: string,
   opts?: { action?: string; duration?: number; closeButton?: boolean }
 ): { close: () => void; closed: Promise<void> };
+
+export const base: Sheet;
+export function scrollbarOn(selector: string): string;
+export function focusRingOn(selector: string): string;
+export function stateLayerOn(host: string, opts?: { focus?: string }): string;
+export function scrollbarTokens(): Record<string, string>;
+

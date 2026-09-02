@@ -132,3 +132,34 @@ test('applyTheme({ loadFonts: false }) does not inject a font link', () => {
   assert.ok(fontLink());
   clearFonts();
 });
+
+test('scrollbar tokens are included in common theme and themeCss output', () => {
+  const theme = createTheme();
+  assert.equal(theme.common['scrollbar-size'], '8px');
+  assert.equal(theme.common['scrollbar-radius'], 'var(--ui-radius-full)');
+  assert.equal(theme.common['scrollbar-track'], 'transparent');
+  assert.equal(theme.common['scrollbar-thumb'], 'var(--ui-color-outline-variant)');
+  assert.equal(theme.common['scrollbar-thumb-hover'], 'var(--ui-color-outline)');
+  assert.equal(theme.common['scrollbar-thumb-active'], 'var(--ui-color-on-surface-variant)');
+
+  const cssText = themeCss(theme);
+  assert.match(cssText, /@media \(hover: hover\) and \(pointer: fine\)/);
+  assert.match(cssText, /scrollbar-width: thin;/);
+  assert.match(cssText, /scrollbar-color: var\(--ui-scrollbar-thumb\) var\(--ui-scrollbar-track\);/);
+  assert.match(cssText, /::-webkit-scrollbar-thumb/);
+  assert.match(cssText, /::-webkit-scrollbar-button\s*\{\s*display:\s*none;/);
+});
+
+test('scrollbar tokens can be overridden via theme config', () => {
+  const custom = createTheme({
+    overrides: {
+      common: {
+        'scrollbar-size': '10px',
+        'scrollbar-thumb': '#ff0000',
+      },
+    },
+  });
+  assert.equal(custom.common['scrollbar-size'], '10px');
+  assert.equal(custom.common['scrollbar-thumb'], '#ff0000');
+});
+
