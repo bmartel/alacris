@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.8.1](https://github.com/bmartel/alacris/compare/ui-v0.8.0...ui-v0.8.1) (2026-10-03)
+
+### Bug Fixes
+
+* **ui:** ui-search input is a combobox ([bf40a86](https://github.com/bmartel/alacris/commit/bf40a8650c0c458e212145c9900acb892c300294))
+
 ## [0.8.0](https://github.com/bmartel/alacris/compare/ui-v0.7.0...ui-v0.8.0) (2026-10-03)
 
 ### Features
