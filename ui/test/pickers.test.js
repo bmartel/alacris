@@ -621,3 +621,20 @@ test('ui-select drops the query when the panel closes', async () => {
     0, 'every option is back');
   unmountAll();
 });
+
+test('ui-chip input variant shows a selected state without a check or toggling', async () => {
+  const el = mount('<ui-chip variant="input" dismissible>Note</ui-chip>');
+  await tick();
+  const root = () => el.shadowRoot.querySelector('[part="control"]').parentElement;
+  const control = el.shadowRoot.querySelector('[part="control"]');
+  assert.ok(!root().classList.contains('selected'));
+  el.selected = true;
+  await tick();
+  assert.ok(root().classList.contains('selected'), 'filled when selected');
+  assert.equal(el.shadowRoot.querySelector('ui-icon[name="check"]'), null, 'no check icon');
+  fire(control, 'click');
+  assert.equal(el.selected, true, 'clicking does not toggle an input chip');
+  assert.equal(el.getAttribute('aria-selected'), null, 'ARIA is left to the app');
+  unmountAll();
+  await tick();
+});

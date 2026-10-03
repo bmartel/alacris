@@ -11,7 +11,9 @@
 // removes itself.
 //
 // @prop  {string}  variant='assist' — assist | filter | input | suggestion
-// @prop  {boolean} selected=false   — filter chips only
+// @prop  {boolean} selected=false   — filter chips (toggle, check icon) and input chips
+//                                     (MD3 selected input chip: filled, no check;
+//                                     the app owns the state and its ARIA)
 // @prop  {boolean} disabled=false
 // @prop  {string}  icon=''          — leading icon name (check replaces it while
 //                                     a filter chip is selected)
@@ -73,7 +75,7 @@ const styles = css`
                 border-color ${sys.duration.short2} ${sys.easing.standard},
                 padding-inline-start ${sys.duration.short4} ${sys.easing.emphasized};
   }
-  .selected .control { padding-inline-start: ${sys.space(2)}; }
+  .checked .control { padding-inline-start: ${sys.space(2)}; }
   .lead {
     display: inline-flex;
     align-items: center;
@@ -159,9 +161,11 @@ define('ui-chip', {
     });
 
     const checkWhen = computed(() => variant() === 'filter' && selected());
+    const filled = computed(() => checkWhen() || (variant() === 'input' && selected()));
     const rootCls = computed(() =>
       [
-        checkWhen() ? 'selected' : '',
+        filled() ? 'selected' : '',
+        checkWhen() ? 'checked' : '',
         icon() ? 'with-lead' : '',
         dismissible() ? 'with-dismiss' : '',
       ].filter(Boolean).join(' '));
