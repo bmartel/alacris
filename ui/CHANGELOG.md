@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.8.0](https://github.com/bmartel/alacris/compare/ui-v0.7.0...ui-v0.8.0) (2026-10-03)
+
+### Features
+
+* **ui:** showSnackbar reports its action and close reason ([4f245a8](https://github.com/bmartel/alacris/commit/4f245a8ccf75ea4033f80e684fb5653153bff704))
+
 ## [0.7.0](https://github.com/bmartel/alacris/compare/ui-v0.6.2...ui-v0.7.0) (2026-10-03)
 
 ### Features
