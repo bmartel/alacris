@@ -125,6 +125,9 @@ test('ui-search suggestions are a list (matching ui-list-item) and the field dis
   assert.equal(el.querySelector('ui-list-item').getAttribute('role'), 'listitem');
   assert.equal(input.getAttribute('aria-expanded'), 'true');
   assert.equal(input.getAttribute('aria-controls'), 'suggestions');
+  // aria-expanded/-autocomplete are only valid on a combobox.
+  assert.equal(input.getAttribute('role'), 'combobox');
+  assert.equal(input.getAttribute('aria-haspopup'), 'dialog');
   unmountAll();
 });
 

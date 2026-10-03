@@ -283,11 +283,12 @@ define('ui-search', {
           <input part="input" ref=${(el) => (input = el)}
                  .value=${() => value() ?? ''}
                  placeholder=${ph}
+                 role="combobox"
                  aria-label=${() => label() || 'Search'}
                  aria-expanded=${() => String(open())}
                  aria-controls=${() => (showPanel() ? 'suggestions' : null)}
                  aria-autocomplete="list"
-                 aria-haspopup=${() => (isView() || slotted() ? 'true' : null)}
+                 aria-haspopup=${() => (isView() ? 'dialog' : slotted() ? 'listbox' : null)}
                  ?disabled=${disabled}
                  @input=${onInput} @change=${commit} @keydown=${onKeydown}
                  @focus=${onFocus}>
