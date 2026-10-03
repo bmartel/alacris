@@ -156,6 +156,8 @@ test('ui-side-sheet standard variant has the close button and actions of the mod
   await tick();
   const std = el.shadowRoot.querySelector('.std');
   assert.ok(std.className.includes('open'));
+  // The host is display: contents, so in a row this panel is the flex item: it must not shrink away.
+  assert.equal(getComputedStyle(std).flexShrink, '0');
   const actions = std.querySelector('.actions');
   assert.ok(actions, 'standard renders an actions area');
   assert.ok(actions.classList.contains('has'), 'slotted actions make it visible');

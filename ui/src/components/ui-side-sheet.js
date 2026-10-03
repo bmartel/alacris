@@ -120,6 +120,9 @@ const styles = css`
 
   .std {
     display: block;
+    /* The host is display: contents, so this panel is the flex item when the
+       sheet sits in a row: it must keep its width, not shrink to nothing. */
+    flex: none;
     block-size: 100%;
     inline-size: 0;
     overflow: hidden;
