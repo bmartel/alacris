@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.7.0](https://github.com/bmartel/alacris/compare/ui-v0.6.2...ui-v0.7.0) (2026-10-03)
+
+### Features
+
+* **ui:** selected state for input chips ([9eced55](https://github.com/bmartel/alacris/commit/9eced55c701c0127083db05ba95c03d43a219dbd))
+
 ## [0.6.2](https://github.com/bmartel/alacris/compare/ui-v0.6.1...ui-v0.6.2) (2026-10-03)
 
 ### Bug Fixes
