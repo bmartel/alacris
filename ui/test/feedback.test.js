@@ -204,6 +204,27 @@ test('showSnackbar queues FIFO and shows the next after the previous exits', asy
   unmountAll();
 });
 
+test('showSnackbar reports the action and why it closed', async () => {
+  let undone = 0;
+  const a = showSnackbar('Moved to trash', { action: 'Undo', duration: 0, onAction: () => undone++ });
+  const b = showSnackbar('Second', { duration: 0 });
+  await tick();
+  const el = document.querySelector('ui-snackbar');
+  fire(el.shadowRoot.querySelector('.action'), 'click');
+  assert.equal(undone, 1, 'onAction ran');
+  assert.deepEqual(await a.closed, { reason: 'action' });
+  await tick();
+  b.close();
+  assert.deepEqual(await b.closed, { reason: 'method' });
+  const c = showSnackbar('queued then cancelled', { duration: 0 });
+  const d = showSnackbar('never shown', { duration: 0 });
+  d.close();
+  assert.deepEqual(await d.closed, { reason: 'method' });
+  c.close();
+  await c.closed;
+  unmountAll();
+});
+
 test('showSnackbar auto-dismiss chains the queue with real timers', async () => {
   const a = showSnackbar('quick one', { duration: 20 });
   const b = showSnackbar('quick two', { duration: 20, action: 'Ok' });

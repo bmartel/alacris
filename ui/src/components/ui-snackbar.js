@@ -8,7 +8,8 @@
 //
 // Imperative (fire and forget; FIFO — one visible at a time):
 //
-//   const { close, closed } = showSnackbar('Message archived', { action: 'Undo' });
+//   const { close, closed } = showSnackbar('Message archived', { action: 'Undo', onAction: undo });
+//   const { reason } = await closed  // 'action' | 'timeout' | 'close' | 'method'
 //
 // The component requests closing by emitting `close` with a reason — the
 // PARENT flips `open`. `closed` fires after the exit animation finishes.
@@ -183,11 +184,15 @@ function serviceHost() {
   if (!serviceEl || !serviceEl.isConnected) {
     serviceEl = document.createElement('ui-snackbar');
     // The service is the "parent": it owns the open state.
-    serviceEl.addEventListener('close', () => { serviceEl.open = false; });
+    serviceEl.addEventListener('close', (e) => {
+      if (current && !current.reason) current.reason = e.detail?.reason ?? 'close';
+      serviceEl.open = false;
+    });
+    serviceEl.addEventListener('action', () => current?.onAction?.());
     serviceEl.addEventListener('closed', () => {
       const done = current;
       current = null;
-      done?.resolve();
+      done?.resolve({ reason: done.reason ?? 'close' });
       next();
     });
     document.body.append(serviceEl);
@@ -210,23 +215,25 @@ function next() {
  * showSnackbar(message, { action, duration, closeButton })
  *
  * Returns { close, closed }: `close()` dismisses this snackbar (or removes it
- * from the queue if it has not shown yet); `closed` resolves once it has fully
- * left the screen.
+ * from the queue if it has not shown yet); `closed` resolves with
+ * `{ reason }` ('action' | 'timeout' | 'close' | 'method') once it has fully
+ * left the screen. `onAction` runs when the action button is pressed.
  */
-export function showSnackbar(message, { action = '', duration = 4000, closeButton = false } = {}) {
+export function showSnackbar(message, { action = '', duration = 4000, closeButton = false, onAction } = {}) {
   let resolve;
   const closed = new Promise((r) => { resolve = r; });
-  const entry = { message, action, duration, closeButton, resolve };
+  const entry = { message, action, duration, closeButton, resolve, onAction, reason: null };
   queue.push(entry);
   next();
   return {
     closed,
     close() {
       if (current === entry) {
+        entry.reason ??= 'method';
         serviceEl.open = false; // exit animation → 'closed' → resolve + next
       } else {
         const i = queue.indexOf(entry);
-        if (i > -1) { queue.splice(i, 1); entry.resolve(); }
+        if (i > -1) { queue.splice(i, 1); entry.resolve({ reason: 'method' }); }
       }
     },
   };
