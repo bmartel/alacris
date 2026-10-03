@@ -104,7 +104,16 @@ const styles = css`
     border-start-start-radius: ${t.radius};
     border-end-start-radius: ${t.radius};
   }
-  .std .inner { padding: ${t.pad}; inline-size: ${t.width}; }
+  /* Fill the drawer's height and scroll when the content is taller (like the
+     modal surface), so slotted content can also size itself to 100%. */
+  .std .inner {
+    box-sizing: border-box;
+    padding: ${t.pad};
+    inline-size: ${t.width};
+    block-size: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
 `;
 
 define('ui-drawer', {
