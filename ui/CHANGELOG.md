@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.8.2](https://github.com/bmartel/alacris/compare/ui-v0.8.1...ui-v0.8.2) (2026-10-03)
+
+### Bug Fixes
+
+* **ui:** standard ui-drawer scrolls content taller than the viewport ([694abaf](https://github.com/bmartel/alacris/commit/694abaf506bbbc331c4cbd425f3d94fb7584d6b1))
+
 ## [0.8.1](https://github.com/bmartel/alacris/compare/ui-v0.8.0...ui-v0.8.1) (2026-10-03)
 
 ### Bug Fixes
