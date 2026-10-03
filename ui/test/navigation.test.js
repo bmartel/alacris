@@ -6,6 +6,7 @@ import { mount, unmountAll, tick, fire } from './helpers.js';
 import '../src/components/ui-tabs.js';
 import '../src/components/ui-menu.js';
 import '../src/components/ui-drawer.js';
+import '../src/components/ui-side-sheet.js';
 import '../src/components/ui-app-bar.js';
 import '../src/components/ui-nav-rail.js';
 import '../src/components/ui-nav-item.js';
@@ -142,6 +143,34 @@ test('ui-drawer standard variant renders in flow and tracks open', async () => {
   assert.equal(el.shadowRoot.querySelector('.scrim'), null, 'no scrim in standard');
   el.anchor = 'end';
   assert.ok(std.className.includes('end'), 'anchor prop is live');
+  unmountAll();
+});
+
+test('ui-side-sheet standard variant has the close button and actions of the modal sheet', async () => {
+  const el = mount(`
+    <ui-side-sheet variant="standard" open>
+      <span slot="headline">Assistant</span>
+      Body
+      <button slot="actions" id="send">Send</button>
+    </ui-side-sheet>`);
+  await tick();
+  const std = el.shadowRoot.querySelector('.std');
+  assert.ok(std.className.includes('open'));
+  const actions = std.querySelector('.actions');
+  assert.ok(actions, 'standard renders an actions area');
+  assert.ok(actions.classList.contains('has'), 'slotted actions make it visible');
+  assert.deepEqual(actions.querySelector('slot').assignedElements().map((e) => e.id), ['send']);
+
+  const reasons = [];
+  el.addEventListener('close', (e) => reasons.push(e.detail.reason));
+  const close = std.querySelector('.header ui-icon-button');
+  assert.equal(close?.label, 'Close');
+  close.shadowRoot.querySelector('button').click();
+  assert.deepEqual(reasons, ['method'], 'close button asks the parent to close');
+
+  const empty = mount('<ui-side-sheet variant="standard" open>Body</ui-side-sheet>');
+  await tick();
+  assert.ok(!empty.shadowRoot.querySelector('.actions').classList.contains('has'), 'no actions slotted: area hidden');
   unmountAll();
 });
 

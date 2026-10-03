@@ -9,7 +9,8 @@
 // Distinct from <ui-drawer> (navigation) and <ui-sheet> (bottom). Modal
 // (default): a scrim plus a panel that slides in from the end edge. Focus is
 // trapped and page scroll locked while open. The PARENT owns `open`. Standard:
-// an in-flow panel that animates its inline size — no scrim, no trap.
+// an in-flow panel that animates its inline size — no scrim, no trap — with
+// the same headline, close button and actions area as the modal sheet.
 //
 // @prop  {boolean} open=false
 // @prop  {string}  variant='modal' — modal | standard
@@ -119,6 +120,7 @@ const styles = css`
 
   .std {
     display: block;
+    block-size: 100%;
     inline-size: 0;
     overflow: hidden;
     background: ${t.bg};
@@ -126,7 +128,12 @@ const styles = css`
     transition: inline-size ${sys.duration.medium2} ${sys.easing.emphasized};
   }
   .std.open { inline-size: ${t.width}; }
-  .std-inner { inline-size: ${t.width}; }
+  .std-inner {
+    display: flex;
+    flex-direction: column;
+    inline-size: ${t.width};
+    block-size: 100%;
+  }
 `;
 
 define('ui-side-sheet', {
@@ -306,8 +313,13 @@ define('ui-side-sheet', {
                        ref=${(el) => hasSlot(el.querySelector('slot'), (has) => hasHeadline.set(has))}>
                     <slot name="headline"></slot>
                   </div>
+                  <ui-icon-button icon="close" label="Close" @click=${() => requestClose('method')}></ui-icon-button>
                 </div>
                 <div class="body" part="body"><slot></slot></div>
+                <div class="actions" part="actions"
+                     ref=${(el) => hasSlot(el.querySelector('slot'), (has) => el.classList.toggle('has', has))}>
+                  <slot name="actions"></slot>
+                </div>
               </div>
             </aside>`
           : null}
