@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.6.2](https://github.com/bmartel/alacris/compare/ui-v0.6.1...ui-v0.6.2) (2026-10-03)
+
+### Bug Fixes
+
+* **ui:** keep the standard ui-side-sheet from shrinking to nothing in a row ([538e958](https://github.com/bmartel/alacris/commit/538e9588cab2d5c0ce1d270b7a191ecb76c6e0fa))
+
 ## [0.6.1](https://github.com/bmartel/alacris/compare/ui-v0.6.0...ui-v0.6.1) (2026-10-03)
 
 ### Bug Fixes
