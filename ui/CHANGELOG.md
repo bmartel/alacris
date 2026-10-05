@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.9.0](https://github.com/bmartel/alacris/compare/ui-v0.8.2...ui-v0.9.0) (2026-10-05)
+
+### Features
+
+* **ui:** ui-text-field and ui-search focus() forwards to the inner input ([a5c42b7](https://github.com/bmartel/alacris/commit/a5c42b706e28c6472d5e1db60783f1019df1f419))
+
 ## [0.8.2](https://github.com/bmartel/alacris/compare/ui-v0.8.1...ui-v0.8.2) (2026-10-03)
 
 ### Bug Fixes
