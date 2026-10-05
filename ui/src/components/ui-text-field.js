@@ -1,4 +1,6 @@
 // <ui-text-field> — Material text field, filled and outlined, floating label.
+// `el.focus()` focuses the inner input (or textarea), so callers needn't reach
+// into the shadow root.
 //
 // @prop  {string}  variant='filled' — filled | outlined
 // @prop  {string}  label=''
@@ -315,6 +317,7 @@ define('ui-text-field', {
     const focused = signal(false);
     const hasLeading = signal(false);
     let input;
+    host.focus = (opts) => input?.focus(opts);
 
     const floating = computed(() => focused() || value() !== '' || placeholder() !== '');
     const cls = computed(() =>

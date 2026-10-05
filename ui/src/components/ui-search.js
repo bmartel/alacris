@@ -1,4 +1,4 @@
-// <ui-search> — Material search bar.
+// <ui-search> — Material search bar. `el.focus()` focuses the inner input.
 //
 //   <ui-search label="Search mail" value=${q}
 //              @input=${(e) => q(e.detail.value)}
@@ -191,6 +191,7 @@ define('ui-search', {
     formBind(host, { name, value, disabled });
     const hasLeading = signal(false);
     let input;
+    host.focus = (opts) => input?.focus(opts);
     let skipFocusOpen = false;
 
     const ph = computed(() => placeholder() || label() || 'Search');

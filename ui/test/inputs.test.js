@@ -566,3 +566,18 @@ test('a textarea takes them too', async () => {
   assert.equal(el.shadowRoot.querySelector('textarea').getAttribute('spellcheck'), 'false');
   unmountAll();
 });
+
+test('ui-text-field and ui-search forward focus() to the inner input', async () => {
+  const field = mount('<ui-text-field label="Name"></ui-text-field>');
+  await tick();
+  field.focus();
+  assert.equal(field.shadowRoot.activeElement, field.shadowRoot.querySelector('input'));
+  const area = mount('<ui-text-field type="textarea" label="Notes"></ui-text-field>');
+  await tick();
+  area.focus();
+  assert.equal(area.shadowRoot.activeElement, area.shadowRoot.querySelector('textarea'));
+  const search = mount('<ui-search label="Search"></ui-search>');
+  await tick();
+  search.focus();
+  assert.equal(search.shadowRoot.activeElement, search.shadowRoot.querySelector('input'));
+});
