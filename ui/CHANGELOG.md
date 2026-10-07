@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.9.2](https://github.com/bmartel/alacris/compare/ui-v0.9.1...ui-v0.9.2) (2026-10-07)
+
+### Bug Fixes
+
+* **ui:** overlays fit the visible viewport on mobile, above the keyboard ([a922851](https://github.com/bmartel/alacris/commit/a922851bd395d3080a8707a02145a4714a77995b))
+
 ## [0.9.1](https://github.com/bmartel/alacris/compare/ui-v0.9.0...ui-v0.9.1) (2026-10-07)
 
 ### Bug Fixes
