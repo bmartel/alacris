@@ -14,7 +14,8 @@
 // (`--ui-progress-pct`), so a value change is one property write. The
 // indeterminate mode is the Material two-bar translate/scale loop, written as
 // CSS keyframes; its cycle length derives from the motion tokens so a theme's
-// motion scale slows or stops it with everything else.
+// motion scale slows or stops it with everything else. In RTL the track is
+// mirrored while indeterminate, so the sweep runs from the inline start.
 
 import { define, html, css, vars, computed } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
@@ -70,6 +71,9 @@ const styles = css`
     display: block;
     animation: ui-progress-i2 calc(${sys.duration.extraLong4} * 2) ${sys.easing.linear} infinite;
   }
+  /* The keyframes translate along physical x; mirror the rail so the bars
+     sweep right to left. The determinate bar is already logical. */
+  :host(:dir(rtl)) .indeterminate { scale: -1 1; }
 `;
 
 define('ui-progress', {

@@ -6,6 +6,12 @@
 // `autoUpdate` keeps it glued through scroll and resize.
 // ~90 lines instead of a positioning dependency, because the components only
 // need the four sides, alignment, flip and shift.
+//
+// Sides are physical; alignment is logical. In a right-to-left context
+// (read from the anchor's computed `direction`) `start` aligns the panel to
+// the anchor's right edge, as the leading edge of RTL text is.
+
+import { isRtl } from './dir.js';
 
 const MAIN = { top: 'top', bottom: 'top', left: 'left', right: 'left' };
 const OPPOSITE = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' };
@@ -21,13 +27,16 @@ const ORIGIN = {
  *                           flip = true, matchWidth = false, padding = 8 })
  *
  * placement: side[-alignment] — side: top|bottom|left|right,
- * alignment: start|center|end (start = aligned to the anchor's leading edge).
- * Writes `left`/`top` on the panel and returns { placement } (the side may
- * have flipped). Uses layout size (`offsetWidth`/`offsetHeight`) so an enter
+ * alignment: start|center|end (start = aligned to the anchor's leading edge:
+ * its left edge in LTR, its right edge in RTL).
+ * Writes physical `left`/`top` on the panel (and clears `right`/`bottom`, so
+ * a logical inset in the panel's CSS cannot over-constrain it in RTL) and
+ * returns { placement } (the side may have flipped). Uses layout size (`offsetWidth`/`offsetHeight`) so an enter
  * transform does not shrink the first measurement.
  */
 export function position(panel, anchor, opts = {}) {
   const { placement = 'bottom-start', offset = 4, flip = true, matchWidth = false, padding = 8 } = opts;
+  const rtl = isRtl(anchor);
   const a = anchor.getBoundingClientRect();
   if (matchWidth) panel.style.minInlineSize = `${a.width}px`;
 
@@ -60,7 +69,8 @@ export function position(panel, anchor, opts = {}) {
   let x, y;
   if (alongX()) {
     y = side === 'bottom' ? a.bottom + offset : a.top - offset - h;
-    x = align === 'start' ? a.left : align === 'end' ? a.right - w : a.left + a.width / 2 - w / 2;
+    const lead = align === 'start' ? !rtl : align === 'end' ? rtl : null;
+    x = lead === null ? a.left + a.width / 2 - w / 2 : lead ? a.left : a.right - w;
   } else {
     x = side === 'right' ? a.right + offset : a.left - offset - w;
     y = align === 'start' ? a.top : align === 'end' ? a.bottom - h : a.top + a.height / 2 - h / 2;
@@ -72,6 +82,8 @@ export function position(panel, anchor, opts = {}) {
 
   panel.style.left = `${x}px`;
   panel.style.top = `${y}px`;
+  panel.style.right = 'auto';
+  panel.style.bottom = 'auto';
   panel.style.transformOrigin = ORIGIN[side];
   return { placement: align ? `${side}-${align}` : side, [MAIN[side]]: true };
 }

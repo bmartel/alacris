@@ -427,7 +427,7 @@ removes itself.
 | | |
 | --- | --- |
 | `@prop` | {string}  variant='assist' — assist \| filter \| input \| suggestion |
-| `@prop` | {boolean} selected=false   — filter chips only |
+| `@prop` | {boolean} selected=false   — filter chips (toggle, check icon) and input chips (MD3 selected input chip: filled, no check; the app owns the state and its ARIA) |
 | `@prop` | {boolean} disabled=false |
 | `@prop` | {string}  icon=''          — leading icon name (check replaces it while a filter chip is selected) |
 | `@prop` | {boolean} dismissible=false — trailing remove button |
@@ -877,7 +877,7 @@ Material linear progress.
 | `@prop` | {string} label='' — accessible name (aria-label on the progressbar) |
 | `@part` | track — the rail |
 | `@part` | bar   — the active indicator |
-| `@vars` | see `t` below (`themeVars.names`)  The determinate width rides a custom property bound from the template (`--ui-progress-pct`), so a value change is one property write. The indeterminate mode is the Material two-bar translate/scale loop, written as CSS keyframes; its cycle length derives from the motion tokens so a theme's motion scale slows or stops it with everything else. |
+| `@vars` | see `t` below (`themeVars.names`)  The determinate width rides a custom property bound from the template (`--ui-progress-pct`), so a value change is one property write. The indeterminate mode is the Material two-bar translate/scale loop, written as CSS keyframes; its cycle length derives from the motion tokens so a theme's motion scale slows or stops it with everything else. In RTL the track is mirrored while indeterminate, so the sweep runs from the inline start. |
 
 Source: [`src/components/ui-progress.js`](../src/components/ui-progress.js)
 
@@ -956,7 +956,7 @@ Source: [`src/components/ui-rating.js`](../src/components/ui-rating.js)
 
 ## `<ui-search>`
 
-Material search bar.
+Material search bar. `el.focus()` focuses the inner input.
 
   &lt;ui-search label="Search mail" value=${q}
              @input=${(e) =&gt; q(e.detail.value)}
@@ -1091,7 +1091,8 @@ a Material side sheet for complementary content.
 Distinct from &lt;ui-drawer&gt; (navigation) and &lt;ui-sheet&gt; (bottom). Modal
 (default): a scrim plus a panel that slides in from the end edge. Focus is
 trapped and page scroll locked while open. The PARENT owns `open`. Standard:
-an in-flow panel that animates its inline size — no scrim, no trap.
+an in-flow panel that animates its inline size — no scrim, no trap — with
+the same headline, close button and actions area as the modal sheet.
 
 | | |
 | --- | --- |
@@ -1150,7 +1151,8 @@ input, so composed-path helpers that look for `typeof node.value ===
 
 The active track portion is painted with `--ui-slider-fill` (or start/end
 when `range`) bound from the template into a gradient; the thumb's
-hover/focus halo is a box-shadow state layer.
+hover/focus halo is a box-shadow state layer. In RTL the native range runs
+right to left, so the gradient and the value bubble follow it.
 
 | | |
 | --- | --- |
@@ -1184,7 +1186,8 @@ Declarative (parent owns the state):
 
 Imperative (fire and forget; FIFO — one visible at a time):
 
-  const { close, closed } = showSnackbar('Message archived', { action: 'Undo' });
+  const { close, closed } = showSnackbar('Message archived', { action: 'Undo', onAction: undo });
+  const { reason } = await closed  // 'action' | 'timeout' | 'close' | 'method'
 
 The component requests closing by emitting `close` with a reason — the
 PARENT flips `open`. `closed` fires after the exit animation finishes.
@@ -1581,6 +1584,8 @@ Source: [`src/components/ui-tabs.js`](../src/components/ui-tabs.js)
 ## `<ui-text-field>`
 
 Material text field, filled and outlined, floating label.
+`el.focus()` focuses the inner input (or textarea), so callers needn't reach
+into the shadow root.
 
 | | |
 | --- | --- |

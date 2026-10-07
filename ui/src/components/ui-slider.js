@@ -12,7 +12,8 @@
 //
 // The active track portion is painted with `--ui-slider-fill` (or start/end
 // when `range`) bound from the template into a gradient; the thumb's
-// hover/focus halo is a box-shadow state layer.
+// hover/focus halo is a box-shadow state layer. In RTL the native range runs
+// right to left, so the gradient and the value bubble follow it.
 //
 // @prop  {number}  value=0
 // @prop  {number}  min=0
@@ -50,6 +51,8 @@ const t = vars('ui-slider', {
 
 const styles = css`
   :host { display: block; inline-size: 240px; }
+  /* The native range input runs from the inline start; paint from there. */
+  :host(:dir(rtl)) { --_ui-slider-to: left; }
   .root { position: relative; display: flex; align-items: center; }
   input {
     appearance: none;
@@ -68,7 +71,7 @@ const styles = css`
   input::-webkit-slider-runnable-track {
     block-size: ${t.trackHeight};
     border-radius: ${sys.radius.full};
-    background: linear-gradient(to right,
+    background: linear-gradient(to var(--_ui-slider-to, right),
       ${t.track} 0%,
       ${t.track} var(--ui-slider-start, 0%),
       ${t.active} var(--ui-slider-start, 0%),
@@ -149,6 +152,8 @@ const styles = css`
     white-space: nowrap;
     pointer-events: none;
   }
+  /* inset-inline-start is right in RTL: centre on the thumb from that side. */
+  :host(:dir(rtl)) .bubble { translate: 50% -100%; }
 `;
 
 define('ui-slider', {

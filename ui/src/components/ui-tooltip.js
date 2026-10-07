@@ -45,8 +45,10 @@ const styles = css`
   :host { display: inline-block; }
   .panel {
     position: fixed;
-    inset-inline-start: 0;
-    inset-block-start: 0;
+    /* Physical on purpose: util/position.js writes viewport left/top. A
+       logical inset would become right: 0 in RTL and pin the panel there. */
+    left: 0;
+    top: 0;
     z-index: ${sys.z.tooltip};
     inline-size: max-content;
   }

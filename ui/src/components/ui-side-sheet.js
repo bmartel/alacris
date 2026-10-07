@@ -34,6 +34,7 @@ import { presence } from '../motion/presence.js';
 import { animate, fx, releaseFill } from '../motion/animate.js';
 import { createSwipeTracker, rubberBand } from '../motion/gesture.js';
 import { focusTrap, scrollLock } from '../util/focus.js';
+import { physicalEdge } from '../util/dir.js';
 import './ui-icon-button.js';
 
 const t = vars('ui-side-sheet', {
@@ -155,8 +156,11 @@ define('ui-side-sheet', {
       host.emit('close', { reason });
     };
 
-    const slideIn = () => (anchor.peek() === 'start' ? fx.slideInLeft : fx.slideInRight);
-    const slideOut = () => (anchor.peek() === 'start' ? fx.slideOutLeft : fx.slideOutRight);
+    // `anchor` is logical; the slide and the swipe are physical. In RTL the
+    // start edge is the right one.
+    const onRight = () => physicalEdge(host, anchor.peek()) === 'right';
+    const slideIn = () => (onRight() ? fx.slideInRight : fx.slideInLeft);
+    const slideOut = () => (onRight() ? fx.slideOutRight : fx.slideOutLeft);
 
     const onDocKeydown = (e) => {
       if (e.key === 'Escape') requestClose('esc');
@@ -211,9 +215,9 @@ define('ui-side-sheet', {
           el.style.transition = 'none';
         },
         onMove({ dx }) {
-          const isEnd = anchor.peek() === 'end';
+          const right = onRight();
           let effectiveDx = dx;
-          if (isEnd) {
+          if (right) {
             if (dx < 0) effectiveDx = rubberBand(dx, 0.2);
           } else {
             if (dx > 0) effectiveDx = rubberBand(dx, 0.2);
@@ -224,14 +228,14 @@ define('ui-side-sheet', {
           if (scrimEl) scrimEl.style.opacity = String(1 - progress * 0.7);
         },
         onEnd({ dx, vx, cancelled }) {
-          const isEnd = anchor.peek() === 'end';
+          const right = onRight();
           const w = el.offsetWidth || 300;
-          const dismissDirection = isEnd ? (vx > 0.4 || dx > w * 0.35) : (vx < -0.4 || dx < -w * 0.35);
+          const dismissDirection = right ? (vx > 0.4 || dx > w * 0.35) : (vx < -0.4 || dx < -w * 0.35);
           const shouldDismiss = !cancelled && dismissDirection;
 
           if (shouldDismiss) {
             closingViaSwipe = true;
-            const targetTransform = isEnd ? 'translateX(100%)' : 'translateX(-100%)';
+            const targetTransform = right ? 'translateX(100%)' : 'translateX(-100%)';
             const remaining = Math.max(0, w - Math.abs(dx));
             const ms = Math.min(300, Math.max(120, Math.round(remaining / (Math.max(Math.abs(vx), 0.8)))));
             if (scrimEl) {

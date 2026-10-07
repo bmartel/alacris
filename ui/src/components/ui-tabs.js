@@ -46,7 +46,10 @@ const styles = css`
   .indicator {
     position: absolute;
     inset-block-end: 0;
-    inset-inline-start: 0;
+    /* Physical on purpose: the indicator is moved by the selected tab's
+       physical x offset (translateX), so it is anchored at the left edge in
+       both directions. */
+    left: 0;
     block-size: ${t.indicatorHeight};
     background: ${t.indicator};
     border-start-start-radius: ${t.indicatorHeight};
