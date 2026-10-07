@@ -142,6 +142,18 @@ export function autoUpdate(panel: HTMLElement, anchor: Element, opts?: object): 
 
 export function focusTrap(host: Element, opts?: { initial?: Element }): () => void;
 export function focusables(host: Element): Element[];
+
+/** Layout-viewport px hidden above/below the visible area (on-screen keyboard); 0 while pinch-zoomed. */
+export function viewportInsets(): { top: number; bottom: number };
+/** The visible band of the layout viewport, in getBoundingClientRect coordinates. */
+export function visibleBounds(): { top: number; bottom: number };
+/** Calls `onChange` now and on every visual-viewport resize/scroll; returns a stop function. */
+export function trackViewport(onChange: (insets: { top: number; bottom: number }) => void): () => void;
+/**
+ * Writes `--ui-vv-top` / `--ui-vv-bottom` on `el` as the visual viewport changes, and scrolls the
+ * focused element inside `host` back into view when the keyboard opens. Returns a stop function.
+ */
+export function fitToViewport(el: HTMLElement, host?: Element | null): () => void;
 export function scrollLock(lock?: boolean): void;
 
 export function rovingTabindex(

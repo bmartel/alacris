@@ -34,6 +34,7 @@ import { presence } from '../motion/presence.js';
 import { animate, fx, releaseFill } from '../motion/animate.js';
 import { createSwipeTracker, rubberBand } from '../motion/gesture.js';
 import { focusTrap, scrollLock } from '../util/focus.js';
+import { overlayOn, fitToViewport } from '../util/viewport.js';
 import { physicalEdge } from '../util/dir.js';
 import './ui-icon-button.js';
 
@@ -47,39 +48,34 @@ const t = vars('ui-side-sheet', {
 
 const styles = css`
   :host { display: contents; }
+  ${overlayOn('.overlay')}
   .overlay {
-    position: fixed;
-    inset: 0;
-    inline-size: 100vw;
-    block-size: 100vh;
-    max-inline-size: 100vw;
-    max-block-size: 100vh;
-    margin: 0;
-    padding: 0;
-    border: none;
-    background: transparent;
-    overflow: visible;
     z-index: ${sys.z.modal};
     display: block;
   }
   .overlay:popover-open {
     display: block;
   }
-  .overlay::backdrop {
-    display: none;
-  }
   .scrim { position: absolute; inset: 0; background: ${t.scrim}; }
+  /* Full height of the visible viewport (the overlay is inset-sized, not
+     100vh), stopping above the on-screen keyboard. */
   .surface {
     position: absolute;
-    inset-block: 0;
+    inset-block-start: var(--ui-vv-top, 0px);
+    inset-block-end: var(--ui-vv-bottom, 0px);
     display: flex;
     flex-direction: column;
     inline-size: ${t.width};
+    max-inline-size: 100%;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     background: ${t.bg};
     color: ${t.fg};
     box-shadow: ${sys.elevation[1]};
     touch-action: pan-y;
   }
+  .surface.left { padding-left: env(safe-area-inset-left, 0px); }
+  .surface.right { padding-right: env(safe-area-inset-right, 0px); }
   .surface.start {
     inset-inline-start: 0;
     border-start-end-radius: ${t.radius};
@@ -91,6 +87,7 @@ const styles = css`
     border-end-start-radius: ${t.radius};
   }
   .header {
+    flex: none;
     display: flex;
     align-items: center;
     gap: ${sys.space(1)};
@@ -105,13 +102,16 @@ const styles = css`
   }
   .body {
     flex: 1;
+    min-block-size: 0;
     overflow: auto;
+    overscroll-behavior: contain;
     padding: ${sys.space(2)} ${sys.space(6)} ${sys.space(6)};
     font: ${sys.type.bodyMd};
     letter-spacing: ${sys.tracking.bodyMd};
     color: ${sys.color.onSurfaceVariant};
   }
   .actions {
+    flex: none;
     display: flex;
     justify-content: flex-end;
     gap: ${sys.space(2)};
@@ -196,6 +196,7 @@ define('ui-side-sheet', {
       releaseTrap?.();
       unlock?.();
       tracker?.destroy();
+      stopFit?.();
     });
 
     const surfaceRef = (el) => {
@@ -275,7 +276,10 @@ define('ui-side-sheet', {
       sync();
     };
 
+    let stopFit = null;
     const overlayRef = (el) => {
+      stopFit?.();
+      stopFit = fitToViewport(el, host);
       queueMicrotask(() => {
         try {
           if (el.isConnected) el.showPopover?.();
@@ -288,7 +292,7 @@ define('ui-side-sheet', {
         <div class="scrim" part="scrim" aria-hidden="true"
              ref=${(el) => { scrimEl = el; }}
              @click=${() => requestClose('scrim')}></div>
-        <aside class=${() => `surface ${anchor()}`} part="surface" role="dialog" aria-modal="true"
+        <aside class=${() => `surface ${anchor()} ${onRight() ? 'right' : 'left'}`} part="surface" role="dialog" aria-modal="true"
                aria-labelledby=${() => (hasHeadline() ? 'headline' : null)}
                aria-label=${() => (hasHeadline() ? null : (label() || 'Side sheet'))}
                tabindex="-1" ref=${surfaceRef}>
@@ -337,6 +341,8 @@ define('ui-side-sheet', {
         onEntered: () => host.emit('opened'),
         onExited: () => {
           tracker?.destroy();
+          stopFit?.();
+          stopFit = null;
           host.emit('closed');
         },
       })}`;

@@ -31,6 +31,7 @@ import { base } from './base.js';
 import { presence } from '../motion/presence.js';
 import { animate, fx, releaseFill } from '../motion/animate.js';
 import { focusTrap, scrollLock } from '../util/focus.js';
+import { overlayOn, visiblePadding, fitToViewport } from '../util/viewport.js';
 
 const t = vars('ui-dialog', {
   bg: sys.color.surfaceContainerHigh,
@@ -43,27 +44,23 @@ const t = vars('ui-dialog', {
 
 const styles = css`
   :host { display: contents; }
+  ${overlayOn('.overlay')}
   .overlay {
-    position: fixed;
-    inset: 0;
-    inline-size: 100vw;
-    block-size: 100vh;
-    max-inline-size: 100vw;
-    max-block-size: 100vh;
-    margin: 0;
-    padding: 0;
-    border: none;
-    background: transparent;
-    overflow: visible;
     z-index: ${sys.z.modal};
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* The overlay is sized by its insets (the visible viewport, not 100vh);
+       the padding keeps the surface clear of the keyboard and screen cutouts. */
+    ${visiblePadding('24px')}
   }
   .overlay:popover-open {
-    display: grid;
+    display: flex;
   }
-  .overlay::backdrop {
-    display: none;
+  /* With the keyboard up every pixel counts: keep only a small margin. */
+  .overlay[data-keyboard] {
+    padding-top: calc(var(--ui-vv-top, 0px) + max(8px, env(safe-area-inset-top, 0px)));
+    padding-bottom: calc(var(--ui-vv-bottom, 0px) + 8px);
   }
   .scrim { position: absolute; inset: 0; background: ${t.scrim}; }
   .surface {
@@ -71,7 +68,14 @@ const styles = css`
     display: flex;
     flex-direction: column;
     inline-size: ${t.width};
-    max-block-size: calc(100vh - 48px);
+    max-inline-size: 100%;
+    max-block-size: 100%;
+    min-block-size: 0;
+    /* Last resort on a tiny visible area (landscape phone + keyboard): when
+       even headline + actions do not fit, the whole surface scrolls so the
+       actions are still reachable. Normally only the body scrolls. */
+    overflow: auto;
+    overscroll-behavior: contain;
     background: ${t.bg};
     color: ${t.fg};
     border-radius: ${t.radius};
@@ -80,18 +84,24 @@ const styles = css`
     gap: ${sys.space(4)};
   }
   .headline {
+    flex: none;
     font: ${sys.type.headlineSm};
     letter-spacing: ${sys.tracking.headlineSm};
     color: ${t.headlineFg};
   }
   .headline:not(.has) { display: none; }
+  /* Only the body scrolls, so the headline and actions stay on screen. */
   .body {
+    flex: 1 1 auto;
+    min-block-size: 0;
     overflow: auto;
+    overscroll-behavior: contain;
     font: ${sys.type.bodyMd};
     letter-spacing: ${sys.tracking.bodyMd};
     color: ${sys.color.onSurfaceVariant};
   }
   .actions {
+    flex: none;
     display: flex;
     justify-content: flex-end;
     gap: ${sys.space(2)};
@@ -148,6 +158,7 @@ define('ui-dialog', {
       document.removeEventListener('keydown', onDocKeydown, true);
       releaseTrap?.();
       unlock?.();
+      stopFit?.();
     });
 
     const hasSlot = (el, set) => {
@@ -161,7 +172,10 @@ define('ui-dialog', {
       releaseFill(animate(el, fx.scaleIn, { duration: 'medium2', easing: 'emphasizedDecelerate' }));
     };
 
+    let stopFit = null;
     const overlayRef = (el) => {
+      stopFit?.();
+      stopFit = fitToViewport(el, host);
       queueMicrotask(() => {
         try {
           if (el.isConnected) el.showPopover?.();
@@ -196,7 +210,11 @@ define('ui-dialog', {
       exit: fx.fadeOut,
       exitDuration: 'short4',
       onEntered: () => host.emit('opened'),
-      onExited: () => host.emit('closed'),
+      onExited: () => {
+        stopFit?.();
+        stopFit = null;
+        host.emit('closed');
+      },
     })}`;
   },
 });

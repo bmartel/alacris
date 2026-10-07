@@ -219,6 +219,7 @@ const styles = css`
     z-index: ${sys.z.popup};
     min-inline-size: 112px;
     max-block-size: 40vh;
+    max-block-size: 40dvh;
     /* The filter field stays put while the options scroll under it, so the
        panel is a column and the list is what overflows. Without this the box
        you are typing into scrolls off the top of the list it is filtering. */

@@ -568,8 +568,9 @@ no scrim, no trap.
 | `@event` | close  — modal dismissed; detail: { reason: 'esc' \| 'scrim' \| 'swipe' } |
 | `@event` | opened — modal enter animation finished |
 | `@event` | closed — modal exit animation finished, DOM removed |
-| `@slot` | (default) — drawer content |
-| `@part` | surface, scrim |
+| `@slot` | (default) — drawer content; scrolls when taller than the screen |
+| `@slot` | footer    — pinned below the scrolling content (account, settings…) |
+| `@part` | surface, content, footer, scrim |
 | `@vars` | see `t` below (`themeVars.names`) |
 
 Source: [`src/components/ui-drawer.js`](../src/components/ui-drawer.js)

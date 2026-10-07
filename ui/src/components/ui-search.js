@@ -172,6 +172,7 @@ const styles = css`
     overflow-x: hidden;
     box-sizing: border-box;
     max-block-size: min(70vh, 360px);
+    max-block-size: min(70dvh, 360px);
     border-block-start: 1px solid ${t.divider};
     border-end-start-radius: ${t.panelRadius};
     border-end-end-radius: ${t.panelRadius};

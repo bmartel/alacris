@@ -20,8 +20,9 @@
 // @event close  — modal dismissed; detail: { reason: 'esc' | 'scrim' | 'swipe' }
 // @event opened — modal enter animation finished
 // @event closed — modal exit animation finished, DOM removed
-// @slot  (default) — drawer content
-// @part  surface, scrim
+// @slot  (default) — drawer content; scrolls when taller than the screen
+// @slot  footer    — pinned below the scrolling content (account, settings…)
+// @part  surface, content, footer, scrim
 // @vars  see `t` below (`themeVars.names`)
 
 import { define, html, css, vars, effect, onCleanup } from '@alacris/core';
@@ -32,6 +33,7 @@ import { animate, fx, releaseFill } from '../motion/animate.js';
 import { createSwipeTracker, rubberBand } from '../motion/gesture.js';
 import { focusTrap, scrollLock } from '../util/focus.js';
 import { physicalEdge } from '../util/dir.js';
+import { overlayOn, fitToViewport } from '../util/viewport.js';
 
 const t = vars('ui-drawer', {
   bg: sys.color.surfaceContainerLow,
@@ -45,39 +47,45 @@ const t = vars('ui-drawer', {
 
 const styles = css`
   :host { display: block; inline-size: fit-content; }
+  ${overlayOn('.overlay')}
   .overlay {
-    position: fixed;
-    inset: 0;
-    inline-size: 100vw;
-    block-size: 100vh;
-    max-inline-size: 100vw;
-    max-block-size: 100vh;
-    margin: 0;
-    padding: 0;
-    border: none;
-    background: transparent;
-    overflow: visible;
     z-index: ${sys.z.drawer};
     display: block;
   }
   .overlay:popover-open {
     display: block;
   }
-  .overlay::backdrop {
-    display: none;
-  }
   .scrim { position: absolute; inset: 0; background: ${t.scrim}; }
+  /* Full height of the visible viewport (the overlay is inset-sized, not
+     100vh), stopping above the on-screen keyboard. The content scrolls; the
+     footer slot stays pinned and reachable. */
   .surface {
     position: absolute;
-    inset-block: 0;
+    inset-block-start: var(--ui-vv-top, 0px);
+    inset-block-end: var(--ui-vv-bottom, 0px);
+    display: flex;
+    flex-direction: column;
     inline-size: ${t.width};
+    max-inline-size: 100%;
     background: ${t.bg};
     color: ${t.fg};
     padding: ${t.pad};
-    overflow-y: auto;
+    padding-top: max(${t.pad}, env(safe-area-inset-top, 0px));
+    padding-bottom: max(${t.pad}, env(safe-area-inset-bottom, 0px));
+    overflow: hidden;
     box-shadow: ${sys.elevation[1]};
     touch-action: pan-y;
   }
+  .surface.left { padding-left: max(${t.pad}, env(safe-area-inset-left, 0px)); }
+  .surface.right { padding-right: max(${t.pad}, env(safe-area-inset-right, 0px)); }
+  .content {
+    flex: 1 1 auto;
+    min-block-size: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .footer { flex: none; }
+  .footer:not(.has) { display: none; }
   .surface.start {
     inset-inline-start: 0;
     border-start-end-radius: ${t.radius};
@@ -105,15 +113,16 @@ const styles = css`
     border-start-start-radius: ${t.radius};
     border-end-start-radius: ${t.radius};
   }
-  /* Fill the drawer's height and scroll when the content is taller (like the
-     modal surface), so slotted content can also size itself to 100%. */
+  /* Fill the drawer's height; the content scrolls when taller (like the modal
+     surface) and slotted content can size itself to 100%. The footer stays
+     pinned. */
   .std .inner {
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
     padding: ${t.pad};
     inline-size: ${t.width};
     block-size: 100%;
-    overflow-y: auto;
-    overscroll-behavior: contain;
   }
 `;
 
@@ -170,6 +179,7 @@ define('ui-drawer', {
       releaseTrap?.();
       unlock?.();
       tracker?.destroy();
+      stopFit?.();
     });
 
     // The panel slides out while the presence overlay (scrim included) fades.
@@ -250,7 +260,10 @@ define('ui-drawer', {
       });
     };
 
+    let stopFit = null;
     const overlayRef = (el) => {
+      stopFit?.();
+      stopFit = fitToViewport(el, host);
       queueMicrotask(() => {
         try {
           if (el.isConnected) el.showPopover?.();
@@ -258,14 +271,22 @@ define('ui-drawer', {
       });
     };
 
+    const footerRef = (el) => {
+      const slot = el.querySelector('slot');
+      const sync = () => el.classList.toggle('has', slot.assignedElements().length > 0);
+      slot.addEventListener('slotchange', sync);
+      sync();
+    };
+
     const overlay = () => html`
       <div class="overlay" popover="manual" ref=${overlayRef}>
         <div class="scrim" part="scrim" aria-hidden="true"
              ref=${(el) => { scrimEl = el; }}
              @click=${() => requestClose('scrim')}></div>
-        <aside class=${() => `surface ${anchor()}`} part="surface" role="dialog" aria-modal="true"
+        <aside class=${() => `surface ${anchor()} ${onRight() ? 'right' : 'left'}`} part="surface" role="dialog" aria-modal="true"
                aria-label=${() => label() || 'Navigation'} tabindex="-1" ref=${surfaceRef}>
-          <slot></slot>
+          <div class="content" part="content"><slot></slot></div>
+          <div class="footer" part="footer" ref=${footerRef}><slot name="footer"></slot></div>
         </aside>
       </div>`;
 
@@ -274,7 +295,10 @@ define('ui-drawer', {
         variant() === 'standard'
           ? html`<aside class=${() => `std ${anchor()}${open() ? ' open' : ''}`} ?inert=${() => !open()} part="surface"
                         aria-label=${() => label() || 'Navigation'}>
-              <div class="inner"><slot></slot></div>
+              <div class="inner">
+                <div class="content" part="content"><slot></slot></div>
+                <div class="footer" part="footer" ref=${footerRef}><slot name="footer"></slot></div>
+              </div>
             </aside>`
           : null}
       ${presence(() => open() && variant() === 'modal', overlay, {
@@ -284,6 +308,8 @@ define('ui-drawer', {
         onEntered: () => host.emit('opened'),
         onExited: () => {
           tracker?.destroy();
+          stopFit?.();
+          stopFit = null;
           host.emit('closed');
         },
       })}`;

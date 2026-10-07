@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Overlay viewport check</title>
+  <script type="importmap">
+  { "imports": { "@alacris/core": "/src/index.js" } }
+  </script>
+  <style>body { margin: 0; font: 16px system-ui; } .tall { block-size: 3000px; }</style>
+</head>
+<body>
+  <div class="tall">page content taller than the screen</div>
+  <script type="module">
+    // Driven by run.mjs over CDP with a small emulated mobile viewport. Each
+    // check opens one overlay with more content than fits, and asserts that
+    // what must be tappable (actions, footer, focused field) is inside the
+    // visible area. `kb(px)` fakes an on-screen keyboard by swapping in a
+    // visualViewport that is `px` shorter than the layout viewport — what
+    // Chrome reports with the default interactive-widget=resizes-visual.
+    import { applyTheme, createTheme } from '/ui/src/theme/index.js';
+    import '/ui/src/components/ui-dialog.js';
+    import '/ui/src/components/ui-drawer.js';
+    import '/ui/src/components/ui-sheet.js';
+    import '/ui/src/components/ui-side-sheet.js';
+    import '/ui/src/components/ui-date-picker.js';
+    import '/ui/src/components/ui-menu.js';
+    import '/ui/src/components/ui-menu-item.js';
+    import '/ui/src/components/ui-snackbar.js';
+    import '/ui/src/components/ui-button.js';
+
+    applyTheme(createTheme());
+
+    let keyboard = 0;
+    const real = window.visualViewport;
+    class FakeVV extends EventTarget {
+      get scale() { return 1; }
+      get offsetTop() { return 0; }
+      get offsetLeft() { return 0; }
+      get width() { return document.documentElement.clientWidth; }
+      get height() { return document.documentElement.clientHeight - keyboard; }
+    }
+    const fake = new FakeVV();
+    Object.defineProperty(window, 'visualViewport', { configurable: true, get: () => fake });
+    // A keyboard never takes more than about half the screen.
+    const kb = (px) => {
+      keyboard = Math.min(px, Math.round(document.documentElement.clientHeight * 0.5));
+      fake.dispatchEvent(new Event('resize'));
+    };
+
+    const frames = (n = 2) => new Promise((r) => {
+      const step = () => (--n <= 0 ? r() : requestAnimationFrame(step));
+      requestAnimationFrame(step);
+    });
+    const wait = (el, type) => new Promise((r) => el.addEventListener(type, r, { once: true }));
+    const visibleBottom = () => document.documentElement.clientHeight - keyboard;
+    const lines = (n, tag = 'p') => Array.from({ length: n }, (_, i) => `<${tag}>Line ${i + 1}</${tag.split(' ')[0]}>`).join('');
+
+    const results = [];
+    const check = (name, ok, info) => results.push({ name, ok: !!ok, info });
+    const inView = (name, el, slack = 0.5) => {
+      const r = el.getBoundingClientRect();
+      check(name, r.height > 0 && r.top >= -slack && r.bottom <= visibleBottom() + slack,
+        { top: Math.round(r.top), bottom: Math.round(r.bottom), visibleBottom: visibleBottom() });
+    };
+    const mount = (markup) => {
+      const d = document.createElement('div');
+      d.innerHTML = markup;
+      document.body.append(d);
+      return d.firstElementChild;
+    };
+    const close = async (el, prop = 'open') => {
+      const done = wait(el, 'closed');
+      el[prop] = false;
+      await Promise.race([done, new Promise((r) => setTimeout(r, 1000))]);
+      el.parentElement.remove();
+    };
+
+    async function dialog() {
+      const el = mount(`<ui-dialog label="Edit">
+        <span slot="headline">Edit item</span>
+        ${lines(40)}
+        <ui-button slot="actions" variant="text">Cancel</ui-button>
+        <ui-button slot="actions">Save</ui-button>
+      </ui-dialog>`);
+      const opened = wait(el, 'opened');
+      el.open = true;
+      await opened;
+      const sr = el.shadowRoot;
+      const overlay = sr.querySelector('.overlay');
+      const o = overlay.getBoundingClientRect();
+      check('dialog: overlay fills the visible viewport exactly', Math.abs(o.height - visibleBottom()) < 1 && o.top === 0,
+        { height: o.height, innerHeight, block: getComputedStyle(overlay).blockSize });
+      inView('dialog: surface on screen', sr.querySelector('.surface'));
+      inView('dialog: actions on screen', sr.querySelector('.actions'));
+      inView('dialog: Save button on screen', el.querySelector('ui-button:last-of-type'));
+      const body = sr.querySelector('.body');
+      check('dialog: body scrolls', body.scrollHeight > body.clientHeight + 10,
+        { scrollHeight: body.scrollHeight, clientHeight: body.clientHeight });
+      await close(el);
+    }
+
+    async function dialogKeyboard() {
+      const el = mount(`<ui-dialog label="Edit">
+        <span slot="headline">Edit item</span>
+        ${lines(12)}
+        <label>Name <input id="name" style="display:block;inline-size:100%"></label>
+        <ui-button slot="actions" variant="text">Cancel</ui-button>
+        <ui-button slot="actions">Save</ui-button>
+      </ui-dialog>`);
+      const opened = wait(el, 'opened');
+      el.open = true;
+      await opened;
+      const input = el.querySelector('#name');
+      input.focus();
+      kb(260);
+      await frames(4);
+      const sr = el.shadowRoot;
+      inView('dialog+keyboard: surface above keyboard', sr.querySelector('.surface'));
+      inView('dialog+keyboard: actions above keyboard', sr.querySelector('.actions'));
+      inView('dialog+keyboard: focused field above keyboard', input);
+      kb(0);
+      await frames(2);
+      const o = sr.querySelector('.overlay');
+      check('dialog: keyboard inset cleared after keyboard hides', !o.style.getPropertyValue('--ui-vv-bottom'),
+        { style: o.getAttribute('style') });
+      await close(el);
+    }
+
+    async function drawer() {
+      const el = mount(`<ui-drawer label="Nav">
+        ${lines(60, 'a href="#" style="display:block"')}
+        <a slot="footer" id="settings" href="#">Settings</a>
+      </ui-drawer>`);
+      const opened = wait(el, 'opened');
+      el.open = true;
+      await opened;
+      const sr = el.shadowRoot;
+      inView('drawer: surface fits the visible viewport', sr.querySelector('.surface'));
+      inView('drawer: footer item on screen', el.querySelector('#settings'));
+      const content = sr.querySelector('.content');
+      check('drawer: content scrolls', content.scrollHeight > content.clientHeight + 10,
+        { scrollHeight: content.scrollHeight, clientHeight: content.clientHeight });
+      kb(200);
+      await frames(3);
+      inView('drawer+keyboard: footer above keyboard', el.querySelector('#settings'));
+      kb(0);
+      await close(el);
+    }
+
+    async function drawerNoFooter() {
+      // Drawers without a footer slot: the last item must still be reachable
+      // by scrolling the content to its end.
+      const el = mount(`<ui-drawer label="Nav">${lines(60, 'a href="#" style="display:block"')}<a id="last" href="#">Last</a></ui-drawer>`);
+      const opened = wait(el, 'opened');
+      el.open = true;
+      await opened;
+      const content = el.shadowRoot.querySelector('.content');
+      content.scrollTop = content.scrollHeight;
+      await frames(2);
+      inView('drawer: last item reachable by scrolling', el.querySelector('#last'));
+      await close(el);
+    }
+
+    async function sheet() {
+      const el = mount(`<ui-sheet label="Sheet">
+        <span slot="headline">Options</span>
+        ${lines(40)}
+        <ui-button slot="actions" id="done">Done</ui-button>
+      </ui-sheet>`);
+      const opened = wait(el, 'opened');
+      el.open = true;
+      await opened;
+      inView('bottom sheet: surface on screen', el.shadowRoot.querySelector('.surface'));
+      inView('bottom sheet: actions on screen', el.querySelector('#done'));
+      kb(220);
+      await frames(3);
+      inView('bottom sheet+keyboard: actions above keyboard', el.querySelector('#done'));
+      kb(0);
+      await close(el);
+    }
+
+    async function sideSheet() {
+      const el = mount(`<ui-side-sheet label="Filters">
+        <span slot="headline">Filters</span>
+        ${lines(40)}
+        <ui-button slot="actions" id="apply">Apply</ui-button>
+      </ui-side-sheet>`);
+      const opened = wait(el, 'opened');
+      el.open = true;
+      await opened;
+      inView('side sheet: surface fits', el.shadowRoot.querySelector('.surface'));
+      inView('side sheet: actions on screen', el.querySelector('#apply'));
+      await close(el);
+    }
+
+    async function datePicker() {
+      const el = mount('<ui-date-picker label="Due" presentation="modal" value="2026-03-14"></ui-date-picker>');
+      await frames(2);
+      const btn = el.shadowRoot.querySelector('ui-icon-button');
+      const opened = wait(el, 'open');
+      (btn.shadowRoot?.querySelector('button') || btn).click();
+      await opened;
+      const sr = el.shadowRoot;
+      inView('date picker (modal): surface fits', sr.querySelector('.modal-surface'));
+      inView('date picker (modal): OK/Cancel on screen', sr.querySelector('.modal-surface .actions'));
+      const closed = wait(el, 'close');
+      sr.querySelector('.modal-surface .actions ui-button').click();
+      await Promise.race([closed, new Promise((r) => setTimeout(r, 1000))]);
+      el.remove();
+    }
+
+    async function menu() {
+      // An anchor low on the screen with the keyboard up: the panel must open
+      // above it (flip), not under the keyboard.
+      const el = mount(`<ui-menu style="position:fixed;left:16px;top:${visibleBottom() - 300}px">
+        <button slot="anchor">More</button>
+        ${Array.from({ length: 6 }, (_, i) => `<ui-menu-item value="${i}">Item ${i}</ui-menu-item>`).join('')}
+      </ui-menu>`);
+      kb(260);
+      await frames(2);
+      const opened = wait(el, 'open');
+      el.open = true;
+      await Promise.race([opened, new Promise((r) => setTimeout(r, 1000))]);
+      await frames(2);
+      inView('menu+keyboard: panel above keyboard', el.shadowRoot.querySelector('.panel'));
+      kb(0);
+      el.open = false;
+      await frames(2);
+      el.parentElement.remove();
+    }
+
+    async function snackbar() {
+      const el = mount('<ui-snackbar message="Saved" action="Undo" duration="0"></ui-snackbar>');
+      const opened = wait(el, 'opened');
+      el.open = true;
+      await opened;
+      inView('snackbar: on screen', el.shadowRoot.querySelector('.surface'));
+      kb(240);
+      await frames(3);
+      inView('snackbar+keyboard: above keyboard', el.shadowRoot.querySelector('.surface'));
+      kb(0);
+      await close(el);
+    }
+
+    window.runChecks = async () => {
+      for (const fn of [dialog, dialogKeyboard, drawer, drawerNoFooter, sheet, sideSheet, datePicker, menu, snackbar]) {
+        try { await fn(); } catch (e) { check(`${fn.name}: threw`, false, String(e?.stack || e)); }
+        kb(0);
+      }
+      return { viewport: { innerWidth, innerHeight, realVV: real && { h: real.height, w: real.width } }, results };
+    };
+    window.ready = true;
+  </script>
+</body>
+</html>

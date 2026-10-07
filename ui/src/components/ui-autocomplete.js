@@ -191,6 +191,7 @@ const styles = css`
     z-index: ${sys.z.popup};
     min-inline-size: 112px;
     max-block-size: 40vh;
+    max-block-size: 40dvh;
     overflow: auto;
     padding-block: ${sys.space(2)};
     background: ${t.panelBg};

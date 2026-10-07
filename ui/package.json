@@ -42,6 +42,7 @@
     "start": "node ../scripts/serve.js 5174",
     "pretest": "node -e \"const fs=require('fs');fs.mkdirSync('node_modules/@alacris',{recursive:true});try{fs.symlinkSync('../../..','node_modules/@alacris/core')}catch{}\"",
     "test": "node --import ./test/setup.js --test test/*.test.js",
+    "test:chrome": "node test/chrome/run.mjs",
     "catalog": "node scripts/catalog.mjs"
   },
   "dependencies": {

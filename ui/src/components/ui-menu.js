@@ -59,6 +59,7 @@ const styles = css`
     box-shadow: ${t.elevation};
     overflow-y: auto;
     max-block-size: calc(100vh - 16px);
+    max-block-size: calc(100dvh - 16px);
   }
 `;
 

@@ -109,6 +109,22 @@ Durations and easings are tokens, so the theme's `motion.scale` governs CSS tran
 
 Named controls (`ui-text-field`, `ui-switch`, `ui-checkbox`, `ui-select`, …) are form-associated custom elements. Give a component a `name` and it submits, resets, and follows `<fieldset disabled>` like a native field.
 
+## Mobile viewport
+
+Dialogs, sheets, drawers and the modal date picker are `position: fixed; inset: 0` overlays sized by the **visible** viewport, not `100vh` (which on phones and tablets is the height with the URL bar hidden, so a `100vh` overlay runs off the bottom of the screen). Only the body scrolls, so headlines and actions stay on screen; drawers scroll their content above an optional pinned `footer` slot.
+
+Two lines in the page's viewport meta finish the job:
+
+```html
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+```
+
+- `interactive-widget=resizes-content` makes the on-screen keyboard shrink the layout viewport (Chrome on Android, 108+), so open overlays shrink above it with no script. Without it, the components follow `window.visualViewport` instead and pad themselves above the keyboard; that also covers browsers that ignore the key.
+- `viewport-fit=cover` lets the page draw under notches and home indicators. Overlays then pad by `env(safe-area-inset-*)`; without it those insets are 0 and nothing changes.
+
+Own overlays can use the same plumbing: `fitToViewport(el, host)` writes `--ui-vv-top` / `--ui-vv-bottom` on `el` while the keyboard is up and scrolls the focused field back into view; `visibleBounds()` gives the visible band for positioning.
+
 ## Entry points
 
 | Import | What it is |
@@ -144,6 +160,7 @@ npm install
 npm run demo        # kitchen sink: http://localhost:5173/ui/
                     # starter app:  http://localhost:5173/starter/
 cd ui && npm test
+cd ui && npm run test:chrome   # overlay geometry in headless Chrome at phone/tablet sizes (skips without Chrome)
 ```
 
 ## License

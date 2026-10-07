@@ -33,6 +33,7 @@ import { presence } from '../motion/presence.js';
 import { animate, fx, releaseFill } from '../motion/animate.js';
 import { createSwipeTracker, rubberBand } from '../motion/gesture.js';
 import { focusTrap, scrollLock } from '../util/focus.js';
+import { overlayOn, visiblePadding, fitToViewport } from '../util/viewport.js';
 
 const t = vars('ui-sheet', {
   bg: sys.color.surfaceContainerLow,
@@ -45,28 +46,23 @@ const t = vars('ui-sheet', {
 
 const styles = css`
   :host { display: contents; }
+  ${overlayOn('.overlay')}
   .overlay {
-    position: fixed;
-    inset: 0;
-    inline-size: 100vw;
-    block-size: 100vh;
-    max-inline-size: 100vw;
-    max-block-size: 100vh;
-    margin: 0;
-    padding: 0;
-    border: none;
-    background: transparent;
-    overflow: visible;
     z-index: ${sys.z.modal};
     display: flex;
     align-items: flex-end;
     justify-content: center;
+    /* Inset-sized (the visible viewport, not 100vh). The 72px top gap is the
+       Material sheet margin; the bottom stops above the on-screen keyboard. */
+    padding-top: calc(var(--ui-vv-top, 0px) + 72px + env(safe-area-inset-top, 0px));
+    padding-bottom: var(--ui-vv-bottom, 0px);
   }
   .overlay:popover-open {
     display: flex;
   }
-  .overlay::backdrop {
-    display: none;
+  /* With the keyboard up the 72px top margin is room the sheet needs. */
+  .overlay[data-keyboard] {
+    padding-top: calc(var(--ui-vv-top, 0px) + env(safe-area-inset-top, 0px));
   }
   .scrim { position: absolute; inset: 0; background: ${t.scrim}; }
   .surface {
@@ -74,7 +70,12 @@ const styles = css`
     display: flex;
     flex-direction: column;
     inline-size: ${t.width};
-    max-block-size: calc(100vh - 72px);
+    max-block-size: 100%;
+    min-block-size: 0;
+    /* The panel runs under the home indicator; its content stops above it. */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
     background: ${t.bg};
     color: ${t.fg};
     border-start-start-radius: ${t.radius};
@@ -93,6 +94,7 @@ const styles = css`
     touch-action: none;
   }
   .headline {
+    flex: none;
     padding-inline: ${sys.space(6)};
     padding-block-end: ${sys.space(2)};
     font: ${sys.type.titleLg};
@@ -100,14 +102,19 @@ const styles = css`
     user-select: none;
   }
   .headline:not(.has) { display: none; }
+  /* Only the body scrolls, so the headline and actions stay on screen. */
   .body {
+    flex: 1 1 auto;
+    min-block-size: 0;
     overflow: auto;
+    overscroll-behavior: contain;
     padding: ${sys.space(2)} ${sys.space(6)} ${sys.space(6)};
     font: ${sys.type.bodyMd};
     letter-spacing: ${sys.tracking.bodyMd};
     color: ${sys.color.onSurfaceVariant};
   }
   .actions {
+    flex: none;
     display: flex;
     justify-content: flex-end;
     gap: ${sys.space(2)};
@@ -177,6 +184,7 @@ define('ui-sheet', {
       releaseTrap?.();
       unlock?.();
       tracker?.destroy();
+      stopFit?.();
     });
 
     const hasSlot = (el, set) => {
@@ -256,7 +264,10 @@ define('ui-sheet', {
       });
     };
 
+    let stopFit = null;
     const overlayRef = (el) => {
+      stopFit?.();
+      stopFit = fitToViewport(el, host);
       queueMicrotask(() => {
         try {
           if (el.isConnected) el.showPopover?.();
@@ -308,6 +319,8 @@ define('ui-sheet', {
         onEntered: () => host.emit('opened'),
         onExited: () => {
           tracker?.destroy();
+          stopFit?.();
+          stopFit = null;
           host.emit('closed');
         },
       })}`;

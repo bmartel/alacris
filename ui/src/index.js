@@ -29,6 +29,7 @@ export { createSwipeTracker, calculateVelocity, rubberBand } from './motion/gest
 // Utilities
 export { position, autoUpdate } from './util/position.js';
 export { focusTrap, focusables, scrollLock } from './util/focus.js';
+export { trackViewport, viewportInsets, visibleBounds, fitToViewport } from './util/viewport.js';
 export { rovingTabindex } from './util/keys.js';
 export { formBind } from './util/form.js';
 export { registerIcons, iconPath, iconNames } from './util/icons.js';

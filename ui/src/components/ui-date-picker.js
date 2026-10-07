@@ -41,6 +41,7 @@ import { autoUpdate } from '../util/position.js';
 import { escapeLayer } from '../util/keys.js';
 import { popupEvent } from '../util/popup.js';
 import { focusTrap, scrollLock } from '../util/focus.js';
+import { overlayOn, visiblePadding, fitToViewport } from '../util/viewport.js';
 import './ui-icon-button.js';
 import './ui-button.js';
 
@@ -271,27 +272,23 @@ const styles = css`
     color: ${t.fg};
     overflow: auto;
   }
+  ${overlayOn('.overlay')}
   .overlay {
-    position: fixed;
-    inset: 0;
-    inline-size: 100vw;
-    block-size: 100vh;
-    max-inline-size: 100vw;
-    max-block-size: 100vh;
-    margin: 0;
-    padding: 0;
-    border: none;
-    background: transparent;
-    overflow: visible;
     z-index: ${sys.z.popup};
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Inset-sized (the visible viewport, not 100vh), clear of the keyboard
+       and screen cutouts. */
+    ${visiblePadding('24px')}
   }
   .overlay:popover-open {
-    display: grid;
+    display: flex;
   }
-  .overlay::backdrop {
-    display: none;
+  /* With the keyboard up every pixel counts: keep only a small margin. */
+  .overlay[data-keyboard] {
+    padding-top: calc(var(--ui-vv-top, 0px) + max(8px, env(safe-area-inset-top, 0px)));
+    padding-bottom: calc(var(--ui-vv-bottom, 0px) + 8px);
   }
   .scrim { position: absolute; inset: 0; background: ${t.scrim}; }
   .modal-surface {
@@ -304,9 +301,24 @@ const styles = css`
     border-radius: ${t.panelRadius};
     box-shadow: ${sys.elevation[3]};
     color: ${t.fg};
-    min-inline-size: min(360px, calc(100vw - 48px));
-    max-inline-size: calc(100vw - 48px);
+    min-inline-size: min(360px, 100%);
+    max-inline-size: 100%;
+    max-block-size: 100%;
+    min-block-size: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
   }
+  /* On a short (landscape) screen the calendar scrolls; OK/Cancel stay put. */
+  .modal-body {
+    flex: 1 1 auto;
+    min-block-size: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    display: flex;
+    flex-direction: column;
+    gap: ${sys.space(2)};
+  }
+  .modal-surface .actions { flex: none; }
   .headline {
     padding-inline: ${sys.space(3)};
     font: ${sys.type.labelMd};
@@ -644,7 +656,8 @@ define('ui-date-picker', {
     effect(() => {
       if (!open() && stopAuto) { stopAuto(); stopAuto = null; }
     });
-    onCleanup(() => { stopAuto?.(); releaseTrap?.(); unlock?.(); });
+    let stopFit = null;
+    onCleanup(() => { stopAuto?.(); releaseTrap?.(); unlock?.(); stopFit?.(); });
 
     const dayClassFrom = (cell) => [
       'day',
@@ -730,6 +743,8 @@ define('ui-date-picker', {
     };
 
     const modalOverlayRef = (el) => {
+      stopFit?.();
+      stopFit = fitToViewport(el, host);
       queueMicrotask(() => {
         try {
           if (el.isConnected) el.showPopover?.();
@@ -743,14 +758,16 @@ define('ui-date-picker', {
         <div class="modal-surface" part="panel" role="dialog" aria-modal="true"
              aria-label=${() => label() || 'Choose date'}
              ref=${modalSurfaceRef}>
-          <div class="headline">${() => (range() ? 'Select dates' : 'Select date')}</div>
-          <div class="picked">${pickedLabel}</div>
-          <div class="cal-header">
-            <span class="month">${title}</span>
-            <ui-icon-button icon="chevron-left" label="Previous month" @click=${() => shiftMonth(-1)}></ui-icon-button>
-            <ui-icon-button icon="chevron-right" label="Next month" @click=${() => shiftMonth(1)}></ui-icon-button>
+          <div class="modal-body">
+            <div class="headline">${() => (range() ? 'Select dates' : 'Select date')}</div>
+            <div class="picked">${pickedLabel}</div>
+            <div class="cal-header">
+              <span class="month">${title}</span>
+              <ui-icon-button icon="chevron-left" label="Previous month" @click=${() => shiftMonth(-1)}></ui-icon-button>
+              <ui-icon-button icon="chevron-right" label="Next month" @click=${() => shiftMonth(1)}></ui-icon-button>
+            </div>
+            ${calGrid}
           </div>
-          ${calGrid}
           <div class="actions">
             <ui-button variant="text" @click=${closePanel}>Cancel</ui-button>
             <ui-button variant="text" @click=${() => range() ? commitRange(draftStart(), draftEnd()) : commit(draft())}>OK</ui-button>
@@ -791,7 +808,11 @@ define('ui-date-picker', {
           enterDuration: 'medium2',
           exitDuration: 'short4',
           onEntered: () => host.emit('open', null, popupEvent),
-          onExited: () => host.emit('close', null, popupEvent),
+          onExited: () => {
+            stopFit?.();
+            stopFit = null;
+            host.emit('close', null, popupEvent);
+          },
         })}
       </div>`;
   },

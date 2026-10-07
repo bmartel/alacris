@@ -26,12 +26,13 @@
 // @part  surface, message, action, close
 // @vars  see `t` below (`themeVars.names`)
 
-import { define, html, css, vars, effect } from '@alacris/core';
+import { define, html, css, vars, effect, onCleanup } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base, focusRingOn } from './base.js';
 import { presence } from '../motion/presence.js';
 import { fx } from '../motion/animate.js';
 import { ripple } from '../motion/ripple.js';
+import { fitToViewport } from '../util/viewport.js';
 import './ui-icon.js';
 
 const t = vars('ui-snackbar', {
@@ -49,11 +50,13 @@ const styles = css`
   .region {
     position: fixed;
     inset-inline: 0;
-    inset-block-end: ${sys.space(4)};
+    /* Above the home indicator and the on-screen keyboard. */
+    inset-block-end: calc(${sys.space(4)} + var(--ui-vv-bottom, 0px) + env(safe-area-inset-bottom, 0px));
     z-index: ${sys.z.snackbar};
     display: flex;
     justify-content: center;
-    padding-inline: ${sys.space(4)};
+    padding-left: max(${sys.space(4)}, env(safe-area-inset-left, 0px));
+    padding-right: max(${sys.space(4)}, env(safe-area-inset-right, 0px));
     pointer-events: none;
   }
   .surface {
@@ -132,8 +135,15 @@ define('ui-snackbar', {
       return () => clearTimeout(id);
     });
 
+    let stopFit = null;
+    const regionRef = (el) => {
+      stopFit?.();
+      stopFit = fitToViewport(el);
+    };
+    onCleanup(() => stopFit?.());
+
     const view = () => html`
-      <div class="region">
+      <div class="region" ref=${regionRef}>
         <div part="surface" role="status" aria-live="polite"
              class=${() => `surface${action() || closeButton() ? ' trailing' : ''}`}>
           <span class="message" part="message">${message}</span>
@@ -163,7 +173,11 @@ define('ui-snackbar', {
       exitDuration: 'short4',
       target: '.surface',
       onEntered: () => host.emit('opened'),
-      onExited: () => host.emit('closed'),
+      onExited: () => {
+        stopFit?.();
+        stopFit = null;
+        host.emit('closed');
+      },
     })}`;
   },
 });

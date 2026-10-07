@@ -12,6 +12,7 @@
 // the anchor's right edge, as the leading edge of RTL text is.
 
 import { isRtl } from './dir.js';
+import { visibleBounds } from './viewport.js';
 
 const MAIN = { top: 'top', bottom: 'top', left: 'left', right: 'left' };
 const OPPOSITE = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' };
@@ -40,16 +41,18 @@ export function position(panel, anchor, opts = {}) {
   panel.style.maxHeight = '';
   panel.style.maxWidth = '';
 
+  // The visible area, in the layout-viewport coordinates `position: fixed`
+  // and getBoundingClientRect use: shrinks above the on-screen keyboard.
+  const { top: vTop, bottom: vBottom } = visibleBounds();
   const vw = window.innerWidth;
-  const vh = window.innerHeight;
   let [side, align = 'start'] = placement.split('-');
   const alongX = () => side === 'top' || side === 'bottom';
   const size = () => ({ w: panel.offsetWidth, h: panel.offsetHeight });
 
   let { w, h } = size();
   const space = {
-    bottom: vh - a.bottom - offset - padding,
-    top: a.top - offset - padding,
+    bottom: vBottom - a.bottom - offset - padding,
+    top: a.top - vTop - offset - padding,
     right: vw - a.right - offset - padding,
     left: a.left - offset - padding,
   };
@@ -76,7 +79,7 @@ export function position(panel, anchor, opts = {}) {
 
   // Shift on the cross axis only — never drag the panel across the anchor.
   if (alongX()) x = Math.max(padding, Math.min(x, vw - w - padding));
-  else y = Math.max(padding, Math.min(y, vh - h - padding));
+  else y = Math.max(vTop + padding, Math.min(y, vBottom - h - padding));
 
   panel.style.left = `${x}px`;
   panel.style.top = `${y}px`;
@@ -102,6 +105,10 @@ export function autoUpdate(panel, anchor, opts) {
   const raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame(run) : 0;
   window.addEventListener('scroll', run, { capture: true, passive: true });
   window.addEventListener('resize', run, { passive: true });
+  // The keyboard resizes only the visual viewport (no window resize).
+  const vv = window.visualViewport;
+  vv?.addEventListener('resize', run, { passive: true });
+  vv?.addEventListener('scroll', run, { passive: true });
   const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(run) : null;
   ro?.observe(anchor);
   ro?.observe(panel);
@@ -109,6 +116,8 @@ export function autoUpdate(panel, anchor, opts) {
     if (raf) cancelAnimationFrame(raf);
     window.removeEventListener('scroll', run, { capture: true });
     window.removeEventListener('resize', run);
+    vv?.removeEventListener('resize', run);
+    vv?.removeEventListener('scroll', run);
     ro?.disconnect();
   };
 }
