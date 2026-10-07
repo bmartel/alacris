@@ -1,5 +1,6 @@
-// Right-to-left: every part placed or moved from script follows the resolved
-// writing direction, and the CSS-only parts carry their :dir(rtl) rules.
+// Right-to-left: every part placed or moved from script, and every arrow key,
+// follows the resolved writing direction, and the CSS-only parts carry their
+// :dir(rtl) rules.
 // happy-dom does not inherit `direction` from a `dir` attribute, so these
 // tests set `direction` inline on the element whose direction is read.
 import { test } from 'node:test';
@@ -9,6 +10,7 @@ import { mount, unmountAll, tick } from './helpers.js';
 
 import { position } from '../src/util/position.js';
 import { isRtl, physicalEdge } from '../src/util/dir.js';
+import { rovingTabindex } from '../src/util/keys.js';
 import '../src/components/ui-drawer.js';
 import '../src/components/ui-side-sheet.js';
 import '../src/components/ui-slider.js';
@@ -16,6 +18,8 @@ import '../src/components/ui-progress.js';
 import '../src/components/ui-tabs.js';
 import '../src/components/ui-menu.js';
 import '../src/components/ui-tooltip.js';
+import '../src/components/ui-swipe-row.js';
+import '../src/components/ui-rating.js';
 
 const DIRS = ['ltr', 'rtl'];
 
@@ -182,6 +186,134 @@ for (const tag of ['ui-menu', 'ui-tooltip']) {
     assert.match(rule, /(^|[\s;])left: 0/);
     assert.match(rule, /(^|[\s;])top: 0/);
     assert.doesNotMatch(rule, /inset-inline-start/);
+    unmountAll();
+  });
+}
+
+// --- Keyboard, swipe row, popup transform-origin ---------------------------
+
+const key = (el, k) => el.dispatchEvent(new window.KeyboardEvent('keydown', { key: k, bubbles: true, composed: true, cancelable: true }));
+
+for (const dir of DIRS) {
+  test(`rovingTabindex: ArrowLeft/ArrowRight follow the writing direction (${dir})`, () => {
+    const group = mount(`<div style="direction: ${dir}"><button>a</button><button>b</button><button>c</button></div>`);
+    const [a, b, c] = group.querySelectorAll('button');
+    const r = rovingTabindex(group, { selector: 'button', orientation: 'horizontal' });
+    const fwd = dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
+    const back = dir === 'rtl' ? 'ArrowRight' : 'ArrowLeft';
+    a.focus();
+    key(a, fwd);
+    assert.ok(document.activeElement === b, `${fwd} moves to the next item`);
+    key(b, back);
+    assert.ok(document.activeElement === a, `${back} moves to the previous item`);
+    key(a, back);
+    assert.ok(document.activeElement === c, 'wraps');
+    // Vertical keys never depend on direction.
+    key(c, 'ArrowDown');
+    assert.ok(document.activeElement === c, 'horizontal group ignores ArrowDown');
+    r.destroy();
+
+    const both = rovingTabindex(group, { selector: 'button', orientation: 'both' });
+    a.focus();
+    key(a, 'ArrowDown');
+    assert.ok(document.activeElement === b, 'ArrowDown is always next');
+    key(b, fwd);
+    assert.ok(document.activeElement === c, `${fwd} is next in a two-axis group too`);
+    both.destroy();
+    unmountAll();
+  });
+
+  test(`ui-tabs arrow keys select the visually adjacent tab (${dir})`, async () => {
+    const el = mount(`<ui-tabs value="one" label="Demo" style="direction: ${dir}">
+      <ui-tab value="one">One</ui-tab><ui-tab value="two">Two</ui-tab><ui-tab value="three">Three</ui-tab></ui-tabs>`);
+    await tick();
+    const [one] = el.querySelectorAll('ui-tab');
+    one.focus();
+    key(one, dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight');
+    await tick();
+    assert.equal(el.value, 'two');
+    unmountAll();
+  });
+
+  test(`ui-rating arrow keys raise toward the inline end (${dir})`, async () => {
+    const el = mount(`<ui-rating label="Stars" value="2" style="direction: ${dir}"></ui-rating>`);
+    await tick();
+    const target = el.shadowRoot.querySelector('[role="slider"], [tabindex], .stars') || el;
+    key(target, dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight');
+    await tick();
+    assert.equal(Number(el.value), 3);
+    key(target, dir === 'rtl' ? 'ArrowRight' : 'ArrowLeft');
+    await tick();
+    assert.equal(Number(el.value), 2);
+    unmountAll();
+  });
+
+  test(`ui-swipe-row reveals leading/trailing actions by writing direction (${dir})`, async () => {
+    const el = mount(`
+      <ui-swipe-row style="direction: ${dir}">
+        <button slot="start">Star</button>
+        <button slot="end">Delete</button>
+        <div>Row</div>
+      </ui-swipe-row>`);
+    await tick();
+    const content = el.shadowRoot.querySelector('.content');
+    for (const a of el.shadowRoot.querySelectorAll('.actions')) {
+      Object.defineProperty(a, 'offsetWidth', { configurable: true, get: () => 80 });
+    }
+    const sides = [];
+    el.addEventListener('open', (e) => sides.push(e.detail.side));
+    const s = dir === 'rtl' ? -1 : 1;
+
+    // Toward the inline start (left in LTR): reveals the end actions.
+    swipe(content, 200, 200 - 120 * s);
+    await tick();
+    assert.equal(sides.at(-1), 'end');
+    assert.equal(content.style.transform, `translateX(${-80 * s}px)`, 'content moves off the end actions');
+
+    el.open = '';
+    await tick();
+    // Toward the inline end: reveals the start actions.
+    swipe(content, 200, 200 + 120 * s);
+    await tick();
+    assert.equal(sides.at(-1), 'start');
+    assert.equal(content.style.transform, `translateX(${80 * s}px)`);
+
+    el.open = 'end';
+    await tick();
+    assert.equal(content.style.transform, `translateX(${-80 * s}px)`, 'controlled open follows direction');
+    unmountAll();
+  });
+
+  test(`position() sets transform-origin at the aligned anchor-facing corner (${dir})`, () => {
+    const anchor = mount(`<button style="direction: ${dir}">Anchor</button>`);
+    const panel = document.createElement('div');
+    document.body.append(panel);
+    anchor.getBoundingClientRect = () => ({ left: 100, right: 200, top: 50, bottom: 80, width: 100, height: 30 });
+    Object.defineProperty(panel, 'offsetWidth', { configurable: true, get: () => 160 });
+    Object.defineProperty(panel, 'offsetHeight', { configurable: true, get: () => 120 });
+    const rtl = dir === 'rtl';
+    const at = (placement) => {
+      position(panel, anchor, { placement, flip: false });
+      return panel.style.transformOrigin;
+    };
+    assert.equal(at('bottom-start'), rtl ? 'right top' : 'left top');
+    assert.equal(at('bottom-end'), rtl ? 'left top' : 'right top');
+    assert.equal(at('top-start'), rtl ? 'right bottom' : 'left bottom');
+    assert.equal(at('top-center'), 'center bottom');
+    assert.equal(at('right-start'), 'left top');
+    assert.equal(at('left-end'), 'right bottom');
+    unmountAll();
+  });
+
+  test(`ui-menu panel scales from the anchor's leading corner (${dir})`, async () => {
+    const el = mount(`<ui-menu style="direction: ${dir}"><button slot="anchor" style="direction: ${dir}">Open</button>
+      <ui-menu-item value="a">A</ui-menu-item></ui-menu>`);
+    await tick();
+    el.open = true;
+    await tick();
+    const panel = el.shadowRoot.querySelector('.panel');
+    assert.ok(panel);
+    assert.equal(panel.style.transformOrigin, dir === 'rtl' ? 'right top' : 'left top');
     unmountAll();
   });
 }

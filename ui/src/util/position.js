@@ -15,12 +15,8 @@ import { isRtl } from './dir.js';
 
 const MAIN = { top: 'top', bottom: 'top', left: 'left', right: 'left' };
 const OPPOSITE = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' };
-const ORIGIN = {
-  top: 'bottom center',
-  bottom: 'top center',
-  left: 'center right',
-  right: 'center left',
-};
+// transform-origin: the panel's anchor-facing edge, at its aligned corner.
+const ORIGIN_SIDE = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' };
 
 /**
  * position(panel, anchor, { placement = 'bottom-start', offset = 4,
@@ -66,14 +62,16 @@ export function position(panel, anchor, opts = {}) {
   else panel.style.maxWidth = `${Math.max(0, space[side])}px`;
   ({ w, h } = size());
 
-  let x, y;
+  let x, y, cross;
   if (alongX()) {
     y = side === 'bottom' ? a.bottom + offset : a.top - offset - h;
     const lead = align === 'start' ? !rtl : align === 'end' ? rtl : null;
     x = lead === null ? a.left + a.width / 2 - w / 2 : lead ? a.left : a.right - w;
+    cross = lead === null ? 'center' : lead ? 'left' : 'right';
   } else {
     x = side === 'right' ? a.right + offset : a.left - offset - w;
     y = align === 'start' ? a.top : align === 'end' ? a.bottom - h : a.top + a.height / 2 - h / 2;
+    cross = align === 'start' ? 'top' : align === 'end' ? 'bottom' : 'center';
   }
 
   // Shift on the cross axis only — never drag the panel across the anchor.
@@ -84,7 +82,9 @@ export function position(panel, anchor, opts = {}) {
   panel.style.top = `${y}px`;
   panel.style.right = 'auto';
   panel.style.bottom = 'auto';
-  panel.style.transformOrigin = ORIGIN[side];
+  panel.style.transformOrigin = alongX()
+    ? `${cross} ${ORIGIN_SIDE[side]}`
+    : `${ORIGIN_SIDE[side]} ${cross}`;
   return { placement: align ? `${side}-${align}` : side, [MAIN[side]]: true };
 }
 

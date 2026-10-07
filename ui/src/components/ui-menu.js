@@ -62,16 +62,6 @@ const styles = css`
   }
 `;
 
-// transform-origin on the panel's anchor-facing corner, per placement.
-const originFor = (placement) => {
-  const [side, align = 'start'] = placement.split('-');
-  const cross = align === 'end' ? 'right' : align === 'center' ? 'center' : 'left';
-  if (side === 'top') return `bottom ${cross}`;
-  if (side === 'bottom') return `top ${cross}`;
-  const block = align === 'end' ? 'bottom' : align === 'center' ? 'center' : 'top';
-  return `${block} ${side === 'left' ? 'right' : 'left'}`;
-};
-
 define('ui-menu', {
   props: { open: false, placement: 'bottom-start' },
   styles: [base, styles],
@@ -160,8 +150,9 @@ define('ui-menu', {
     });
     onCleanup(() => stopPosition?.());
 
+    // position() also sets transform-origin to the anchor-facing corner, for
+    // the side it actually used (after any flip) and the writing direction.
     const panelRef = (el) => {
-      el.style.transformOrigin = originFor(placement());
       stopPosition = autoUpdate(el, anchorEl(), { placement: placement() });
     };
 

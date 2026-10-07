@@ -391,7 +391,7 @@ test('position flips above the anchor without covering it', async () => {
     assert.match(result.placement, /^top/);
     const y = parseFloat(panel.style.top);
     assert.ok(y + 280 <= 400 - 4 + 0.5, 'panel stays above the field');
-    assert.equal(panel.style.transformOrigin, 'bottom center');
+    assert.equal(panel.style.transformOrigin, 'left bottom', 'grows from the anchor-facing start corner');
   } finally {
     if (prevH) Object.defineProperty(window, 'innerHeight', prevH);
     if (prevW) Object.defineProperty(window, 'innerWidth', prevW);

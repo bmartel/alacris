@@ -1,6 +1,10 @@
 // rovingTabindex — arrow-key navigation for composite widgets
 // (tabs, menus, radio groups, chip sets), per the ARIA Authoring Practices:
 // one Tab stop for the whole widget, arrows move the active item.
+// Left/Right follow the writing direction: in RTL (the container's computed
+// `direction`) ArrowLeft moves to the next item and ArrowRight to the previous.
+
+import { isRtl } from './dir.js';
 
 /**
  * rovingTabindex(container, {
@@ -68,9 +72,10 @@ export function rovingTabindex(container, opts = {}) {
     if (!list.length) return;
     const path = e.composedPath();
     if (!list.some((el) => path.includes(el)) && !path.includes(container)) return;
+    const next = horizontal && isRtl(container) ? -1 : 1;
     switch (e.key) {
-      case 'ArrowRight': if (horizontal) { e.preventDefault(); move(1, undefined, e); } break;
-      case 'ArrowLeft': if (horizontal) { e.preventDefault(); move(-1, undefined, e); } break;
+      case 'ArrowRight': if (horizontal) { e.preventDefault(); move(next, undefined, e); } break;
+      case 'ArrowLeft': if (horizontal) { e.preventDefault(); move(-next, undefined, e); } break;
       case 'ArrowDown': if (vertical) { e.preventDefault(); move(1, undefined, e); } break;
       case 'ArrowUp': if (vertical) { e.preventDefault(); move(-1, undefined, e); } break;
       case 'Home': e.preventDefault(); move(0, 0, e); break;

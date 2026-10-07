@@ -396,6 +396,8 @@ const styles = css`
   .ticks {
     position: absolute;
     inset: 0;
+    /* A clock face is not mirrored in RTL; keep its arrow keys physical too. */
+    direction: ltr;
     opacity: 0;
     pointer-events: none;
     scale: 0.85;

@@ -23,6 +23,7 @@ import { define, html, css, vars, computed, signal } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
 import { base, focusRingOn } from './base.js';
 import './ui-icon.js';
+import { isRtl } from '../util/dir.js';
 
 const t = vars('ui-rating', {
   activeFg: sys.color.primary,
@@ -79,7 +80,11 @@ define('ui-rating', {
     const onKeydown = (e) => {
       if (!interactive()) return;
       let next;
-      switch (e.key) {
+      // The stars run from the inline start, so in RTL ArrowLeft raises.
+      const key = isRtl(host)
+        ? ({ ArrowLeft: 'ArrowRight', ArrowRight: 'ArrowLeft' })[e.key] || e.key
+        : e.key;
+      switch (key) {
         case 'ArrowRight': case 'ArrowUp': next = Math.min(max(), value() + 1); break;
         case 'ArrowLeft': case 'ArrowDown': next = Math.max(0, value() - 1); break;
         case 'Home': next = 0; break;

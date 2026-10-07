@@ -1345,8 +1345,8 @@ an Android-style horizontal swipe-to-reveal row container.
 | `@event` | close  — detail: {} |
 | `@event` | action — detail: { side: 'start' \| 'end' } |
 | `@slot` | (default) — primary row content (e.g. &lt;ui-list-item&gt;, &lt;ui-card&gt;) |
-| `@slot` | start — actions revealed when swiping right |
-| `@slot` | end   — actions revealed when swiping left |
+| `@slot` | start — actions at the inline start, revealed when swiping toward the end (right in LTR, left in RTL) |
+| `@slot` | end   — actions at the inline end, revealed when swiping toward the start (left in LTR, right in RTL) |
 | `@part` | container, content, start-actions, end-actions |
 | `@vars` | see `t` below (`themeVars.names`) |
 

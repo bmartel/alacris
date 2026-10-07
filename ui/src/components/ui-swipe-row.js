@@ -14,8 +14,10 @@
 // @event close  — detail: {}
 // @event action — detail: { side: 'start' | 'end' }
 // @slot  (default) — primary row content (e.g. <ui-list-item>, <ui-card>)
-// @slot  start — actions revealed when swiping right
-// @slot  end   — actions revealed when swiping left
+// @slot  start — actions at the inline start, revealed when swiping toward
+//                the end (right in LTR, left in RTL)
+// @slot  end   — actions at the inline end, revealed when swiping toward
+//                the start (left in LTR, right in RTL)
 // @part  container, content, start-actions, end-actions
 // @vars  see `t` below (`themeVars.names`)
 
@@ -24,6 +26,7 @@ import { sys } from '../tokens/sys.js';
 import { base } from './base.js';
 import { animate } from '../motion/animate.js';
 import { createSwipeTracker, rubberBand } from '../motion/gesture.js';
+import { isRtl } from '../util/dir.js';
 
 const t = vars('ui-swipe-row', {
   bg: sys.color.surface,
@@ -85,13 +88,17 @@ define('ui-swipe-row', {
     const hasStart = signal(false);
     const hasEnd = signal(false);
 
+    // Offsets below are logical: positive moves the content toward the inline
+    // end (revealing start actions). `sign` maps them to physical x.
+    const sign = () => (isRtl(host) ? -1 : 1);
+
     const getStartWidth = () => (startActionsEl?.offsetWidth || 0);
     const getEndWidth = () => (endActionsEl?.offsetWidth || 0);
 
     const snapTo = (x, ms = 200, easing = 'emphasizedDecelerate') => {
       if (!contentEl) return Promise.resolve();
       const currentTransform = contentEl.style.transform || 'translateX(0px)';
-      const targetTransform = `translateX(${x}px)`;
+      const targetTransform = `translateX(${x * sign()}px)`;
       const anim = animate(contentEl, [
         { transform: currentTransform },
         { transform: targetTransform },
@@ -171,7 +178,7 @@ define('ui-swipe-row', {
           el.style.transition = 'none';
         },
         onMove({ dx }) {
-          const totalDx = startOffset + dx;
+          const totalDx = startOffset + dx * sign();
           const startW = getStartWidth();
           const endW = getEndWidth();
           let effectiveDx = totalDx;
@@ -188,15 +195,16 @@ define('ui-swipe-row', {
             }
           }
 
-          el.style.transform = `translateX(${effectiveDx}px)`;
+          el.style.transform = `translateX(${effectiveDx * sign()}px)`;
         },
-        onEnd({ dx, vx, cancelled }) {
+        onEnd({ dx, vx: rawVx, cancelled }) {
           if (cancelled) {
             setOpenState(currentOpen, false);
             return;
           }
 
-          const totalDx = startOffset + dx;
+          const vx = rawVx * sign();
+          const totalDx = startOffset + dx * sign();
           const containerW = containerEl?.offsetWidth || 300;
           const startW = getStartWidth() || 80;
           const endW = getEndWidth() || 80;
