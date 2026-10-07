@@ -4,6 +4,13 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.9.1](https://github.com/bmartel/alacris/compare/ui-v0.9.0...ui-v0.9.1) (2026-10-07)
+
+### Bug Fixes
+
+* **ui:** arrow keys, swipe row and popup origin follow the writing direction ([70b42d5](https://github.com/bmartel/alacris/commit/70b42d5811599d494b0a23de593c96dfafa3a519))
+* **ui:** components follow the writing direction in RTL ([7801cd4](https://github.com/bmartel/alacris/commit/7801cd4c21132fbe1f6505c3e3a247258d2570d5))
+
 ## [0.9.0](https://github.com/bmartel/alacris/compare/ui-v0.8.2...ui-v0.9.0) (2026-10-05)
 
 ### Features
