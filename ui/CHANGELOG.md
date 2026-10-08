@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.9.3](https://github.com/bmartel/alacris/compare/ui-v0.9.2...ui-v0.9.3) (2026-10-08)
+
+### Bug Fixes
+
+* **ui:** modal drawer and side sheet surfaces are divs with role=dialog ([c0397c6](https://github.com/bmartel/alacris/commit/c0397c69dd55e8cec99ffb3c67a499b1edf9a400))
+
 ## [0.9.2](https://github.com/bmartel/alacris/compare/ui-v0.9.1...ui-v0.9.2) (2026-10-07)
 
 ### Bug Fixes
