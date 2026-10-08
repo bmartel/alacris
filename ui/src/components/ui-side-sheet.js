@@ -292,7 +292,7 @@ define('ui-side-sheet', {
         <div class="scrim" part="scrim" aria-hidden="true"
              ref=${(el) => { scrimEl = el; }}
              @click=${() => requestClose('scrim')}></div>
-        <aside class=${() => `surface ${anchor()} ${onRight() ? 'right' : 'left'}`} part="surface" role="dialog" aria-modal="true"
+        <div class=${() => `surface ${anchor()} ${onRight() ? 'right' : 'left'}`} part="surface" role="dialog" aria-modal="true"
                aria-labelledby=${() => (hasHeadline() ? 'headline' : null)}
                aria-label=${() => (hasHeadline() ? null : (label() || 'Side sheet'))}
                tabindex="-1" ref=${surfaceRef}>
@@ -308,7 +308,7 @@ define('ui-side-sheet', {
                ref=${(el) => hasSlot(el.querySelector('slot'), (has) => el.classList.toggle('has', has))}>
             <slot name="actions"></slot>
           </div>
-        </aside>
+        </div>
       </div>`;
 
     return html`

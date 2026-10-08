@@ -283,11 +283,11 @@ define('ui-drawer', {
         <div class="scrim" part="scrim" aria-hidden="true"
              ref=${(el) => { scrimEl = el; }}
              @click=${() => requestClose('scrim')}></div>
-        <aside class=${() => `surface ${anchor()} ${onRight() ? 'right' : 'left'}`} part="surface" role="dialog" aria-modal="true"
+        <div class=${() => `surface ${anchor()} ${onRight() ? 'right' : 'left'}`} part="surface" role="dialog" aria-modal="true"
                aria-label=${() => label() || 'Navigation'} tabindex="-1" ref=${surfaceRef}>
           <div class="content" part="content"><slot></slot></div>
           <div class="footer" part="footer" ref=${footerRef}><slot name="footer"></slot></div>
-        </aside>
+        </div>
       </div>`;
 
     return html`
