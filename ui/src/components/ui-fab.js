@@ -1,11 +1,13 @@
 // <ui-fab> — the Material floating action button, regular and extended.
 //
 // A non-empty `label` renders the extended FAB (icon + text) and is always the
-// accessible name, extended or not.
+// accessible name. An icon-only FAB is named by `accessible-label` (read by
+// screen readers, never shown).
 //
 // @prop  {string}  icon=''           — registry icon name (or slot custom content)
 // @prop  {string}  label=''          — extended-FAB text; always used as aria-label
-//                                      (falls back to the icon name when empty)
+// @prop  {string}  accessibleLabel='' — the name of an icon-only FAB (attribute
+//                                      `accessible-label`); with neither, the icon name
 // @prop  {string}  variant='primary' — primary | secondary | tertiary | surface
 // @prop  {string}  size='md'         — sm (40px) | md (56px) | lg (96px)
 // @prop  {boolean} disabled=false
@@ -96,15 +98,15 @@ const styles = css`
 `;
 
 define('ui-fab', {
-  props: { icon: '', label: '', variant: 'primary', size: 'md', disabled: false },
+  props: { icon: '', label: '', accessibleLabel: '', variant: 'primary', size: 'md', disabled: false },
   styles: [base, styles],
-  setup({ icon, label, variant, size, disabled }, host) {
+  setup({ icon, label, accessibleLabel, variant, size, disabled }, host) {
     const cls = computed(() =>
       `control ${variant()} ${size()}${label() ? ' extended' : ''}`);
 
     return html`
       <button part="control" class=${cls} type="button" ?disabled=${disabled}
-              aria-label=${() => label() || icon() || null}
+              aria-label=${() => label() || accessibleLabel() || icon() || null}
               ref=${(el) => ripple(el, { disabled })}>
         <span class="layer" aria-hidden="true"></span>
         ${() => (icon() ? html`<ui-icon name=${icon}></ui-icon>` : html`<slot></slot>`)}

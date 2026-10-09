@@ -26,6 +26,16 @@ const key = (el, k) =>
 
 // ---------------------------------------------------------------------- fab
 
+test('ui-fab: accessible-label names an icon-only FAB without extending it', async () => {
+  const el = mount('<ui-fab icon="edit" accessible-label="New page"></ui-fab>');
+  await tick();
+  const btn = el.shadowRoot.querySelector('button');
+  assert.equal(btn.getAttribute('aria-label'), 'New page');
+  assert.ok(!btn.classList.contains('extended'));
+  assert.equal(el.shadowRoot.querySelector('.text'), null);
+  unmountAll();
+});
+
 test('ui-fab renders variant/size classes, extends with a label, disables', async () => {
   const el = mount('<ui-fab icon="add"></ui-fab>');
   await tick();
