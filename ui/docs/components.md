@@ -1,7 +1,7 @@
 # Component catalog
 
 Assembled from each component's file header by `scripts/catalog.mjs` — the
-headers are the source of truth. 70 components. Every component
+headers are the source of truth. 71 components. Every component
 also exports `themeVars` (when it declares component tokens); `themeVars.names`
 is the machine-readable custom-property list.
 
@@ -456,6 +456,88 @@ clears `indeterminate` and toggles `checked`. The check/dash is the MD3
 
 Source: [`src/components/ui-checkbox.js`](../src/components/ui-checkbox.js)
 
+## `<ui-chip-field>`
+
+a text field that holds its values as input chips, with a
+filtering listbox: tags, labels, a select or multi-select.
+
+  &lt;ui-chip-field label="Tags" variant="outlined" multiple allow-create
+                 .options=${[{ value: 'work', color: 'tertiary' }, 'home']}
+                 .value=${['work']}
+                 @change=${(e) =&gt; save(e.detail.value)}&gt;&lt;/ui-chip-field&gt;
+
+The container is &lt;ui-text-field&gt;'s, pixel for pixel: filled or outlined, a
+56px minimum height, the notched floating label (floated while it holds
+chips, has text or focus), the same paddings, hover, focus, error and
+disabled states, supporting text under it, and leading / trailing icons.
+The chips are MD3 input chips (32px, 8px corners, 8px apart) followed by
+the text input; the field grows a row at a time when they wrap. Each chip
+has its own remove button (a sibling of the label, never inside another
+button). The dropdown indicator is the trailing icon: it toggles the
+listbox and turns while it is open.
+
+Typing filters the options (case and accents ignored) in a listbox that
+sits in the top layer, anchored to the field, at least as wide as it, and
+flips above it near the bottom of the window. While typing, the exact
+match (else the first option listed) is active; ArrowDown / ArrowUp move
+it (Alt+ArrowDown only opens) and Enter picks it. With `allowCreate`, what
+was typed is offered as the last option, "Create “…”" (active, so Enter
+creates it, when nothing matches). In
+`multiple` mode picking toggles an option and the listbox stays open, and
+a comma (typed or pasted) ends a value; otherwise a pick replaces the one chip and
+closes it. Backspace in an empty input (or ArrowLeft at its start,
+ArrowRight in RTL) moves to the last chip's remove button; there Backspace
+/ Delete / Enter / Space remove it, the arrows move between chips and
+Escape goes back to the input. Leaving the field picks an exact match of
+what was typed and drops any other text (nothing is created by leaving).
+Escape closes the listbox.
+
+Accessibility: the input is a `combobox` (aria-expanded, aria-controls,
+aria-activedescendant) named by the label and described by the chips it
+holds; options carry `aria-selected` (and the listbox
+`aria-multiselectable` in multiple mode). Adding or removing a chip is
+announced politely.
+
+`value` is an array of option values in `multiple` mode, else a string
+('' for none). `options` are strings or { value, label, color } objects;
+`color` tints the chip: a role name ('primary' | 'secondary' | 'tertiary'
+| 'error' — that role's container colours) or any CSS colour (a light
+wash of it). Values not among the options still show, as themselves.
+
+`strings` overrides the built-in English text, any subset of:
+  { remove: 'Remove {label}', create: 'Create “{query}”',
+    added: '{label} added', removed: '{label} removed',
+    showOptions, hideOptions, options }
+
+Methods: `focus(options)` focuses the text input.
+
+| | |
+| --- | --- |
+| `@prop` | {string}  variant='filled'  — filled \| outlined |
+| `@prop` | {string}  label='' |
+| `@prop` | {string\|Array} value=''     — string (single) or array (multiple) |
+| `@prop` | {Array}   options=[]        — strings or { value, label, color } |
+| `@prop` | {boolean} multiple=false    — several chips; picking toggles |
+| `@prop` | {boolean} allowCreate=false — Enter on text with no match creates it |
+| `@prop` | {string}  placeholder='' |
+| `@prop` | {string}  helper=''         — supporting text under the field |
+| `@prop` | {string}  error=''          — error message; non-empty switches to error state |
+| `@prop` | {boolean} disabled=false |
+| `@prop` | {boolean} required=false |
+| `@prop` | {string}  name=''           — form participation (multiple: comma-joined) |
+| `@prop` | {object}  strings=null      — localized text (see above) |
+| `@event` | change — the value changed (a pick, a create or a removal); detail: { value } |
+| `@event` | create — a new value was created from the text; detail: { value } (followed by `change`) |
+| `@event` | input  — every keystroke; detail: { value } (the raw text) |
+| `@event` | open   — listbox visible (after the enter animation); does not bubble |
+| `@event` | close  — listbox removed (after the exit animation); does not bubble |
+| `@slot` | leading  — icon before the chips |
+| `@slot` | trailing — replaces the dropdown indicator |
+| `@part` | field, input, label, helper, chip, panel, option |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-chip-field.js`](../src/components/ui-chip-field.js)
+
 ## `<ui-chip-set>`
 
 a wrapping row of &lt;ui-chip&gt;s with roving-tabindex focus.
@@ -533,7 +615,35 @@ with OK / Cancel.
 `value` is an ISO date string (YYYY-MM-DD), or '' for none. Typing an
 ISO or locale-formatted date into the field commits on blur / Enter.
 Set `range` to pick a start and end; `change` then reports
-`{ start, end, value }` where `value` is `start/end`.
+`{ start, end, value }` where `value` is `start/end`. In range mode a
+typed "start – end" (en/em dash, " - ", " to ", "→", or ISO/ISO) commits
+both ends on blur / Enter.
+
+Typing understands ISO dates, the locale's numeric order (M/D/Y in en-US,
+D/M/Y in en-GB, D.M.Y in de, Y/M/D in ja…; any of / . - or space between
+parts, two-digit years are 20xx, a missing year is this year) and the
+locale's month names, long or short (`parseDate` is exported).
+
+The docked calendar is a `popover` in the top layer, anchored to the field
+(flips above it when there is no room below), so no ancestor's overflow,
+transform or stacking context clips or covers it. The week starts on the
+locale's first day (`Intl.Locale#getWeekInfo`) unless `firstDay` is set.
+
+Keyboard: Alt+ArrowDown or F4 opens the calendar and moves focus into it
+(ArrowDown too while it is open). In the grid, arrows move a day / a week
+(left and right mirror in RTL), Home / End go to the week's start / end,
+PageUp / PageDown a month (with Shift a year), Enter or Space picks, and
+Escape closes it with focus back in the field.
+
+Without a `label`, the field's accessible name is the host's `aria-label`
+(moved onto the input), else the placeholder, else `strings.date`.
+
+Methods: `showPicker()` opens the calendar (focus stays where it is);
+`focus(options)` focuses the text field.
+
+`strings` overrides the built-in English text, any subset of:
+  { previousMonth, nextMonth, openCalendar, closeCalendar, chooseDate,
+    selectDate, selectDates, selectedDate, selectedDates, ok, cancel, date }
 
 | | |
 | --- | --- |
@@ -547,6 +657,8 @@ Set `range` to pick a start and end; `change` then reports
 | `@prop` | {string}  min=''           — inclusive ISO lower bound |
 | `@prop` | {string}  max=''           — inclusive ISO upper bound |
 | `@prop` | {string}  locale=''        — BCP 47 tag; empty uses the runtime locale |
+| `@prop` | {number}  firstDay=-1      — first day of the week, 0 (Sunday)–6; -1 = the locale's |
+| `@prop` | {object}  strings=null     — localized text (see above) |
 | `@prop` | {boolean} disabled=false |
 | `@prop` | {boolean} required=false |
 | `@prop` | {string}  name=''          — form participation |
@@ -1715,6 +1827,25 @@ The keyboard icon in the panel toggles between the analog dial and the
 digital hour/minute grids (MD3 input-method toggle). Hour and minute
 faces crossfade; the clock hand rotates with the motion tokens.
 
+The panel is a `popover` in the top layer, anchored to the field (flips
+above it when there is no room below), so no ancestor's overflow,
+transform or stacking context clips or covers it.
+
+Typing understands 24-hour and 12-hour forms in the locale ("21:30",
+"9:30 pm", "9.30", "21h30", "930", "9 pm", the locale's AM/PM words);
+`parseTypedTime` is exported.
+
+Without a `label`, the field's accessible name is the host's `aria-label`
+(moved onto the input), else the placeholder, else `strings.time`.
+
+Methods: `showPicker()` opens the panel (focus stays where it is);
+`focus(options)` focuses the text field.
+
+`strings` overrides the built-in English text, any subset of:
+  { chooseTime, openTimePicker, closeTimePicker, hours, minutes,
+    hourValue ('{hour} hours'), minuteValue ('{minute} minutes'), am, pm,
+    switchToInput, switchToClock, time }
+
 | | |
 | --- | --- |
 | `@prop` | {string}  label='' |
@@ -1724,6 +1855,7 @@ faces crossfade; the clock hand rotates with the motion tokens.
 | `@prop` | {string}  hourCycle='12'   — 12 \| 24 |
 | `@prop` | {number}  minuteStep=5     — minute choices (1, 5, or 15 typical) |
 | `@prop` | {string}  locale=''        — BCP 47 tag; empty uses the runtime locale |
+| `@prop` | {object}  strings=null     — localized text (see above) |
 | `@prop` | {boolean} disabled=false |
 | `@prop` | {boolean} required=false |
 | `@prop` | {string}  name=''          — form participation |

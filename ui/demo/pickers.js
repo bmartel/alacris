@@ -1,4 +1,4 @@
-// Demo — selects, autocomplete, chips, date and time pickers.
+// Demo — selects, autocomplete, chips, chip fields, date and time pickers.
 
 import { html, signal } from '@alacris/core';
 import { block, stackBlock } from './helpers.js';
@@ -7,6 +7,8 @@ import '../src/components/ui-option.js';
 import '../src/components/ui-autocomplete.js';
 import '../src/components/ui-chip.js';
 import '../src/components/ui-chip-set.js';
+import '../src/components/ui-chip-field.js';
+import '../src/components/ui-text-field.js';
 import '../src/components/ui-date-picker.js';
 import '../src/components/ui-time-picker.js';
 import '../src/components/ui-text.js';
@@ -30,6 +32,14 @@ export const section = () => {
   const alarm = signal('07:30');
   const meeting = signal('14:00');
   const clockTime = signal('09:15');
+  const tags = signal(['work', 'garden']);
+  const status = signal('Doing');
+  const TAGS = [
+    { value: 'work', label: 'Work', color: 'tertiary' },
+    { value: 'garden', label: 'Garden', color: 'secondary' },
+    { value: 'reading', label: 'Reading', color: 'primary' },
+    'travel', 'recipes', 'ideas',
+  ];
 
   return html`
     ${block('Select — filled / outlined / disabled / preselected', html`
@@ -66,6 +76,28 @@ export const section = () => {
       <ui-text variant="body-sm" color="onSurfaceVariant">
         ${() => (fruit() ? `fruit: ${fruit()}` : '')} ${() => (tag() ? `tag: ${tag()}` : '')}
       </ui-text>`)}
+
+    ${stackBlock('Chip field — beside a text field and a date picker (outlined)', html`
+      <ui-text-field class="chip-compare" label="People" variant="outlined" value="Brandon"></ui-text-field>
+      <ui-chip-field class="chip-compare" label="Tags" variant="outlined" multiple allow-create
+                     options=${TAGS} value=${tags}
+                     @change=${(e) => e.detail && tags(e.detail.value)}></ui-chip-field>
+      <ui-date-picker class="chip-compare" label="Due" variant="outlined" value="2026-10-12"></ui-date-picker>
+      <ui-chip-field class="chip-compare" label="Status" variant="outlined"
+                     options=${['Todo', 'Doing', 'Done']} value=${status}
+                     helper="One value; a pick replaces it"
+                     @change=${(e) => e.detail && status(e.detail.value)}></ui-chip-field>`)}
+
+    ${stackBlock('Chip field — filled, empty, error and disabled', html`
+      <ui-text-field class="chip-compare" label="People" value="Brandon"></ui-text-field>
+      <ui-chip-field class="chip-compare" label="Tags" multiple allow-create options=${TAGS}
+                     .value=${['work', 'reading', 'travel', 'recipes']}></ui-chip-field>
+      <ui-date-picker class="chip-compare" label="Due" value="2026-10-12"></ui-date-picker>
+      <ui-chip-field class="chip-compare" label="Labels" multiple options=${TAGS} placeholder="Add a label"></ui-chip-field>
+      <ui-chip-field class="chip-compare" label="Owner" variant="outlined" options=${['Ada', 'Grace']}
+                     error="Pick an owner"></ui-chip-field>
+      <ui-chip-field class="chip-compare" label="Tags" variant="outlined" multiple disabled
+                     .value=${['work']} options=${TAGS}></ui-chip-field>`)}
 
     ${block('Chips — the four variants', html`
       <ui-chip icon="calendar">Assist</ui-chip>

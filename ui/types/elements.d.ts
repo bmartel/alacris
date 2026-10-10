@@ -4,6 +4,30 @@
 
 export {};
 
+/** An option of <ui-chip-field>: a string, or a value with a label and a chip colour. */
+export type ChipFieldOption = string | { value: string; label?: string; color?: string };
+
+/** <ui-chip-field>'s properties (see the component's header for behaviour). */
+export interface UiChipFieldElement extends HTMLElement {
+  variant: 'filled' | 'outlined';
+  label: string;
+  /** An array in `multiple` mode, else a string ('' for none). */
+  value: string | string[];
+  options: ChipFieldOption[];
+  multiple: boolean;
+  allowCreate: boolean;
+  placeholder: string;
+  helper: string;
+  error: string;
+  disabled: boolean;
+  required: boolean;
+  name: string;
+  strings: Partial<{
+    remove: string; create: string; added: string; removed: string;
+    showOptions: string; hideOptions: string; options: string;
+  }> | null;
+}
+
 declare global {
   interface HTMLElementTagNameMap {
     'ui-accordion': HTMLElement;
@@ -26,6 +50,7 @@ declare global {
     'ui-chat-composer': HTMLElement;
     'ui-chip': HTMLElement;
     'ui-chip-set': HTMLElement;
+    'ui-chip-field': UiChipFieldElement;
     'ui-container': HTMLElement;
     'ui-date-picker': HTMLElement;
     'ui-dialog': HTMLElement;

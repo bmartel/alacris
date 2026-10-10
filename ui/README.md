@@ -1,6 +1,6 @@
 # Alacris UI
 
-A complete, themeable design system built with **[Alacris](https://github.com/bmartel/alacris)** and nothing else. No other runtime dependencies, no build step, no CSS framework — 68 components, a three-tier token system, a theme engine that re-skins the whole page with one stylesheet write, and a documented motion layer.
+A complete, themeable design system built with **[Alacris](https://github.com/bmartel/alacris)** and nothing else. No other runtime dependencies, no build step, no CSS framework — 71 components, a three-tier token system, a theme engine that re-skins the whole page with one stylesheet write, and a documented motion layer.
 
 **Material Design is the default. Your design system is the point.** Every visual decision flows through tokens you can override at three levels — from "change the brand color" (one line) to "this is no longer Material at all".
 

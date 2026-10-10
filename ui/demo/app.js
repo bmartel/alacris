@@ -49,7 +49,7 @@ const FAMILIES = [
     keywords: 'fab checkbox radio slider rating search toggle split' },
   { ...pickers, icon: 'calendar', rail: 'Pickers',
     blurb: 'Select, chips, date and time.',
-    keywords: 'select autocomplete chip date time picker' },
+    keywords: 'select autocomplete chip chip-field tags date time picker' },
   { ...display, icon: 'table-chart', rail: 'Display',
     blurb: 'Lists, tables, avatars, carousels.',
     keywords: 'avatar badge list table tooltip carousel' },
@@ -260,15 +260,15 @@ const styles = css`
   .token-swatch .token-name { overflow-wrap: anywhere; }
   /* Fields default to 240px; cards size to content. Grow to fill a wrapping
      row, and fill a stack, so a lone item spans the card. */
-  .demo-row > :is(ui-text-field, ui-select, ui-autocomplete, ui-date-picker, ui-time-picker, ui-slider, ui-search, ui-card),
-  .demo-col > :is(ui-text-field, ui-select, ui-autocomplete, ui-date-picker, ui-time-picker, ui-slider, ui-search, ui-card) {
+  .demo-row > :is(ui-text-field, ui-select, ui-autocomplete, ui-chip-field, ui-date-picker, ui-time-picker, ui-slider, ui-search, ui-card),
+  .demo-col > :is(ui-text-field, ui-select, ui-autocomplete, ui-chip-field, ui-date-picker, ui-time-picker, ui-slider, ui-search, ui-card) {
     min-inline-size: min(100%, 16rem);
     max-inline-size: 100%;
   }
-  .demo-row > :is(ui-text-field, ui-select, ui-autocomplete, ui-date-picker, ui-time-picker, ui-slider, ui-search, ui-card) {
+  .demo-row > :is(ui-text-field, ui-select, ui-autocomplete, ui-chip-field, ui-date-picker, ui-time-picker, ui-slider, ui-search, ui-card) {
     flex: 1 1 16rem;
   }
-  .demo-col > :is(ui-text-field, ui-select, ui-autocomplete, ui-date-picker, ui-time-picker, ui-slider, ui-search, ui-card) {
+  .demo-col > :is(ui-text-field, ui-select, ui-autocomplete, ui-chip-field, ui-date-picker, ui-time-picker, ui-slider, ui-search, ui-card) {
     inline-size: 100%;
   }
   .footer { padding-block: ${sys.space(12)} ${sys.space(16)}; display: flex; flex-direction: column; gap: ${sys.space(3)}; }
