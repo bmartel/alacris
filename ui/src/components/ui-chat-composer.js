@@ -254,6 +254,7 @@ define('ui-chat-composer', {
     } = p;
 
     let input = null;
+    let surface = null;
     host.focus = (opts) => input?.focus(opts);
 
     const focused = signal(false);
@@ -350,9 +351,16 @@ define('ui-chat-composer', {
       if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
       dropping.set(true);
     };
+    // Listeners are delegated: e.currentTarget is not the surface, so compare with its ref.
     const onDragLeave = (e) => {
-      if (e.currentTarget.contains(e.relatedTarget)) return;
+      if (surface?.contains(e.relatedTarget)) return;
       dropping.set(false);
+    };
+    // A press on the surface around the text (not on a control) puts the cursor in it.
+    const onSurfaceClick = (e) => {
+      const target = e.composedPath()[0];
+      if (disabled() || !(target instanceof Element)) return;
+      if (target === surface || target.matches('.input, .lead, .picker, .trail, .send, .attachments')) input?.focus();
     };
     const onDrop = (e) => {
       if (!dropping()) return;
@@ -397,7 +405,7 @@ define('ui-chat-composer', {
 
     return html`
       <div class=${cls}>
-        <div class="surface" part="surface"
+        <div class="surface" part="surface" ref=${(el) => (surface = el)} @click=${onSurfaceClick}
              @dragenter=${onDragOver} @dragover=${onDragOver} @dragleave=${onDragLeave} @drop=${onDrop}>
           ${() => (hasAttachments()
             ? html`<ul class="attachments" part="attachments" aria-label=${attachmentsLabel}>

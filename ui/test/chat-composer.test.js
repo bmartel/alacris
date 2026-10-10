@@ -286,3 +286,13 @@ test('ui-chat-composer: focus() focuses the text area; the surface shows focus',
   assert.equal(el.shadowRoot.querySelector('.root').classList.contains('focused'), false);
   unmountAll();
 });
+
+test('ui-chat-composer: a press on the surface around the text focuses it', async () => {
+  const el = mount('<ui-chat-composer label="Message"></ui-chat-composer>');
+  await tick();
+  let focused = 0;
+  parts(el).textarea.focus = () => focused++;
+  el.shadowRoot.querySelector('.surface').dispatchEvent(new window.MouseEvent('click', { bubbles: true, composed: true }));
+  assert.equal(focused, 1);
+  unmountAll();
+});
