@@ -127,6 +127,9 @@ test('ui-chip-field: Enter on text with no match creates it (and offers Create)'
   assert.deepEqual(el.value, ['Garden', 'work']);
   assert.deepEqual(created, ['Garden']);
   assert.equal(input.value, '');
+  // The space after a comma, typed as its own keystroke, doesn't start the next value.
+  type(input, ' ');
+  assert.equal(input.value, '');
   type(input, 'one, two, thr');
   assert.deepEqual(el.value, ['Garden', 'work', 'one', 'two']);
   assert.equal(input.value, 'thr', 'the text after the last comma stays to be typed on');

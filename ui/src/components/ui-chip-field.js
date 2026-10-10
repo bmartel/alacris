@@ -660,6 +660,10 @@ define('ui-chip-field', {
           else if (allowCreate()) choose({ kind: 'create', value: q });
         }
         e.target.value = text;
+      } else if (multiple() && !query() && /^\s+/.test(text)) {
+        // The space typed after a comma (its own keystroke) doesn't start the next value.
+        text = text.replace(/^\s+/, '');
+        e.target.value = text;
       }
       query.set(text);
       open.set(true);
