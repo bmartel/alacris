@@ -12,8 +12,11 @@
 // @part  pill    — the 56×32 icon container
 // @vars  see `t` below (`themeVars.names`)
 //
-// Focus: the host is the roving tab stop (<ui-bottom-nav> assigns tabindex);
-// focus is forwarded to the inner button so Enter/Space activate natively.
+// Focus: the host is the roving tab stop (<ui-bottom-nav>/<ui-nav-rail> assign
+// tabindex); focus is forwarded to the inner button so Enter/Space activate
+// natively. When the host keeps the focus anyway (the forward doesn't take,
+// e.g. after the arrow keys moved to it), Enter/Space on the host press the
+// button themselves.
 
 import { define, html, css, vars, computed, onCleanup } from '@alacris/core';
 import { sys } from '../tokens/sys.js';
@@ -109,7 +112,18 @@ define('ui-nav-item', {
     let btn = null;
     const forward = () => btn?.focus();
     host.addEventListener('focus', forward);
-    onCleanup(() => host.removeEventListener('focus', forward));
+    // Enter/Space while the host, not its button, holds the focus: press the button.
+    const onKeydown = (e) => {
+      if ((e.key !== 'Enter' && e.key !== ' ') || e.defaultPrevented || !btn) return;
+      if (host.shadowRoot?.activeElement === btn) return; // the button handles it natively
+      e.preventDefault();
+      btn.click();
+    };
+    host.addEventListener('keydown', onKeydown);
+    onCleanup(() => {
+      host.removeEventListener('focus', forward);
+      host.removeEventListener('keydown', onKeydown);
+    });
 
     const shownIcon = computed(() => (selected() && activeIcon()) || icon());
 

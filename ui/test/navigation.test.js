@@ -232,6 +232,31 @@ test('ui-nav-rail coordinates selection and emits change', async () => {
   unmountAll();
 });
 
+test('ui-nav-item: Enter and Space on the focused host (arrow keys moved to it) activate it once', async () => {
+  const el = mount(`
+    <ui-nav-rail value="home" label="Main">
+      <ui-nav-item value="home" icon="home" label="Home"></ui-nav-item>
+      <ui-nav-item value="search" icon="search" label="Search"></ui-nav-item>
+      <ui-nav-item value="off" icon="block" label="Off" disabled></ui-nav-item>
+    </ui-nav-rail>`);
+  await tick();
+  const [, search, off] = el.querySelectorAll('ui-nav-item');
+  const picked = [];
+  el.addEventListener('ui-nav-select', (e) => picked.push(e.detail.value));
+  for (const key of ['Enter', ' ']) {
+    const ev = new window.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, composed: true });
+    search.dispatchEvent(ev);
+    assert.equal(ev.defaultPrevented, true, `${JSON.stringify(key)} is handled`);
+  }
+  assert.deepEqual(picked, ['search', 'search']);
+  assert.equal(search.selected, true);
+  off.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+  assert.deepEqual(picked, ['search', 'search'], 'a disabled item stays inert');
+  search.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'a', bubbles: true, cancelable: true }));
+  assert.equal(picked.length, 2, 'other keys are left alone');
+  unmountAll();
+});
+
 test('ui-tabs secondary variant is live on the tablist', async () => {
   const el = mount(TABS);
   await tick();
