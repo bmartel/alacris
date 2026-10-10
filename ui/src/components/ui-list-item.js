@@ -127,7 +127,9 @@ define('ui-list-item', {
     const onKeydown = (e) => {
       if (!href() && interactive() && !disabled() && (e.key === 'Enter' || e.key === ' ')) {
         e.preventDefault();
-        e.currentTarget.click();
+        // Handlers are delegated (core attaches them at the root), so
+        // e.currentTarget is the root, not this item's control.
+        (e.target.closest?.('.control') ?? e.target).click();
       }
     };
     const onClick = (e) => {

@@ -278,3 +278,18 @@ test('ui-table is a named native table with sort and selection semantics', async
   assert.equal(table.querySelector('.tbody [role=row]').getAttribute('aria-selected'), 'true');
   unmountAll();
 });
+
+test('an interactive ui-list-item activates on Enter and Space', async () => {
+  const el = mount('<ui-list-item interactive headline="Open"></ui-list-item>');
+  await tick();
+  let clicks = 0;
+  el.addEventListener('click', () => clicks++);
+  const control = el.shadowRoot.querySelector('.control');
+  for (const key of ['Enter', ' ']) {
+    const e = new window.Event('keydown', { bubbles: true, composed: true, cancelable: true });
+    Object.defineProperty(e, 'key', { value: key });
+    control.dispatchEvent(e);
+  }
+  assert.equal(clicks, 2);
+  unmountAll();
+});
