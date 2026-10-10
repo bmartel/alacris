@@ -362,3 +362,28 @@ test('nested render does not duplicate delegated events on ancestor root', () =>
   assert.equal(clicks, 1);
 });
 
+
+test('re-applying a template leaves values already in the DOM alone', () => {
+  const tick = signal(0);
+  const n = signal(1);
+  const view = () => html`<p class=${'a'} title=${'t'} ?hidden=${false}>${'same'}<b>${n()}</b></p>`;
+  const el = document.createElement('div');
+  render(() => (tick(), view()), el);
+  const p = el.querySelector('p');
+  const b = p.querySelector('b');
+  const shown = [...p.childNodes].find((c) => c.nodeType === 3 && c.data === 'same');
+  const bText = b.firstChild;
+  let writes = 0;
+  for (const m of ['setAttribute', 'removeAttribute', 'toggleAttribute']) {
+    const base = p[m];
+    p[m] = function (...a) { writes++; return base.apply(this, a); };
+  }
+  tick(1);
+  assert.equal(writes, 0);
+  assert.equal(p.className, 'a');
+  assert.ok([...p.childNodes].includes(shown));
+  assert.equal(b.firstChild, bText);
+  n(2);
+  assert.equal(b.textContent, '2');
+  assert.equal(b.firstChild, bText, 'a changed text is written into its node');
+});
