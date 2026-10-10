@@ -8,6 +8,25 @@
 // digital hour/minute grids (MD3 input-method toggle). Hour and minute
 // faces crossfade; the clock hand rotates with the motion tokens.
 //
+// The panel is a `popover` in the top layer, anchored to the field (flips
+// above it when there is no room below), so no ancestor's overflow,
+// transform or stacking context clips or covers it.
+//
+// Typing understands 24-hour and 12-hour forms in the locale ("21:30",
+// "9:30 pm", "9.30", "21h30", "930", "9 pm", the locale's AM/PM words);
+// `parseTypedTime` is exported.
+//
+// Without a `label`, the field's accessible name is the host's `aria-label`
+// (moved onto the input), else the placeholder, else `strings.time`.
+//
+// Methods: `showPicker()` opens the panel (focus stays where it is);
+// `focus(options)` focuses the text field.
+//
+// `strings` overrides the built-in English text, any subset of:
+//   { chooseTime, openTimePicker, closeTimePicker, hours, minutes,
+//     hourValue ('{hour} hours'), minuteValue ('{minute} minutes'), am, pm,
+//     switchToInput, switchToClock, time }
+//
 // @prop  {string}  label=''
 // @prop  {string}  value=''         — 24-hour HH:mm, or '' for none
 // @prop  {string}  variant='filled' — filled | outlined
@@ -15,6 +34,7 @@
 // @prop  {string}  hourCycle='12'   — 12 | 24
 // @prop  {number}  minuteStep=5     — minute choices (1, 5, or 15 typical)
 // @prop  {string}  locale=''        — BCP 47 tag; empty uses the runtime locale
+// @prop  {object}  strings=null     — localized text (see above)
 // @prop  {boolean} disabled=false
 // @prop  {boolean} required=false
 // @prop  {string}  name=''          — form participation
@@ -59,6 +79,73 @@ const formatTime = (value, locale, hourCycle) => {
     hourCycle: hourCycle === '24' ? 'h23' : 'h12',
   }).format(d);
 };
+const foldTime = (s) => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  .replace(/\./g, '').replace(/[\u00a0\u202f\s]+/g, ' ').trim();
+const periodsCache = new Map();
+const dayPeriods = (locale) => {
+  const key = locale || '';
+  if (periodsCache.has(key)) return periodsCache.get(key);
+  const out = [{ name: 'am', pm: false }, { name: 'pm', pm: true }, { name: 'a', pm: false }, { name: 'p', pm: true }];
+  try {
+    const f = new Intl.DateTimeFormat(loc(locale), { hour: 'numeric', hourCycle: 'h12' });
+    for (const [h, pm] of [[9, false], [21, true]]) {
+      const part = f.formatToParts(new Date(2026, 0, 1, h)).find((x) => x.type === 'dayPeriod');
+      const name = part && foldTime(part.value);
+      if (name && !out.some((x) => x.name === name)) out.push({ name, pm });
+    }
+  } catch {}
+  out.sort((a, b) => b.name.length - a.name.length);
+  periodsCache.set(key, out);
+  return out;
+};
+
+/**
+ * Parse a typed time in `locale` to 24-hour `HH:mm`. Returns '' for empty
+ * text and null when it cannot be read.
+ */
+export const parseTypedTime = (text, locale = '') => {
+  let s = foldTime(text ?? '');
+  if (!s) return '';
+  let pm = null;
+  for (const p of dayPeriods(locale)) {
+    if (s.endsWith(p.name)) {
+      const rest = s.slice(0, -p.name.length);
+      if (/[\d\s]$/.test(rest)) { pm = p.pm; s = rest.trim(); break; }
+    }
+    if (s.startsWith(p.name)) {
+      const rest = s.slice(p.name.length);
+      if (/^[\d\s]/.test(rest)) { pm = p.pm; s = rest.trim(); break; }
+    }
+  }
+  let h, m;
+  let match;
+  if ((match = /^(\d{1,2})\s*[:.h]\s*(\d{2})$/.exec(s))) { h = +match[1]; m = +match[2]; }
+  else if ((match = /^(\d{1,2})\s*h?$/.exec(s))) { h = +match[1]; m = 0; }
+  else if ((match = /^(\d{3,4})$/.exec(s))) { h = Math.floor(+match[1] / 100); m = +match[1] % 100; }
+  else return null;
+  if (m > 59) return null;
+  if (pm !== null) {
+    if (h < 1 || h > 12) return null;
+    h = (h % 12) + (pm ? 12 : 0);
+  } else if (h > 23) return null;
+  return toValue(h, m);
+};
+
+const DEFAULT_STRINGS = {
+  chooseTime: 'Choose time',
+  openTimePicker: 'Open time picker',
+  closeTimePicker: 'Close time picker',
+  hours: 'Hours',
+  minutes: 'Minutes',
+  hourValue: '{hour} hours',
+  minuteValue: '{minute} minutes',
+  am: 'AM',
+  pm: 'PM',
+  switchToInput: 'Switch to text input',
+  switchToClock: 'Switch to clock',
+  time: 'Time',
+};
+
 const nowValue = () => {
   const n = new Date();
   return toValue(n.getHours(), n.getMinutes());
@@ -190,6 +277,7 @@ const styles = css`
                 scale ${sys.duration.short3} ${sys.easing.standard},
                 color ${sys.duration.short2} ${sys.easing.standard};
   }
+  :host(:dir(rtl)) .label { transform-origin: 100% 50%; }
   .filled.floating .label { translate: 0 calc(-50% - 16px); scale: 0.75; }
   .outlined.floating .label {
     translate: 0 calc(-50% - (${t.height} + var(--ui-density, 0) * 4px) / 2);
@@ -227,6 +315,12 @@ const styles = css`
     box-shadow: ${sys.elevation[3]};
     color: ${t.fg};
     overflow: auto;
+  }
+  /* In the top layer: drop the UA popover box; position() writes left/top. */
+  .panel[popover] {
+    margin: 0;
+    inset: auto;
+    border: none;
   }
   .face {
     display: flex;
@@ -435,12 +529,29 @@ define('ui-time-picker', {
   formAssociated: true,
   props: {
     label: '', value: '', variant: 'filled', view: 'clock', hourCycle: '12', minuteStep: 5,
-    locale: '', disabled: false, required: false, name: '', placeholder: '',
+    locale: '', strings: null, disabled: false, required: false, name: '', placeholder: '',
   },
   styles: [base, styles],
   setup(p, host) {
-    const { label, value, variant, view, hourCycle, minuteStep, locale, disabled, required, name, placeholder } = p;
+    const { label, value, variant, view, hourCycle, minuteStep, locale, strings, disabled, required, name, placeholder } = p;
     formBind(host, { name, value, disabled });
+
+    const S = computed(() => ({ ...DEFAULT_STRINGS, ...(strings() || {}) }));
+    const hourName = (h) => S().hourValue.replace('{hour}', h);
+    const minuteName = (m) => S().minuteValue.replace('{minute}', m);
+    // The host's aria-label names the input (a label on a role-less host
+    // would be prohibited ARIA), kept in step if it is set again.
+    const hostLabel = signal('');
+    const takeLabel = () => {
+      const v = host.getAttribute('aria-label');
+      if (v == null) return;
+      hostLabel.set(v);
+      host.removeAttribute('aria-label');
+    };
+    takeLabel();
+    const labelObserver = typeof MutationObserver === 'function' ? new MutationObserver(takeLabel) : null;
+    labelObserver?.observe(host, { attributes: true, attributeFilter: ['aria-label'] });
+    let inputEl = null;
 
     const open = signal(false);
     const focused = signal(false);
@@ -536,18 +647,20 @@ define('ui-time-picker', {
       text.set(e.target.value);
       host.emit('input', { value: e.target.value });
     };
+    const typed = () => {
+      const v = parseTypedTime(text(), locale());
+      if (v !== null) return v;
+      const d = new Date(`1970-01-01T${text().trim()}`);
+      return Number.isNaN(d.getTime()) ? null : toValue(d.getHours(), d.getMinutes());
+    };
     const onBlur = () => {
       focused.set(false);
-      let parsedVal = parseTime(text());
-      if (!parsedVal) {
-        const d = new Date(`1970-01-01T${text()}`);
-        if (!Number.isNaN(d.getTime())) parsedVal = { h: d.getHours(), m: d.getMinutes() };
-      }
-      if (!parsedVal && text().trim() === '') {
+      const v = typed();
+      if (v === '') {
         if (value()) commit('', { close: false });
         return;
       }
-      if (parsedVal) commit(toValue(parsedVal.h, parsedVal.m), { close: false });
+      if (v) commit(v, { close: false });
       else text.set(formatTime(value(), locale(), hourCycle()) || value());
     };
     const onKeydown = (e) => {
@@ -555,13 +668,16 @@ define('ui-time-picker', {
       else if (e.key === 'F4') { e.preventDefault(); toggle(); }
       else if (e.key === 'Enter') {
         e.preventDefault();
-        const p0 = parseTime(text());
-        if (p0) commit(toValue(p0.h, p0.m));
+        const v = typed();
+        if (v !== null) commit(v);
       } else if (e.key === 'Escape' && open()) {
         e.preventDefault();
         closePanel();
       }
     };
+
+    host.showPicker = () => openPanel();
+    host.focus = (opts) => inputEl?.focus(opts);
 
     effect(() => {
       if (!open()) return;
@@ -612,32 +728,44 @@ define('ui-time-picker', {
     effect(() => {
       if (!open() && stopAuto) { stopAuto(); stopAuto = null; }
     });
-    onCleanup(() => stopAuto?.());
+    onCleanup(() => { stopAuto?.(); labelObserver?.disconnect(); });
 
     const panelRef = (el) => {
       stopAuto?.();
       stopAuto = autoUpdate(el, fieldEl, { placement: 'bottom-start', offset: 4 });
+      // Into the top layer once it is in the document: no ancestor's
+      // overflow, transform or stacking context can clip or cover it.
+      queueMicrotask(() => {
+        if (!el.isConnected || !open.peek()) return;
+        try {
+          el.showPopover?.();
+        } catch {
+          el.removeAttribute('popover');
+        }
+        stopAuto?.();
+        stopAuto = autoUpdate(el, fieldEl, { placement: 'bottom-start', offset: 4 });
+      });
     };
 
     const panelView = () => html`
-      <div class="panel" part="panel" role="dialog" aria-label=${() => label() || 'Choose time'}
+      <div class="panel" part="panel" popover="manual" role="dialog" aria-label=${() => label() || hostLabel() || S().chooseTime}
            ref=${panelRef}>
         <div class="face">
           <button type="button" class=${() => ({ digit: true, active: selecting() === 'hour' })}
-                  aria-label="Hours" @click=${() => selecting.set('hour')}>
+                  aria-label=${() => S().hours} @click=${() => selecting.set('hour')}>
             ${() => pad(is12() ? hour12() : parsed().h)}
           </button>
           <span class="colon" aria-hidden="true">:</span>
           <button type="button" class=${() => ({ digit: true, active: selecting() === 'minute' })}
-                  aria-label="Minutes" @click=${() => selecting.set('minute')}>
+                  aria-label=${() => S().minutes} @click=${() => selecting.set('minute')}>
             ${() => pad(parsed().m)}
           </button>
           ${() => (is12()
             ? html`<div class="period">
                 <button type="button" class=${() => ({ active: period() === 'AM' })}
-                        @click=${() => setPeriod('AM')}>AM</button>
+                        @click=${() => setPeriod('AM')}>${() => S().am}</button>
                 <button type="button" class=${() => ({ active: period() === 'PM' })}
-                        @click=${() => setPeriod('PM')}>PM</button>
+                        @click=${() => setPeriod('PM')}>${() => S().pm}</button>
               </div>`
             : null)}
         </div>
@@ -651,14 +779,14 @@ define('ui-time-picker', {
                     <button type="button" class=${() => ({ tick: true, active: hourActive(h) })}
                             style=${{ '--a': ((h % 12) * 30) + 'deg' }}
                             data-hour=${h}
-                            aria-label=${h + ' hours'}
+                            aria-label=${() => hourName(h)}
                             tabindex="-1"
                             @click=${() => pickHour(h)}>${h}</button>`)}
                 ${() => innerHours().map((h) => html`
                     <button type="button" class=${() => ({ tick: true, inner: true, active: hourActive(h) })}
                             style=${{ '--a': ((h % 12) * 30) + 'deg' }}
                             data-hour=${h}
-                            aria-label=${h + ' hours'}
+                            aria-label=${() => hourName(h)}
                             tabindex="-1"
                             @click=${() => pickHour(h)}>${pad(h)}</button>`)}
               </div>
@@ -667,14 +795,14 @@ define('ui-time-picker', {
                     <button type="button" class=${() => ({ tick: true, active: m === parsed().m })}
                             style=${{ '--a': (m * 6) + 'deg' }}
                             data-minute=${m}
-                            aria-label=${m + ' minutes'}
+                            aria-label=${() => minuteName(m)}
                             tabindex="-1"
                             @click=${() => pickMinute(m)}>${pad(m)}</button>`)}
               </div>
           </div>
           <div class=${() => `grids${isClock() ? ' off' : ''}`}>
         <div class=${() => `grid${selecting() === 'hour' ? '' : ' off'}`}
-             role="listbox" aria-label="Hours">
+             role="listbox" aria-label=${() => S().hours}>
           ${each(
             () => hourChoices(),
             (h) => html`
@@ -693,7 +821,7 @@ define('ui-time-picker', {
           )}
         </div>
         <div class=${() => `grid${selecting() === 'minute' ? '' : ' off'}`}
-             role="listbox" aria-label="Minutes">
+             role="listbox" aria-label=${() => S().minutes}>
           ${each(
             () => minuteChoices(),
             (m) => html`
@@ -716,7 +844,7 @@ define('ui-time-picker', {
         <div class="switch">
           <ui-icon-button
             icon=${() => (isClock() ? 'keyboard' : 'clock')}
-            label=${() => (isClock() ? 'Switch to text input' : 'Switch to clock')}
+            label=${() => (isClock() ? S().switchToInput : S().switchToClock)}
             @click=${(e) => { e.stopPropagation(); face.set(isClock() ? 'input' : 'clock'); }}></ui-icon-button>
         </div>
       </div>`;
@@ -728,16 +856,16 @@ define('ui-time-picker', {
             ? html`<fieldset aria-hidden="true"><legend><span>${label}${() => (required() ? ' *' : '')}</span></legend></fieldset>`
             : null)}
           ${() => (label() ? html`<span class="label" part="label" id="field-label">${label}${() => (required() ? ' *' : '')}</span>` : null)}
-          <input part="input" .value=${text}
+          <input part="input" .value=${text} ref=${(el) => (inputEl = el)}
                  placeholder=${() => placeholder() || null}
                  ?disabled=${disabled} ?required=${required}
                  aria-labelledby=${() => (label() ? 'field-label' : null)}
-                 aria-label=${() => (label() ? null : (placeholder() || 'Time'))}
+                 aria-label=${() => (label() ? null : (hostLabel() || placeholder() || S().time))}
                  aria-haspopup="dialog" aria-expanded=${() => String(open())}
                  autocomplete="off"
                  @input=${onInput} @focus=${() => focused.set(true)} @blur=${onBlur}
                  @keydown=${onKeydown}>
-          <ui-icon-button icon="clock" label=${() => (open() ? 'Close time picker' : 'Open time picker')}
+          <ui-icon-button icon="clock" label=${() => (open() ? S().closeTimePicker : S().openTimePicker)}
                           @click=${toggle}></ui-icon-button>
         </div>
         ${presence(open, panelView, {

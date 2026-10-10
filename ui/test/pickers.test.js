@@ -638,3 +638,281 @@ test('ui-chip input variant shows a selected state without a check or toggling',
   unmountAll();
   await tick();
 });
+
+// --- Date and time pickers: top layer, locale, keyboard, strings, typing ---
+
+const keyOn = (el, k, init = {}) =>
+  el.dispatchEvent(new window.KeyboardEvent('keydown', { key: k, bubbles: true, composed: true, cancelable: true, ...init }));
+const openIcon = (el) => fire(el.shadowRoot.querySelector('ui-icon-button').shadowRoot.querySelector('button'), 'click');
+const focusedDay = (el) => el.shadowRoot.activeElement?.getAttribute('data-iso');
+
+test('parseDate reads ISO, the locale numeric order and month names', async () => {
+  const { parseDate } = await import('../src/components/ui-date-picker.js');
+  const now = new Date(2026, 5, 1);
+  assert.equal(parseDate('2026-10-03', 'en-US', now), '2026-10-03');
+  assert.equal(parseDate('10/3/2026', 'en-US', now), '2026-10-03');
+  assert.equal(parseDate('3/10/2026', 'en-GB', now), '2026-10-03');
+  assert.equal(parseDate('3.10.2026', 'de', now), '2026-10-03');
+  assert.equal(parseDate('3.10.26', 'de', now), '2026-10-03');
+  assert.equal(parseDate('2026/10/3', 'ja', now), '2026-10-03');
+  assert.equal(parseDate('2026年10月3日', 'ja', now), '2026-10-03');
+  assert.equal(parseDate('3/10', 'en-GB', now), '2026-10-03', 'no year: this year');
+  assert.equal(parseDate('Oct 3, 2026', 'en-US', now), '2026-10-03');
+  assert.equal(parseDate('3 Oct 2026', 'en-GB', now), '2026-10-03');
+  assert.equal(parseDate('Saturday, October 3, 2026', 'en-US', now), '2026-10-03');
+  assert.equal(parseDate('3 octobre 2026', 'fr', now), '2026-10-03');
+  assert.equal(parseDate('3. Okt. 2026', 'de', now), '2026-10-03');
+  assert.equal(parseDate('3 févr. 2026', 'fr', now), '2026-02-03');
+  assert.equal(parseDate('3 FEVRIER 2026', 'fr', now), '2026-02-03', 'case and accents fold');
+  assert.equal(parseDate('', 'en-US', now), '');
+  assert.equal(parseDate('31/2/2026', 'en-GB', now), null, 'no 31 February');
+  assert.equal(parseDate('nonsense', 'en-US', now), null);
+});
+
+test('parseDateRange reads both ends in order', async () => {
+  const { parseDateRange } = await import('../src/components/ui-date-picker.js');
+  assert.deepEqual(parseDateRange('2026-08-01/2026-08-05', 'en-US'), { start: '2026-08-01', end: '2026-08-05' });
+  assert.deepEqual(parseDateRange('Aug 5, 2026 – Aug 1, 2026', 'en-US'), { start: '2026-08-01', end: '2026-08-05' });
+  assert.deepEqual(parseDateRange('1/8/2026 - 5/8/2026', 'en-GB'), { start: '2026-08-01', end: '2026-08-05' });
+  assert.deepEqual(parseDateRange('2026-08-01 to 2026-08-05'), { start: '2026-08-01', end: '2026-08-05' });
+  assert.deepEqual(parseDateRange('2026-08-01 → 2026-08-05'), { start: '2026-08-01', end: '2026-08-05' });
+  assert.deepEqual(parseDateRange(''), { start: '', end: '' });
+  assert.equal(parseDateRange('2026-08-01'), null);
+  assert.equal(parseDateRange('2026-08-01 – soon'), null);
+});
+
+test('ui-date-picker starts the week on the locale first day, or firstDay', async () => {
+  const { weekStart } = await import('../src/components/ui-date-picker.js');
+  assert.equal(weekStart('en-US'), 0);
+  assert.equal(weekStart('en-GB'), 1);
+  // August 2026 starts on a Saturday.
+  const gb = mount('<ui-date-picker label="D" locale="en-GB" value="2026-08-14"></ui-date-picker>');
+  await tick();
+  openIcon(gb);
+  assert.equal(gb.shadowRoot.querySelector('.day').getAttribute('data-iso'), '2026-07-27', 'Monday first');
+  assert.equal(gb.shadowRoot.querySelectorAll('.weekday')[0].textContent, 'M');
+  unmountAll();
+  await tick();
+  const us = mount('<ui-date-picker label="D" locale="en-US" value="2026-08-14"></ui-date-picker>');
+  await tick();
+  openIcon(us);
+  assert.equal(us.shadowRoot.querySelector('.day').getAttribute('data-iso'), '2026-07-26', 'Sunday first');
+  unmountAll();
+  await tick();
+  const sat = mount('<ui-date-picker label="D" locale="en-US" first-day="6" value="2026-08-14"></ui-date-picker>');
+  await tick();
+  openIcon(sat);
+  assert.equal(sat.shadowRoot.querySelector('.day').getAttribute('data-iso'), '2026-08-01', 'first-day overrides');
+  unmountAll();
+  await tick();
+});
+
+test('ui-date-picker panel is a top-layer popover with one tab stop and full-date names', async () => {
+  const el = mount('<ui-date-picker label="D" locale="en-US" value="2026-08-14"></ui-date-picker>');
+  await tick();
+  openIcon(el);
+  const panel = el.shadowRoot.querySelector('.panel');
+  assert.equal(panel.getAttribute('popover'), 'manual');
+  const stops = [...panel.querySelectorAll('.day')].filter((b) => b.tabIndex === 0);
+  assert.equal(stops.length, 1);
+  assert.equal(stops[0].getAttribute('data-iso'), '2026-08-14');
+  assert.equal(stops[0].getAttribute('aria-label'), 'Friday, August 14, 2026');
+  unmountAll();
+  await tick();
+});
+
+test('ui-date-picker keyboard: Alt+ArrowDown into the grid, arrows, Home/End, PageDown, Escape', async () => {
+  const el = mount('<ui-date-picker label="D" locale="en-US" value="2026-08-14"></ui-date-picker>');
+  await tick();
+  const input = el.shadowRoot.querySelector('input');
+  input.focus();
+  keyOn(input, 'ArrowDown', { altKey: true });
+  await tick();
+  assert.ok(el.shadowRoot.querySelector('.panel'), 'opens');
+  assert.equal(focusedDay(el), '2026-08-14', 'focus on the selected day');
+  const grid = () => el.shadowRoot.activeElement;
+  keyOn(grid(), 'ArrowRight');
+  assert.equal(focusedDay(el), '2026-08-15');
+  keyOn(grid(), 'ArrowDown');
+  assert.equal(focusedDay(el), '2026-08-22');
+  keyOn(grid(), 'ArrowUp');
+  keyOn(grid(), 'ArrowLeft');
+  assert.equal(focusedDay(el), '2026-08-14');
+  keyOn(grid(), 'Home');
+  assert.equal(focusedDay(el), '2026-08-09', 'Sunday: the en-US week start');
+  keyOn(grid(), 'End');
+  assert.equal(focusedDay(el), '2026-08-15');
+  keyOn(grid(), 'PageDown');
+  assert.equal(focusedDay(el), '2026-09-15', 'next month, same day');
+  assert.match(el.shadowRoot.querySelector('.month').textContent, /September 2026/);
+  keyOn(grid(), 'PageUp', { shiftKey: true });
+  assert.equal(focusedDay(el), '2025-09-15', 'Shift: a year');
+  keyOn(grid(), 'ArrowDown');
+  keyOn(grid(), 'ArrowDown');
+  keyOn(grid(), 'ArrowDown');
+  assert.equal(focusedDay(el), '2025-10-06', 'leaving the month shows the next one');
+  assert.equal(grid().tabIndex, 0);
+  keyOn(grid(), 'Escape');
+  await tick();
+  await tick();
+  assert.equal(el.shadowRoot.querySelector('.panel'), null, 'Escape closes');
+  assert.equal(el.shadowRoot.activeElement, input, 'focus back in the field');
+  unmountAll();
+  await tick();
+});
+
+test('ui-date-picker keyboard stays within min/max and disables months outside them', async () => {
+  const el = mount('<ui-date-picker label="D" locale="en-US" value="2026-08-14" min="2026-08-10" max="2026-08-20"></ui-date-picker>');
+  await tick();
+  const input = el.shadowRoot.querySelector('input');
+  input.focus();
+  keyOn(input, 'F4');
+  await tick();
+  keyOn(el.shadowRoot.activeElement, 'PageDown');
+  assert.equal(focusedDay(el), '2026-08-20', 'clamped to max');
+  keyOn(el.shadowRoot.activeElement, 'PageUp');
+  assert.equal(focusedDay(el), '2026-08-10', 'clamped to min');
+  const [prev, next] = el.shadowRoot.querySelectorAll('.cal-header ui-icon-button');
+  assert.equal(prev.disabled, true);
+  assert.equal(next.disabled, true);
+  unmountAll();
+  await tick();
+});
+
+test('ui-date-picker mirrors arrows and month chevrons right to left', async () => {
+  const holder = mount('<div dir="rtl" style="direction: rtl"><ui-date-picker label="D" locale="en-US" value="2026-08-14"></ui-date-picker></div>');
+  const el = holder.querySelector('ui-date-picker');
+  await tick();
+  if (getComputedStyle(el).direction !== 'rtl') {
+    unmountAll();
+    return; // the simulated DOM cannot resolve direction
+  }
+  const input = el.shadowRoot.querySelector('input');
+  input.focus();
+  keyOn(input, 'ArrowDown', { altKey: true });
+  await tick();
+  keyOn(el.shadowRoot.activeElement, 'ArrowLeft');
+  assert.equal(focusedDay(el), '2026-08-15', 'left is forward in RTL');
+  const [prev, next] = el.shadowRoot.querySelectorAll('.cal-header ui-icon-button');
+  assert.equal(prev.icon, 'chevron-right');
+  assert.equal(next.icon, 'chevron-left');
+  unmountAll();
+  await tick();
+});
+
+test('ui-date-picker strings, aria-label from the host, showPicker and focus', async () => {
+  const el = mount('<ui-date-picker aria-label="Started" locale="fr"></ui-date-picker>');
+  el.strings = { previousMonth: 'Mois précédent', nextMonth: 'Mois suivant', openCalendar: 'Ouvrir le calendrier', chooseDate: 'Choisir une date' };
+  await tick();
+  const input = el.shadowRoot.querySelector('input');
+  assert.equal(input.getAttribute('aria-label'), 'Started', 'the host label names the input');
+  assert.equal(el.hasAttribute('aria-label'), false, 'and leaves the role-less host');
+  assert.equal(el.shadowRoot.querySelector('ui-icon-button').label, 'Ouvrir le calendrier');
+  el.focus();
+  assert.equal(el.shadowRoot.activeElement, input, 'focus() focuses the field');
+  el.showPicker();
+  const panel = el.shadowRoot.querySelector('.panel');
+  assert.ok(panel, 'showPicker opens');
+  assert.equal(el.shadowRoot.activeElement, input, 'focus stays in the field');
+  assert.equal(panel.getAttribute('aria-label'), 'Started');
+  const [prev, next] = panel.querySelectorAll('.cal-header ui-icon-button');
+  assert.equal(prev.label, 'Mois précédent');
+  assert.equal(next.label, 'Mois suivant');
+  unmountAll();
+  await tick();
+  const plain = mount('<ui-date-picker></ui-date-picker>');
+  plain.strings = { date: 'Datum' };
+  await tick();
+  assert.equal(plain.shadowRoot.querySelector('input').getAttribute('aria-label'), 'Datum');
+  unmountAll();
+  await tick();
+});
+
+test('ui-date-picker commits a typed localized date on Enter', async () => {
+  const el = mount('<ui-date-picker label="D" locale="en-GB"></ui-date-picker>');
+  await tick();
+  let detail = null;
+  el.addEventListener('change', (e) => (detail = e.detail));
+  const input = el.shadowRoot.querySelector('input');
+  input.value = '3/10/2026';
+  fire(input, 'input');
+  keyOn(input, 'Enter');
+  assert.equal(el.value, '2026-10-03');
+  assert.equal(detail.value, '2026-10-03');
+  unmountAll();
+  await tick();
+});
+
+test('ui-date-picker range commits a typed range on blur, and restores what it cannot read', async () => {
+  const el = mount('<ui-date-picker label="Trip" range locale="en-US"></ui-date-picker>');
+  await tick();
+  let detail = null;
+  el.addEventListener('change', (e) => (detail = e.detail));
+  const input = el.shadowRoot.querySelector('input');
+  input.value = 'Aug 5, 2026 – Aug 1, 2026';
+  fire(input, 'input');
+  fire(input, 'blur', { bubbles: false });
+  assert.equal(el.start, '2026-08-01');
+  assert.equal(el.end, '2026-08-05');
+  assert.deepEqual(detail, { start: '2026-08-01', end: '2026-08-05', value: '2026-08-01/2026-08-05' });
+  input.value = 'whenever';
+  fire(input, 'input');
+  fire(input, 'blur', { bubbles: false });
+  assert.equal(el.start, '2026-08-01', 'unchanged');
+  assert.match(input.value, /Aug 1, 2026/);
+  unmountAll();
+  await tick();
+});
+
+test('parseTypedTime reads 12- and 24-hour forms', async () => {
+  const { parseTypedTime } = await import('../src/components/ui-time-picker.js');
+  assert.equal(parseTypedTime('21:30'), '21:30');
+  assert.equal(parseTypedTime('9:30 pm', 'en-US'), '21:30');
+  assert.equal(parseTypedTime('9:30 PM', 'en-US'), '21:30');
+  assert.equal(parseTypedTime('12 am', 'en-US'), '00:00');
+  assert.equal(parseTypedTime('12pm', 'en-US'), '12:00');
+  assert.equal(parseTypedTime('9 p.m.', 'en-US'), '21:00');
+  assert.equal(parseTypedTime('9.30'), '09:30');
+  assert.equal(parseTypedTime('21h30', 'fr'), '21:30');
+  assert.equal(parseTypedTime('21h', 'fr'), '21:00');
+  assert.equal(parseTypedTime('930'), '09:30');
+  assert.equal(parseTypedTime('0930'), '09:30');
+  assert.equal(parseTypedTime('午後9:30', 'ja'), '21:30');
+  assert.equal(parseTypedTime(''), '');
+  assert.equal(parseTypedTime('25:00'), null);
+  assert.equal(parseTypedTime('13 pm'), null);
+  assert.equal(parseTypedTime('soon'), null);
+});
+
+test('ui-time-picker: top-layer panel, strings, host aria-label, showPicker, typed time', async () => {
+  const el = mount('<ui-time-picker aria-label="Run at" locale="en-US"></ui-time-picker>');
+  el.strings = { openTimePicker: 'Ouvrir', hours: 'Heures', minuteValue: '{minute} min' };
+  await tick();
+  const input = el.shadowRoot.querySelector('input');
+  assert.equal(input.getAttribute('aria-label'), 'Run at');
+  assert.equal(el.hasAttribute('aria-label'), false);
+  assert.equal(el.shadowRoot.querySelector('ui-icon-button').label, 'Ouvrir');
+  el.focus();
+  assert.equal(el.shadowRoot.activeElement, input);
+  el.showPicker();
+  const panel = el.shadowRoot.querySelector('.panel');
+  assert.ok(panel);
+  assert.equal(panel.getAttribute('popover'), 'manual');
+  assert.equal(panel.getAttribute('aria-label'), 'Run at');
+  assert.equal(panel.querySelector('.digit').getAttribute('aria-label'), 'Heures');
+  assert.equal(panel.querySelector('[data-minute="5"]').getAttribute('aria-label'), '5 min');
+  unmountAll();
+  await tick();
+  const t2 = mount('<ui-time-picker label="At" locale="en-US"></ui-time-picker>');
+  await tick();
+  let detail = null;
+  t2.addEventListener('change', (e) => (detail = e.detail));
+  const i2 = t2.shadowRoot.querySelector('input');
+  i2.value = '9:30 pm';
+  fire(i2, 'input');
+  keyOn(i2, 'Enter');
+  assert.equal(t2.value, '21:30');
+  assert.equal(detail.value, '21:30');
+  unmountAll();
+  await tick();
+});

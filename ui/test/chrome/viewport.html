@@ -210,6 +210,37 @@
       el.remove();
     }
 
+    async function datePickerDocked() {
+      // Low on the screen, inside a scroller that clips and a transformed
+      // ancestor: the calendar is in the top layer, above the field, whole.
+      const box = mount(`<div style="position:fixed;left:16px;top:${visibleBottom() - 120}px;inline-size:300px;block-size:100px;overflow:hidden;transform:translateZ(0)">
+        <ui-date-picker label="Due" value="2026-03-14" style="margin-top:20px"></ui-date-picker>
+      </div>`);
+      const el = box.querySelector('ui-date-picker');
+      await frames(2);
+      const opened = wait(el, 'open');
+      const input = el.shadowRoot.querySelector('input');
+      input.focus();
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', altKey: true, bubbles: true, composed: true, cancelable: true }));
+      await Promise.race([opened, new Promise((r) => setTimeout(r, 1000))]);
+      await frames(2);
+      const panel = el.shadowRoot.querySelector('.panel');
+      check('date picker (docked): panel in the top layer', panel.matches(':popover-open'));
+      inView('date picker (docked): panel fits', panel);
+      const field = el.shadowRoot.querySelector('.field').getBoundingClientRect();
+      check('date picker (docked): flips above the field', panel.getBoundingClientRect().bottom <= field.top + 0.5,
+        { panelBottom: Math.round(panel.getBoundingClientRect().bottom), fieldTop: Math.round(field.top) });
+      const day = panel.querySelector('[data-iso="2026-03-14"]');
+      check('date picker (docked): keyboard focus on the selected day', el.shadowRoot.activeElement === day);
+      const r = day.getBoundingClientRect();
+      const hit = el.shadowRoot.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      check('date picker (docked): day is not covered or clipped', hit === day || day.contains(hit));
+      day.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true, cancelable: true }));
+      await frames(3);
+      check('date picker (docked): Escape returns focus to the field', el.shadowRoot.activeElement === input);
+      box.remove();
+    }
+
     async function menu() {
       // An anchor low on the screen with the keyboard up: the panel must open
       // above it (flip), not under the keyboard.
@@ -244,7 +275,7 @@
     }
 
     window.runChecks = async () => {
-      for (const fn of [dialog, dialogKeyboard, drawer, drawerNoFooter, sheet, sideSheet, datePicker, menu, snackbar]) {
+      for (const fn of [dialog, dialogKeyboard, drawer, drawerNoFooter, sheet, sideSheet, datePicker, datePickerDocked, menu, snackbar]) {
         try { await fn(); } catch (e) { check(`${fn.name}: threw`, false, String(e?.stack || e)); }
         kb(0);
       }
