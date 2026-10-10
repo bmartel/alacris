@@ -273,6 +273,20 @@ const setStyleProp = (style, k, x) =>
     ? style.setProperty(k, x == null || x === false ? '' : x)
     : (style[k] = x == null || x === false ? '' : x);
 
+// Re-applying a template (a thunk re-run that returns the same call site, a
+// positional list re-rendered) hands every static hole its value again. A
+// value already in the DOM is left alone: rewriting it would queue a mutation
+// record and invalidate style for nothing, and replacing an identical text
+// node detaches whatever a selection or an observer held on to.
+const setAttr = (el, n, v) => {
+  if (v == null || v === false) {
+    if (el.hasAttribute(n)) el.removeAttribute(n);
+    return;
+  }
+  const s = v === true ? '' : '' + v;
+  if (el.getAttribute(n) !== s) el.setAttribute(n, s);
+};
+
 function setStyle(el, v) {
   if (v && typeof v === 'object') {
     const style = el.style;
@@ -286,7 +300,7 @@ function setStyle(el, v) {
     return;
   }
   el.$$y = null;
-  v == null || v === false ? el.removeAttribute('style') : el.setAttribute('style', v);
+  setAttr(el, 'style', v);
 }
 
 function prepare(p) {
@@ -324,14 +338,15 @@ function prepare(p) {
   if (n === 'class') {
     p.set = (el, v) => {
       const t = classText(v);
-      t ? (typeof el.className === 'string' ? (el.className = t) : el.setAttribute('class', t)) : el.removeAttribute('class');
+      if (!t) { if (el.hasAttribute('class')) el.removeAttribute('class'); }
+      else if (el.getAttribute('class') !== t) typeof el.className === 'string' ? (el.className = t) : el.setAttribute('class', t);
     };
     return p;
   }
   if (n === 'style') { p.set = setStyle; return p; }
 
   if (c === 46) { const k = n.slice(1); p.set = (el, v) => { el[k] = v; }; return p; }        // .prop
-  if (c === 63) { const k = n.slice(1); p.set = (el, v) => el.toggleAttribute(k, !!v); return p; } // ?attr
+  if (c === 63) { const k = n.slice(1); p.set = (el, v) => { if (el.hasAttribute(k) !== !!v) el.toggleAttribute(k, !!v); }; return p; } // ?attr
   if (n === 'ref') {
     p.raw = 1;
     p.set = (el, v) => { typeof v === 'function' ? v(el) : v && (v.current = el); };
@@ -349,9 +364,7 @@ function prepare(p) {
       el[k] = v;
       return;
     }
-    v == null || v === false
-      ? el.removeAttribute(n)
-      : el.setAttribute(n, v === true ? '' : v);
+    setAttr(el, n, v);
   };
   return p;
 }
@@ -448,13 +461,19 @@ class Inst {
 // Write a primitive into an element's text. Returns 1 if it handled `v`, so
 // the caller knows when to grow a real child range instead.
 const writeText = (el, v) => {
-  if (v == null || v === false || v === true) { el.textContent = ''; return 1; }
-  const t = typeof v;
+  let s;
+  if (v == null || v === false || v === true) s = '';
   // Coerce explicitly: `textContent = 0` is spec'd to write "0", but not every
   // DOM implementation agrees, and a silently blank cell is a nasty bug.
-  if (t === 'string') { el.textContent = v; return 1; }
-  if (t === 'number') { el.textContent = '' + v; return 1; }
-  return 0;
+  else if (typeof v === 'string') s = v;
+  else if (typeof v === 'number') s = '' + v;
+  else return 0;
+  const f = el.firstChild;
+  // Already showing it: one text node with this text (or nothing for '').
+  if (s === '' ? !f : f && f === el.lastChild && f.nodeType === 3 && f.data === s) return 1;
+  if (f && f === el.lastChild && f.nodeType === 3 && s !== '') f.data = s;
+  else el.textContent = s;
+  return 1;
 };
 
 // A hole that owns everything inside one element. While the value stays
@@ -508,7 +527,7 @@ class Child {
   }
 
   text(v) {
-    if (this.tn) { this.tn.data = v; return; }
+    if (this.tn) { const s = '' + v; if (this.tn.data !== s) this.tn.data = s; return; }
     this.clear();
     this.e.before(this.tn = doc.createTextNode(v));
   }
