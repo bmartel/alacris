@@ -66,6 +66,7 @@ import './components/ui-option.js';
 import './components/ui-autocomplete.js';
 import './components/ui-chip.js';
 import './components/ui-chip-set.js';
+import './components/ui-chip-field.js';
 import './components/ui-date-picker.js';
 import './components/ui-time-picker.js';
 import './components/ui-search.js';
