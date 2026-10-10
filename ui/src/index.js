@@ -69,6 +69,7 @@ import './components/ui-chip-set.js';
 import './components/ui-date-picker.js';
 import './components/ui-time-picker.js';
 import './components/ui-search.js';
+import './components/ui-chat-composer.js';
 
 // Data display
 import './components/ui-avatar.js';

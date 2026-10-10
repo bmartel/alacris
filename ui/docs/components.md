@@ -1,7 +1,7 @@
 # Component catalog
 
 Assembled from each component's file header by `scripts/catalog.mjs` — the
-headers are the source of truth. 69 components. Every component
+headers are the source of truth. 70 components. Every component
 also exports `themeVars` (when it declares component tokens); `themeVars.names`
 is the machine-readable custom-property list.
 
@@ -365,6 +365,72 @@ item can still become selected.
 
 Source: [`src/components/ui-carousel.js`](../src/components/ui-carousel.js)
 
+## `<ui-chat-composer>`
+
+the prompt box of a chat, in the Material 3 style of
+Gemini: one rounded surface holding an add button with its menu, a text
+area that grows with what is typed, an optional picker (a model or mode),
+trailing actions (a microphone) and a round Send button that turns into
+Stop while a reply streams. Attachments show as chips above the text, files
+pasted or dropped on the surface are reported, a counter appears near
+`maxlength`, and a short caption can sit under the surface.
+
+  &lt;ui-chat-composer label="Message" placeholder="Ask anything"
+                    .value=${draft} ?busy=${streaming}
+                    @input=${(e) =&gt; e.detail && draft.set(e.detail.value)}
+                    @send=${(e) =&gt; ask(e.detail.value)} @stop=${stop}&gt;
+    &lt;ui-menu-item slot="menu" value="file" icon="attach-file"&gt;Attach a file&lt;/ui-menu-item&gt;
+    &lt;ui-menu slot="picker" placement="top-end"&gt;…a text button and its items…&lt;/ui-menu&gt;
+    &lt;ui-tooltip slot="trailing" text="Dictate"&gt;&lt;ui-icon-button icon="mic" label="Dictate"&gt;&lt;/ui-icon-button&gt;&lt;/ui-tooltip&gt;
+  &lt;/ui-chat-composer&gt;
+
+Enter sends and Shift+Enter starts a new line (`submit`), never while an
+input method is composing. The text area grows from one line to `maxRows`,
+then scrolls; at the bottom of a column the surface grows upward. Wide
+hosts lay everything out on one row; narrower ones put the text above a row
+of actions (`layout`); below `compactWidth` the picker slot is hidden and
+the host gets `data-compact`, so the app can offer the picker's choices in
+the add menu instead (`layoutchange`). Attachment chips are not buttons:
+each has its own remove button beside its name, never nested in another
+control.
+
+| | |
+| --- | --- |
+| `@prop` | {string}  value=''         — the text (two-way: listen to `input`) |
+| `@prop` | {string}  label=''         — accessible name of the text area (falls back to `placeholder`) |
+| `@prop` | {string}  placeholder='' |
+| `@prop` | {boolean} disabled=false |
+| `@prop` | {boolean} busy=false       — a reply is coming: Send becomes Stop and Enter does not send |
+| `@prop` | {number}  maxlength=0      — &gt;0 enforces it; a quiet counter shows past 90% of it |
+| `@prop` | {number}  maxRows=8        — lines the text area grows to before it scrolls (attribute `max-rows`) |
+| `@prop` | {string}  submit='enter'   — enter (Enter sends, Shift+Enter is a new line) \| mod-enter (Ctrl/⌘+Enter sends) \| none |
+| `@prop` | {string}  layout='auto'    — auto (inline from 560px wide, else stacked) \| inline \| stacked |
+| `@prop` | {number}  compactWidth=300 — narrower than this the picker slot is hidden (attribute `compact-width`) |
+| `@prop` | {boolean} allowFiles=false — files pasted into or dropped on the surface emit `files` (attribute `allow-files`) |
+| `@prop` | {Array}   attachments=[]   — chips above the text: [{ id, name, thumbnail?, icon? }] |
+| `@prop` | {string}  caption=''       — a short note centered under the surface |
+| `@prop` | {string}  sendLabel='Send' |
+| `@prop` | {string}  stopLabel='Stop' |
+| `@prop` | {string}  addLabel='Add'   — the add button's name and tooltip |
+| `@prop` | {string}  removeLabel='Remove' — prefixes each attachment's name on its remove button |
+| `@prop` | {string}  attachmentsLabel='Attachments' |
+| `@event` | input  — every edit (not mid-composition), and '' after a send; detail: { value } |
+| `@event` | send   — Send or the submit key with text or attachments; detail: { value, attachments }. Cancelable: unless prevented, the text clears. |
+| `@event` | stop   — Stop was pressed while busy |
+| `@event` | select — an item of the add menu was chosen; detail: { value } |
+| `@event` | files  — files were pasted or dropped (`allowFiles`); detail: { files, source: 'paste' \| 'drop' } |
+| `@event` | remove — an attachment's remove button; detail: { id } |
+| `@event` | layoutchange — the resolved layout changed; detail: { layout: 'inline' \| 'stacked', compact } |
+| `@slot` | leading  — replaces the add button and its menu |
+| `@slot` | menu     — &lt;ui-menu-item&gt; children of the add menu (the add button shows only with some) |
+| `@slot` | picker   — a picker between the text and the trailing actions; hidden when compact |
+| `@slot` | trailing — actions before Send (a microphone) |
+| `@slot` | caption  — rich caption content (replaces `caption`) |
+| `@part` | surface, input, attachments, attachment, counter, send, caption |
+| `@vars` | see `t` below (`themeVars.names`) |
+
+Source: [`src/components/ui-chat-composer.js`](../src/components/ui-chat-composer.js)
+
 ## `<ui-checkbox>`
 
 the Material checkbox with indeterminate support.
@@ -609,12 +675,14 @@ Source: [`src/components/ui-fab-menu.js`](../src/components/ui-fab-menu.js)
 the Material floating action button, regular and extended.
 
 A non-empty `label` renders the extended FAB (icon + text) and is always the
-accessible name, extended or not.
+accessible name. An icon-only FAB is named by `accessible-label` (read by
+screen readers, never shown).
 
 | | |
 | --- | --- |
 | `@prop` | {string}  icon=''           — registry icon name (or slot custom content) |
-| `@prop` | {string}  label=''          — extended-FAB text; always used as aria-label (falls back to the icon name when empty) |
+| `@prop` | {string}  label=''          — extended-FAB text; always used as aria-label |
+| `@prop` | {string}  accessibleLabel='' — the name of an icon-only FAB (attribute `accessible-label`); with neither, the icon name |
 | `@prop` | {string}  variant='primary' — primary \| secondary \| tertiary \| surface |
 | `@prop` | {string}  size='md'         — sm (40px) \| md (56px) \| lg (96px) |
 | `@prop` | {boolean} disabled=false |
@@ -753,8 +821,9 @@ a menu anchored to a slotted trigger.
     &lt;ui-menu-item value="delete" icon="delete" danger&gt;Delete&lt;/ui-menu-item&gt;
   &lt;/ui-menu&gt;
 
-The "anchor" slot renders inline; clicking it toggles the menu. The panel is
-position:fixed, anchored to the slotted trigger, flips when it would
+The "anchor" slot renders inline; clicking it toggles the menu (an anchor
+wrapped in &lt;ui-tooltip&gt; works too: the popup state goes on the control).
+The panel is position:fixed, anchored to the slotted trigger, flips when it would
 overflow, and stays glued through scroll/resize. While open, focus moves to
 the first item and arrows rove vertically; Escape closes and refocuses the
 anchor, Tab and outside pointerdown close. Selecting an item emits `select`
@@ -790,7 +859,7 @@ one destination inside &lt;ui-bottom-nav&gt; or &lt;ui-nav-rail&gt;.
 | `@slot` | icon — custom icon content when `icon` is empty |
 | `@part` | control — the &lt;button&gt; |
 | `@part` | pill    — the 56×32 icon container |
-| `@vars` | see `t` below (`themeVars.names`)  Focus: the host is the roving tab stop (&lt;ui-bottom-nav&gt; assigns tabindex); focus is forwarded to the inner button so Enter/Space activate natively. |
+| `@vars` | see `t` below (`themeVars.names`)  Focus: the host is the roving tab stop (&lt;ui-bottom-nav&gt;/&lt;ui-nav-rail&gt; assign tabindex); focus is forwarded to the inner button so Enter/Space activate natively. When the host keeps the focus anyway (the forward doesn't take, e.g. after the arrow keys moved to it), Enter/Space on the host press the button themselves. |
 
 Source: [`src/components/ui-nav-item.js`](../src/components/ui-nav-item.js)
 

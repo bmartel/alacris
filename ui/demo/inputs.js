@@ -1,5 +1,5 @@
 // Demo — Inputs & actions: FAB, button groups, segmented buttons, checkbox,
-// radio, slider, rating, search.
+// radio, slider, rating, search, chat composer.
 
 import { html, signal } from '@alacris/core';
 import { block, stackBlock } from './helpers.js';
@@ -14,6 +14,11 @@ import '../src/components/ui-radio-group.js';
 import '../src/components/ui-slider.js';
 import '../src/components/ui-rating.js';
 import '../src/components/ui-search.js';
+import '../src/components/ui-chat-composer.js';
+import '../src/components/ui-menu.js';
+import '../src/components/ui-tooltip.js';
+import '../src/components/ui-icon-button.js';
+import '../src/components/ui-icon.js';
 import '../src/components/ui-split-button.js';
 import '../src/components/ui-menu-item.js';
 import '../src/components/ui-fab-menu.js';
@@ -29,6 +34,27 @@ export const section = () => {
   const rangeEnd = signal(80);
   const query = signal('');
   const filesQuery = signal('');
+  // Chat composer: a pretend reply streams for two seconds after Send.
+  const draft = signal('');
+  const streaming = signal(false);
+  const said = signal('');
+  const model = signal('Flash');
+  const files = signal([
+    { id: 'r', name: 'quarterly-report.pdf', icon: 'description' },
+    { id: 'p', name: 'whiteboard.png', icon: 'image' },
+  ]);
+  let reply = 0;
+  const onSend = (e) => {
+    said(`sent: ${e.detail.value}${e.detail.attachments.length ? ` + ${e.detail.attachments.length} file(s)` : ''}`);
+    streaming(true);
+    clearTimeout(reply);
+    reply = setTimeout(() => streaming(false), 2000);
+  };
+  const onStop = () => {
+    clearTimeout(reply);
+    streaming(false);
+    said('stopped');
+  };
 
   return html`
     ${block('FAB — variants', html`
@@ -167,6 +193,33 @@ export const section = () => {
           Recent — Ada, Grace, Katherine
         </ui-text>
       </ui-search>
+    `)}
+
+    ${stackBlock('Chat composer', html`
+      <ui-chat-composer label="Message" placeholder="Ask anything" value=${draft} ?busy=${streaming}
+                        add-label="Add files and more" caption="Replies are made up by a timer here."
+                        @input=${(e) => e.detail && draft(e.detail.value)}
+                        @send=${onSend} @stop=${onStop}
+                        @select=${(e) => e.detail && said(`menu: ${e.detail.value}`)}>
+        <ui-menu-item slot="menu" value="file" icon="attach-file">Upload a file</ui-menu-item>
+        <ui-menu-item slot="menu" value="photo" icon="image">Add a photo</ui-menu-item>
+        <ui-menu slot="picker" placement="top-end" @select=${(e) => e.detail && model(e.detail.value)}>
+          <ui-button slot="anchor" variant="text">${model}<ui-icon slot="trailing" name="expand-more"></ui-icon></ui-button>
+          <ui-menu-item value="Flash">Flash</ui-menu-item>
+          <ui-menu-item value="Pro">Pro</ui-menu-item>
+        </ui-menu>
+        <ui-tooltip slot="trailing" text="Dictate"><ui-icon-button icon="mic" label="Dictate"></ui-icon-button></ui-tooltip>
+      </ui-chat-composer>
+      <ui-text variant="body-sm" color="onSurfaceVariant">${() => said() || 'Enter sends, Shift+Enter starts a new line'}</ui-text>
+    `)}
+
+    ${stackBlock('Chat composer — attachments, counter, stacked', html`
+      <ui-chat-composer label="Message" placeholder="Describe the files" layout="stacked" maxlength="120"
+                        allow-files .attachments=${files}
+                        @remove=${(e) => e.detail && files(files().filter((f) => f.id !== e.detail.id))}
+                        @files=${(e) => e.detail && files([...files(), ...e.detail.files.map((f, i) => ({ id: `${Date.now()}-${i}`, name: f.name, icon: 'attach-file' }))])}>
+      </ui-chat-composer>
+      <ui-chat-composer label="Message" placeholder="Disabled" disabled></ui-chat-composer>
     `)}
   `;
 };
