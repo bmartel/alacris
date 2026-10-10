@@ -23,6 +23,7 @@ declare global {
     'ui-carousel': HTMLElement;
     'ui-carousel-item': HTMLElement;
     'ui-checkbox': HTMLElement;
+    'ui-chat-composer': HTMLElement;
     'ui-chip': HTMLElement;
     'ui-chip-set': HTMLElement;
     'ui-container': HTMLElement;

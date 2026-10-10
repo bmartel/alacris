@@ -6,8 +6,9 @@
 //     <ui-menu-item value="delete" icon="delete" danger>Delete</ui-menu-item>
 //   </ui-menu>
 //
-// The "anchor" slot renders inline; clicking it toggles the menu. The panel is
-// position:fixed, anchored to the slotted trigger, flips when it would
+// The "anchor" slot renders inline; clicking it toggles the menu (an anchor
+// wrapped in <ui-tooltip> works too: the popup state goes on the control).
+// The panel is position:fixed, anchored to the slotted trigger, flips when it would
 // overflow, and stays glued through scroll/resize. While open, focus moves to
 // the first item and arrows rove vertically; Escape closes and refocuses the
 // anchor, Tab and outside pointerdown close. Selecting an item emits `select`
@@ -75,7 +76,11 @@ define('ui-menu', {
 
     const popupTrigger = (el) => {
       if (!el || el === host) return null;
-      return el.shadowRoot?.querySelector('button, a[href], [role="button"]') || el;
+      const own = el.shadowRoot?.querySelector('button, a[href], [role="button"]');
+      if (own) return own;
+      // A trigger wrapped in <ui-tooltip>: the control is the tooltip's child.
+      const inner = el.localName === 'ui-tooltip' ? el.firstElementChild : null;
+      return (inner && popupTrigger(inner)) || el;
     };
 
     const syncTrigger = () => {
