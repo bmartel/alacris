@@ -293,3 +293,18 @@ test('an interactive ui-list-item activates on Enter and Space', async () => {
   assert.equal(clicks, 2);
   unmountAll();
 });
+
+test('ui-date-picker and ui-time-picker fields are comboboxes (aria-expanded is only valid on one)', async () => {
+  for (const tag of ['ui-date-picker', 'ui-time-picker']) {
+    const el = mount(`<${tag} label="When"></${tag}>`);
+    await tick();
+    const input = el.shadowRoot.querySelector('input');
+    assert.equal(input.getAttribute('role'), 'combobox', tag);
+    assert.equal(input.getAttribute('aria-haspopup'), 'dialog', tag);
+    assert.equal(input.getAttribute('aria-expanded'), 'false', tag);
+    el.showPicker();
+    await tick();
+    assert.equal(input.getAttribute('aria-expanded'), 'true', tag);
+    unmountAll();
+  }
+});

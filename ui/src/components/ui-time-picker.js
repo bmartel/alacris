@@ -856,7 +856,7 @@ define('ui-time-picker', {
             ? html`<fieldset aria-hidden="true"><legend><span>${label}${() => (required() ? ' *' : '')}</span></legend></fieldset>`
             : null)}
           ${() => (label() ? html`<span class="label" part="label" id="field-label">${label}${() => (required() ? ' *' : '')}</span>` : null)}
-          <input part="input" .value=${text} ref=${(el) => (inputEl = el)}
+          <input part="input" role="combobox" .value=${text} ref=${(el) => (inputEl = el)}
                  placeholder=${() => placeholder() || null}
                  ?disabled=${disabled} ?required=${required}
                  aria-labelledby=${() => (label() ? 'field-label' : null)}
