@@ -4,7 +4,7 @@
 
 # Alacris
 
-**Web components with signals and fine-grained DOM updates — in 6.60 kB.**
+**Web components with signals and fine-grained DOM updates — in 6.69 kB.**
 
 ESM-only · zero dependencies · no build step required · works inside any framework
 
