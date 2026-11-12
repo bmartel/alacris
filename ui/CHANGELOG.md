@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.13.1](https://github.com/bmartel/alacris/compare/ui-v0.13.0...ui-v0.13.1) (2026-11-12)
+
+### Bug Fixes
+
+* **ui:** text field and chat composer hand host listeners one input event, with the value ([#30](https://github.com/bmartel/alacris/issues/30)) ([42e1da2](https://github.com/bmartel/alacris/commit/42e1da25761f6d6fbf0c5eaa6043fa124b1ddb1d))
+
 ## [0.13.0](https://github.com/bmartel/alacris/compare/ui-v0.12.2...ui-v0.13.0) (2026-11-12)
 
 ### Bug Fixes
