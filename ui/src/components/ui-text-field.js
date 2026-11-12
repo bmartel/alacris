@@ -334,6 +334,11 @@ define('ui-text-field', {
     };
 
     const onInput = (e) => {
+      // The native `input` event is composed, so it would reach the host's
+      // listeners as well, as a second event with no `{ value }` detail. Only
+      // the event emitted below leaves the component. (This also runs for
+      // compositionend, which is left to propagate.)
+      if (e.type === 'input') e.stopPropagation();
       if (isComposing) return;
       value.set(e.target.value);
       host.emit('input', { value: value() });

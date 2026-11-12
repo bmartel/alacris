@@ -8,7 +8,7 @@
 //
 //   <ui-chat-composer label="Message" placeholder="Ask anything"
 //                     .value=${draft} ?busy=${streaming}
-//                     @input=${(e) => e.detail && draft.set(e.detail.value)}
+//                     @input=${(e) => draft.set(e.detail.value)}
 //                     @send=${(e) => ask(e.detail.value)} @stop=${stop}>
 //     <ui-menu-item slot="menu" value="file" icon="attach-file">Attach a file</ui-menu-item>
 //     <ui-menu slot="picker" placement="top-end">…a text button and its items…</ui-menu>
@@ -326,6 +326,10 @@ define('ui-chat-composer', {
 
     let composing = false;
     const onInput = (e) => {
+      // Native `input` is composed: stop it, so the host's listeners get only
+      // the event emitted below, which carries `{ value }`. (compositionend
+      // also lands here and is left to propagate.)
+      if (e.type === 'input') e.stopPropagation();
       if (composing) return;
       value.set(e.target.value);
       host.emit('input', { value: value() });
