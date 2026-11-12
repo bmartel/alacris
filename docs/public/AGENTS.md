@@ -1,7 +1,7 @@
 # AGENTS.md — building applications with Alacris
 
 You are working in a project that uses **Alacris** (npm: `@alacris/core`) — web components
-with signals and fine-grained DOM updates. ~6.69 kB gzip, ESM-only, zero dependencies,
+with signals and fine-grained DOM updates. ~6.74 kB gzip, ESM-only, zero dependencies,
 no build step required. Docs: https://bmartel.github.io/alacris/
 
 This file tells you how to organize, write, and verify Alacris code. Follow it
@@ -225,7 +225,7 @@ down with the element.
 | `class="card ${v}"` | attribute spliced with static text (must be quoted) |
 | `.value=${v}` | DOM **property**, casing preserved |
 | `?disabled=${v}` | boolean attribute, present while truthy |
-| `@click=${fn}` | event listener; modifiers: `.stop.prevent.once.capture.passive` |
+| `@click=${fn}` | event listener; modifiers: `.stop.prevent.once.capture.passive.self` (`.self`: only events whose target is this element) |
 | `ref=${el => ...}` | called with the element after creation |
 
 - `class=${...}` and `style=${...}` also accept objects/arrays:

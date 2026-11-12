@@ -57,8 +57,11 @@ snapshot and the child will not see later writes.
 | `.once` | fires at most once |
 | `.capture` | capture phase |
 | `.passive` | passive listener |
+| `.self` | only events whose `target` is this element; ones bubbling up from children are ignored |
 
-They compose: `@click.stop.prevent=${fn}`.
+They compose: `@click.stop.prevent=${fn}`. With `.self`, the other modifiers apply
+only to the element's own events: `@click.self.stop` does not stop a child's
+click, and `@change.self.once` waits for the element's own first `change`.
 
 Bindings **without** modifiers are delegated — one listener per render root
 rather than one per element. A modifier opts out and attaches a real listener.

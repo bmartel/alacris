@@ -4,14 +4,14 @@
 
 # Alacris
 
-**Web components with signals and fine-grained DOM updates — in 6.69 kB.**
+**Web components with signals and fine-grained DOM updates — in 6.74 kB.**
 
 ESM-only · zero dependencies · no build step required · works inside any framework
 
 [![CI](https://github.com/bmartel/alacris/actions/workflows/ci.yml/badge.svg)](https://github.com/bmartel/alacris/actions/workflows/ci.yml)
 [![Docs](https://github.com/bmartel/alacris/actions/workflows/docs.yml/badge.svg)](https://bmartel.github.io/alacris/)
 [![npm](https://img.shields.io/npm/v/@alacris/core.svg)](https://www.npmjs.com/package/@alacris/core)
-[![core size](https://img.shields.io/badge/core-6.69%20kB%20gzip-blue)](#size)
+[![core size](https://img.shields.io/badge/core-6.74%20kB%20gzip-blue)](#size)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ***alacris*** *(Latin)* — brisk, lively, quick.
@@ -63,7 +63,7 @@ See [Performance](#performance) for the numbers and for where Alacris still pays
 
 | file | raw | gzip | brotli |
 | --- | ---: | ---: | ---: |
-| `dist/alacris.js` — signals + templates + styles + elements | 17.17 KB | **6.69 KB** | 6.09 KB |
+| `dist/alacris.js` — signals + templates + styles + elements | 17.22 KB | **6.74 KB** | 6.13 KB |
 | `dist/store.js` — deep reactive state | 2.14 KB | **1.03 KB** | 0.95 KB |
 | `dist/context.js` — cross-component context | 0.91 KB | **0.54 KB** | 0.46 KB |
 | `dist/signal.js` — reactivity alone, no DOM | 2.34 KB | **1.03 KB** | 0.96 KB |
@@ -178,7 +178,9 @@ Child positions accept templates, arrays, DOM nodes, strings and numbers.
 html`...`}` never leaks a stray `true`/`false` into the page.
 
 Event modifiers: `@click.once`, `@click.capture`, `@scroll.passive`,
-`@click.stop`, `@submit.prevent` — and they compose (`@click.stop.prevent`).
+`@click.stop`, `@submit.prevent`, `@change.self` — and they compose
+(`@click.stop.prevent`). `.self` runs the handler only for events dispatched by
+the element itself, not ones bubbling up from its children.
 
 ### Lists
 

@@ -264,6 +264,36 @@ test('delegated handlers need the event to bubble', () => {
   el.remove();
 });
 
+test('.self ignores events bubbling up from children', () => {
+  const el = host();
+  const seen = [];
+  render(html`<div @change.self=${(e) => seen.push(e.target.localName)}><input></div>`, el);
+  const div = el.querySelector('div'), input = el.querySelector('input');
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+  assert.deepEqual(seen, []);
+  div.dispatchEvent(new Event('change', { bubbles: true }));
+  assert.deepEqual(seen, ['div']);
+  el.remove();
+});
+
+test('.self applies the other modifiers to the element\'s own events only', () => {
+  const el = host();
+  let outer = 0, hits = 0;
+  render(html`<section @click=${() => outer++}>
+    <div @click.self.stop.once=${() => hits++}><button></button></div>
+  </section>`, el);
+  const div = el.querySelector('div'), button = el.querySelector('button');
+  // A child's click is not stopped, and does not use up `once`.
+  button.click();
+  assert.equal(outer, 1);
+  assert.equal(hits, 0);
+  div.click(); div.click();
+  assert.equal(hits, 1);
+  // The first own click was stopped; after `once` the listener is gone, so the second gets through.
+  assert.equal(outer, 2);
+  el.remove();
+});
+
 test('a modifier opts out of delegation and attaches a real listener', () => {
   const el = host();
   let hits = 0;
