@@ -13,6 +13,17 @@
 // Activation is AUTOMATIC per the ARIA APG: arrow keys move focus AND select
 // (one Tab stop for the whole bar via roving tabindex).
 //
+// More tabs than fit: the bar scrolls horizontally (no scrollbar) instead of
+// widening the page, and selecting a tab scrolls it fully into view. The
+// indicator is positioned in the bar's scroll coordinates, so it stays under
+// its tab while the bar scrolls, and it is re-measured whenever the bar or
+// the selected tab changes size (late fonts, a count appearing in a label).
+//
+// `change` here means "the selected tab changed". Controls inside a panel
+// (a <ui-switch>, a <ui-select>) emit their own bubbling `change`, and those
+// pass through this element like any DOM event. A handler on <ui-tabs> that
+// must only see tab changes checks `e.target === e.currentTarget`.
+//
 // @prop  {string} value='' — the selected tab's value
 // @prop  {string} variant='primary' — primary | secondary
 // @prop  {string} label='' — accessible name for the tablist
@@ -42,7 +53,15 @@ const styles = css`
     display: flex;
     align-items: stretch;
     border-block-end: 1px solid ${t.divider};
+    /* Too many tabs scroll inside the bar rather than overflowing the page. */
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
   }
+  .tablist::-webkit-scrollbar { display: none; }
+  /* A tab keeps its natural width; the bar scrolls instead of squeezing it. */
+  ::slotted(ui-tab) { flex: none; }
   .indicator {
     position: absolute;
     inset-block-end: 0;
@@ -73,6 +92,7 @@ define('ui-tabs', {
   styles: [base, styles],
   setup({ value, variant, label }, host) {
     const id = ++uid;
+    let seq = 0;
     const rev = signal(0); // bumped on slotchange so syncs re-run
     const bump = () => rev.update((n) => n + 1);
 
@@ -112,7 +132,11 @@ define('ui-tabs', {
         tab.selected = on;
         tab.tabIndex = on && !tab.disabled ? 0 : -1;
         if (on && !tab.disabled) hasStop = true;
-        if (!tab.id) tab.id = `ui-tab-${id}-${tab.value}`;
+        // Ids come from a counter, never from `value`: this can run before a
+        // tab has upgraded (value still undefined, so every tab got the same
+        // id and aria-controls pointed nowhere), and a value may hold
+        // characters an IDREF cannot.
+        if (!tab.id) tab.id = `ui-tab-${id}-${++seq}`;
       }
       if (!hasStop) {
         const first = tabs.find((el) => !el.disabled);
@@ -120,8 +144,10 @@ define('ui-tabs', {
       }
       for (const panel of panels) {
         panel.active = panel.value === v;
-        if (!panel.id) panel.id = `ui-tab-panel-${id}-${panel.value}`;
-        const tab = tabs.find((el) => el.value === panel.value);
+        if (!panel.id) panel.id = `ui-tab-panel-${id}-${++seq}`;
+        // Before upgrade neither side has a value yet; pairing undefined with
+        // undefined wired every panel to the first tab.
+        const tab = panel.value === undefined ? null : tabs.find((el) => el.value === panel.value);
         if (tab) {
           tab.setAttribute('aria-controls', panel.id);
           panel.setAttribute('aria-labelledby', tab.id);
@@ -135,27 +161,58 @@ define('ui-tabs', {
     const ix = signal(0);
     const iw = signal(0);
     let tablistEl = null;
+    // Both variants measure viewport rects and convert to the bar's scroll
+    // coordinates (the indicator is a child of the scrolling bar, so it must
+    // be placed where its tab sits in the scrolled content, not on screen).
+    // scrollLeft is negative in RTL, which is exactly the correction needed
+    // for an indicator anchored at the physical left edge.
     const measure = () => {
       const tab = tabsOf().find((el) => el.selected);
       if (!tab || !tablistEl) { iw.set(0); return; }
-      if (variant.peek() === 'primary') {
-        const inner = tab.shadowRoot?.querySelector('.inner');
-        const listRect = tablistEl.getBoundingClientRect();
-        const r = (inner || tab).getBoundingClientRect();
-        if (!r.width) { iw.set(0); return; }
-        ix.set(r.left - listRect.left);
-        iw.set(r.width);
-      } else {
-        const w = tab.offsetWidth || 0;
-        if (!w) { iw.set(0); return; }
-        ix.set(tab.offsetLeft || 0);
-        iw.set(w);
-      }
+      const target = variant.peek() === 'primary'
+        ? tab.shadowRoot?.querySelector('.inner') || tab
+        : tab;
+      const listRect = tablistEl.getBoundingClientRect();
+      const r = target.getBoundingClientRect();
+      if (!r.width) { iw.set(0); return; }
+      ix.set(r.left - listRect.left + (tablistEl.scrollLeft || 0));
+      iw.set(r.width);
     };
+
+    // Bring the selected tab fully into the bar. Only the bar scrolls: a
+    // scrollIntoView() would also move the page when the bar is off screen.
+    const reveal = () => {
+      const tab = tabsOf().find((el) => el.selected);
+      if (!tab || !tablistEl || tablistEl.scrollWidth <= tablistEl.clientWidth) return;
+      const listRect = tablistEl.getBoundingClientRect();
+      const r = tab.getBoundingClientRect();
+      const delta = r.left < listRect.left
+        ? r.left - listRect.left
+        : r.right > listRect.right ? r.right - listRect.right : 0;
+      if (delta) tablistEl.scrollBy?.({ left: delta, behavior: 'auto' });
+    };
+
+    // The first measurement can run before the tabs have laid out (their own
+    // templates, a webfont), which left the indicator a few pixels wide until
+    // something else re-measured. Observing sizes makes it self-correcting.
+    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(() => measure()) : null;
+    let observed = [];
+    const observe = () => {
+      if (!ro) return;
+      for (const el of observed) ro.unobserve(el);
+      observed = [tablistEl, ...tabsOf()].filter(Boolean);
+      for (const el of observed) ro.observe(el);
+    };
+    onCleanup(() => ro?.disconnect());
+
     effect(() => {
       value();
       rev();
-      queueMicrotask(measure);
+      queueMicrotask(() => {
+        observe();
+        reveal();
+        measure();
+      });
     });
     effect(() => {
       window.addEventListener('resize', measure, { passive: true });

@@ -69,6 +69,63 @@ test('ui-tabs selects on tab click and emits change; disabled tabs inert', async
   unmountAll();
 });
 
+test('ui-tabs gives every tab and panel a unique id and pairs them by value', async () => {
+  const el = mount(`
+    <ui-tabs value="b c" label="Demo">
+      <ui-tab value="a">A</ui-tab><ui-tab value="b c">B</ui-tab><ui-tab value="d">D</ui-tab>
+      <ui-tab-panel slot="panels" value="a">PA</ui-tab-panel>
+      <ui-tab-panel slot="panels" value="b c">PB</ui-tab-panel>
+      <ui-tab-panel slot="panels" value="d">PD</ui-tab-panel>
+    </ui-tabs>`);
+  await tick();
+  const tabs = [...el.querySelectorAll('ui-tab')];
+  const panels = [...el.querySelectorAll('ui-tab-panel')];
+  const ids = [...tabs, ...panels].map((n) => n.id);
+  assert.equal(new Set(ids).size, 6, 'six distinct ids');
+  for (const id of ids) assert.match(id, /^[A-Za-z][\w-]*$/, `"${id}" is a valid IDREF (no spaces, no "undefined")`);
+  assert.ok(!ids.some((id) => id.includes('undefined')));
+  tabs.forEach((tab, i) => {
+    assert.equal(tab.getAttribute('aria-controls'), panels[i].id);
+    assert.equal(panels[i].getAttribute('aria-labelledby'), tab.id);
+  });
+  await tick();
+  unmountAll();
+});
+
+test('ui-tabs: a change bubbling up from panel content is distinguishable by target', async () => {
+  const el = mount(TABS);
+  await tick();
+  const seen = [];
+  el.addEventListener('change', (e) => seen.push(e.target === e.currentTarget));
+  // What a <ui-switch> or <ui-select> inside a panel does.
+  el.querySelector('ui-tab-panel').dispatchEvent(new CustomEvent('change', { bubbles: true, composed: true, detail: { checked: true } }));
+  fire(el.querySelectorAll('ui-tab')[1], 'click');
+  assert.deepEqual(seen, [false, true], "only the tabs' own event targets the tabs element");
+  assert.equal(el.value, 'two', 'a child change does not move the selection');
+  await tick();
+  unmountAll();
+});
+
+test('anchored panels (menu, select, autocomplete) are top-layer popovers', async () => {
+  await import('../src/components/ui-select.js');
+  await import('../src/components/ui-option.js');
+  await import('../src/components/ui-autocomplete.js');
+  const { readFileSync } = await import('node:fs');
+  for (const name of ['ui-menu', 'ui-select', 'ui-autocomplete']) {
+    const src = readFileSync(new URL(`../src/components/${name}.js`, import.meta.url), 'utf8');
+    assert.match(src, /class="panel" part="panel" popover="manual"/, `${name} panel declares popover=manual`);
+    assert.match(src, /\.panel\[popover\] \{ margin: 0; inset: auto; border: none;/, `${name} resets the UA popover box`);
+    assert.match(src, /showPopover\?\.\(\)/, `${name} promotes the panel once connected`);
+  }
+  const menu = mount(`<ui-menu><button slot="anchor">Open</button><ui-menu-item value="a">A</ui-menu-item></ui-menu>`);
+  menu.open = true;
+  await tick();
+  assert.equal(menu.shadowRoot.querySelector('.panel').getAttribute('popover'), 'manual');
+  menu.open = false;
+  await tick();
+  unmountAll();
+});
+
 test('ui-menu opens by property, item click selects and closes', async () => {
   const el = mount(`
     <ui-menu>

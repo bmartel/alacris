@@ -231,6 +231,8 @@ const styles = css`
     box-shadow: ${sys.elevation[2]};
     transform-origin: top center;
   }
+  /* In the top layer: drop the UA popover box; position() writes left/top. */
+  .panel[popover] { margin: 0; inset: auto; border: none; padding: 0; color: ${t.fg}; }
   .options { overflow: auto; padding-block: ${sys.space(2)}; }
 
   .search {
@@ -478,9 +480,19 @@ define('ui-select', {
       }
     };
 
+    const place = (el) => autoUpdate(el, fieldEl, { placement: 'bottom-start', matchWidth: true, offset: 4 });
     const panelRef = (el) => {
       stopAuto?.();
-      stopAuto = autoUpdate(el, fieldEl, { placement: 'bottom-start', matchWidth: true, offset: 4 });
+      stopAuto = place(el);
+      // Into the top layer once it is in the document: no ancestor's
+      // overflow, transform or stacking context can clip or cover it (a
+      // select in a card used to open underneath the next card).
+      queueMicrotask(() => {
+        if (!el.isConnected || !open.peek()) return;
+        try { el.showPopover?.(); } catch { el.removeAttribute('popover'); }
+        stopAuto?.();
+        stopAuto = place(el);
+      });
     };
 
     // Typing filters, so the arrows and Enter have to work from the field the
@@ -524,7 +536,7 @@ define('ui-select', {
                @keydown=${onSearchKeydown}
                ref=${searchRef}></div>`;
     const panelView = () => html`
-      <div class="panel" part="panel" ref=${panelRef}>
+      <div class="panel" part="panel" popover="manual" ref=${panelRef}>
         ${() => (searching() ? searchView() : null)}
         <div class="options" role="listbox" id="listbox" aria-label=${() => label() || null}>
           <slot></slot>
