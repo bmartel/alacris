@@ -106,9 +106,16 @@ html`<button @click.once=${init}>`
 html`<form @submit.prevent=${save}>`
 html`<div @click.stop=${select}>`
 html`<div @scroll.passive=${onScroll}>`
+html`<my-tabs @change.self=${onTab}>`
 ```
 
-`.stop`, `.prevent`, `.once`, `.capture` and `.passive` are supported.
+`.stop`, `.prevent`, `.once`, `.capture`, `.passive` and `.self` are supported.
+
+`.self` runs the handler only when the event was dispatched by the element
+itself. Events bubble, so a `change` from an input inside `<my-tabs>` reaches a
+plain `@change` on it too; `@change.self` ignores those. An event from inside a
+component's shadow root is retargeted to the host, so it still counts as the
+host's own.
 
 <Aside type="note" title="Events are delegated">
 Bindings without modifiers attach **one listener per render root** rather than

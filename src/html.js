@@ -320,15 +320,22 @@ function prepare(p) {
 
     // Modifiers need real listener options, so this one keeps a wrapper.
     p.wrap = 1;
-    const stop = mods.indexOf('stop') > -1, prevent = mods.indexOf('prevent') > -1;
-    const opts = { capture: mods.indexOf('capture') > -1, once: mods.indexOf('once') > -1, passive: mods.indexOf('passive') > -1 };
+    const has = (m) => mods.indexOf(m) > -1;
+    const stop = has('stop'), prevent = has('prevent'), self = has('self'), once = has('once');
+    // With .self the browser's own `once` would be spent by a child's event, so it is done by hand.
+    const opts = { capture: has('capture'), once: once && !self, passive: has('passive') };
     p.mk = (el) => {
       const w = { h: null };
-      el.addEventListener(type, e => {
+      const on = (e) => {
+        if (self) {
+          if (e.target !== el) return;
+          if (once) el.removeEventListener(type, on, opts);
+        }
         if (stop) e.stopPropagation();
         if (prevent) e.preventDefault();
         if (w.h) w.h.call(el, e);
-      }, opts);
+      };
+      el.addEventListener(type, on, opts);
       return w;
     };
     p.set = (w, v) => { w.h = v; };
