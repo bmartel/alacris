@@ -28,6 +28,10 @@
     import '/ui/src/components/ui-menu-item.js';
     import '/ui/src/components/ui-snackbar.js';
     import '/ui/src/components/ui-button.js';
+    import '/ui/src/components/ui-tabs.js';
+    import '/ui/src/components/ui-card.js';
+    import '/ui/src/components/ui-select.js';
+    import '/ui/src/components/ui-option.js';
 
     applyTheme(createTheme());
 
@@ -274,8 +278,91 @@
       await close(el);
     }
 
+    async function tabsOverflow() {
+      // More tabs than fit: the bar scrolls, the page does not widen, and the
+      // indicator stays under the selected tab wherever the bar is scrolled.
+      const names = ['Overview', 'Files', 'Inbox', 'Activity', 'Account', 'Settings', 'Billing', 'Integrations'];
+      const box = mount(`<div style="position:fixed;inset-block-start:8px;inset-inline-start:8px;inline-size:300px">
+        <ui-tabs value="Overview" label="Sections">
+          ${names.map((n) => `<ui-tab value="${n}">${n}</ui-tab>`).join('')}
+          ${names.map((n) => `<ui-tab-panel slot="panels" value="${n}">${n}</ui-tab-panel>`).join('')}
+        </ui-tabs></div>`);
+      const tabs = box.querySelector('ui-tabs');
+      const list = tabs.shadowRoot.querySelector('.tablist');
+      const indicator = tabs.shadowRoot.querySelector('.indicator');
+      const settle = () => new Promise((r) => setTimeout(r, 600)); // indicator transition
+      const aligned = (name, value) => {
+        const inner = tabs.querySelector(`ui-tab[value="${value}"]`).shadowRoot.querySelector('.inner');
+        const a = inner.getBoundingClientRect();
+        const b = indicator.getBoundingClientRect();
+        check(name, a.width > 8 && Math.abs(a.left - b.left) < 1 && Math.abs(a.width - b.width) < 1,
+          { tab: [Math.round(a.left), Math.round(a.width)], indicator: [Math.round(b.left), Math.round(b.width)] });
+      };
+      await frames(3);
+      await settle();
+      check('tabs: bar scrolls instead of widening', list.scrollWidth > list.clientWidth + 10 && box.scrollWidth <= box.clientWidth,
+        { scrollWidth: list.scrollWidth, clientWidth: list.clientWidth, box: box.scrollWidth });
+      aligned('tabs: indicator spans the first tab on first paint', 'Overview');
+
+      const pageScroll = scrollY;
+      tabs.querySelector('ui-tab[value="Integrations"]').click();
+      await frames(3);
+      await settle();
+      const l = list.getBoundingClientRect();
+      const last = tabs.querySelector('ui-tab[value="Integrations"]').getBoundingClientRect();
+      check('tabs: selected tab is scrolled fully into the bar', last.left >= l.left - 0.5 && last.right <= l.right + 0.5,
+        { tab: [Math.round(last.left), Math.round(last.right)], bar: [Math.round(l.left), Math.round(l.right)] });
+      check('tabs: selecting did not scroll the page', scrollY === pageScroll, { before: pageScroll, after: scrollY });
+      aligned('tabs: indicator under the selected tab after scrolling to it', 'Integrations');
+
+      list.scrollLeft = 0;
+      await frames(3);
+      aligned('tabs: indicator travels with its tab when the bar is scrolled', 'Integrations');
+
+      const label = tabs.querySelector('ui-tab[value="Integrations"]');
+      label.textContent = 'Integrations (12)';
+      list.scrollLeft = list.scrollWidth;
+      await frames(3);
+      await settle();
+      aligned('tabs: indicator re-measures when the label changes size', 'Integrations');
+      box.remove();
+    }
+
+    async function selectInCard() {
+      // A select inside a card (overflow: hidden + its own stacking context)
+      // followed by another card: the option panel must be neither clipped by
+      // its card nor painted under the next one.
+      const box = mount(`<div style="position:fixed;inset-block-start:8px;inset-inline-start:8px;inline-size:300px;display:grid;gap:8px">
+        <ui-card><ui-select label="Plan" value="a">
+          <ui-option value="a">Individual</ui-option>
+          <ui-option value="b">Pro</ui-option>
+          <ui-option value="c">Pro+</ui-option>
+        </ui-select></ui-card>
+        <ui-card><div style="block-size:240px">The next card</div></ui-card></div>`);
+      const select = box.querySelector('ui-select');
+      await frames(2);
+      const opened = wait(select, 'open');
+      select.shadowRoot.querySelector('[part="control"]').click();
+      await Promise.race([opened, new Promise((r) => setTimeout(r, 1000))]);
+      await frames(2);
+      const panel = select.shadowRoot.querySelector('.panel');
+      check('select in card: panel is in the top layer', panel?.matches(':popover-open'));
+      for (const opt of select.querySelectorAll('ui-option')) {
+        const r = opt.getBoundingClientRect();
+        const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        check(`select in card: "${opt.textContent.trim()}" is not clipped or covered`,
+          r.height > 0 && (hit === opt || opt.contains(hit)) && r.bottom <= visibleBottom() + 0.5,
+          { top: Math.round(r.top), bottom: Math.round(r.bottom), hit: hit?.localName });
+      }
+      const field = select.getBoundingClientRect();
+      const p = panel.getBoundingClientRect();
+      check('select in card: panel is anchored to its field', Math.abs(p.left - field.left) < 2 && p.top >= field.bottom - 1,
+        { panel: [Math.round(p.left), Math.round(p.top)], field: [Math.round(field.left), Math.round(field.bottom)] });
+      box.remove();
+    }
+
     window.runChecks = async () => {
-      for (const fn of [dialog, dialogKeyboard, drawer, drawerNoFooter, sheet, sideSheet, datePicker, datePickerDocked, menu, snackbar]) {
+      for (const fn of [dialog, dialogKeyboard, drawer, drawerNoFooter, sheet, sideSheet, datePicker, datePickerDocked, menu, snackbar, tabsOverflow, selectInCard]) {
         try { await fn(); } catch (e) { check(`${fn.name}: threw`, false, String(e?.stack || e)); }
         kb(0);
       }

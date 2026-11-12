@@ -62,6 +62,8 @@ const styles = css`
     max-block-size: calc(100vh - 16px);
     max-block-size: calc(100dvh - 16px);
   }
+  /* In the top layer: drop the UA popover box; position() writes left/top. */
+  .panel[popover] { margin: 0; inset: auto; border: none; padding-inline: 0; color: inherit; }
 `;
 
 define('ui-menu', {
@@ -158,12 +160,22 @@ define('ui-menu', {
 
     // position() also sets transform-origin to the anchor-facing corner, for
     // the side it actually used (after any flip) and the writing direction.
+    const place = (el) => autoUpdate(el, anchorEl(), { placement: placement() });
     const panelRef = (el) => {
-      stopPosition = autoUpdate(el, anchorEl(), { placement: placement() });
+      stopPosition?.();
+      stopPosition = place(el);
+      // Into the top layer once it is in the document: no ancestor's
+      // overflow, transform or stacking context can clip or cover it.
+      queueMicrotask(() => {
+        if (!el.isConnected || !open.peek()) return;
+        try { el.showPopover?.(); } catch { el.removeAttribute('popover'); }
+        stopPosition?.();
+        stopPosition = place(el);
+      });
     };
 
     const view = () => html`
-      <div class="panel" part="panel" role="menu" ref=${panelRef}>
+      <div class="panel" part="panel" popover="manual" role="menu" ref=${panelRef}>
         <slot></slot>
       </div>`;
 

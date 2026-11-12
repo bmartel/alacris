@@ -199,6 +199,8 @@ const styles = css`
     box-shadow: ${sys.elevation[2]};
     transform-origin: top center;
   }
+  /* In the top layer: drop the UA popover box; position() writes left/top. */
+  .panel[popover] { margin: 0; inset: auto; border: none; padding-inline: 0; color: inherit; }
   .opt {
     position: relative;
     isolation: isolate;
@@ -333,12 +335,21 @@ define('ui-autocomplete', {
     });
     onCleanup(() => stopAuto?.());
 
+    const place = (el) => autoUpdate(el, fieldEl, { placement: 'bottom-start', matchWidth: true, offset: 4 });
     const panelRef = (el) => {
       stopAuto?.();
-      stopAuto = autoUpdate(el, fieldEl, { placement: 'bottom-start', matchWidth: true, offset: 4 });
+      stopAuto = place(el);
+      // Into the top layer once it is in the document: no ancestor's
+      // overflow, transform or stacking context can clip or cover it.
+      queueMicrotask(() => {
+        if (!el.isConnected || !showPanel.peek()) return;
+        try { el.showPopover?.(); } catch { el.removeAttribute('popover'); }
+        stopAuto?.();
+        stopAuto = place(el);
+      });
     };
     const panelView = () => html`
-      <div class="panel" part="panel" role="listbox" id="panel"
+      <div class="panel" part="panel" popover="manual" role="listbox" id="panel"
            aria-label=${() => label() || null} ref=${panelRef}>
         ${each(
           () => filtered(),

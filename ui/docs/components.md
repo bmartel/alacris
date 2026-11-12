@@ -1750,6 +1750,17 @@ reflects `selected` onto each &lt;ui-tab&gt; and `active` onto each
 Activation is AUTOMATIC per the ARIA APG: arrow keys move focus AND select
 (one Tab stop for the whole bar via roving tabindex).
 
+More tabs than fit: the bar scrolls horizontally (no scrollbar) instead of
+widening the page, and selecting a tab scrolls it fully into view. The
+indicator is positioned in the bar's scroll coordinates, so it stays under
+its tab while the bar scrolls, and it is re-measured whenever the bar or
+the selected tab changes size (late fonts, a count appearing in a label).
+
+`change` here means "the selected tab changed". Controls inside a panel
+(a &lt;ui-switch&gt;, a &lt;ui-select&gt;) emit their own bubbling `change`, and those
+pass through this element like any DOM event. A handler on &lt;ui-tabs&gt; that
+must only see tab changes checks `e.target === e.currentTarget`.
+
 | | |
 | --- | --- |
 | `@prop` | {string} value='' — the selected tab's value |
