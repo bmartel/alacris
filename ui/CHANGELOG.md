@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.12.2](https://github.com/bmartel/alacris/compare/ui-v0.12.1...ui-v0.12.2) (2026-11-12)
+
+### Bug Fixes
+
+* **ui:** tabs overflow, indicator and ids; select, menu and autocomplete open in the top layer ([#26](https://github.com/bmartel/alacris/issues/26)) ([caf3866](https://github.com/bmartel/alacris/commit/caf3866b49da73a66cc76c6fb043cfc374bbe3a6))
+
 ## [0.9.3](https://github.com/bmartel/alacris/compare/ui-v0.9.2...ui-v0.9.3) (2026-10-08)
 
 ### Bug Fixes
