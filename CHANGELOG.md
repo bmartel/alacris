@@ -4,6 +4,25 @@ All notable changes to this project are documented here. Releases are cut
 automatically by [semantic-release](https://semantic-release.gitbook.io/) from
 [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [0.12.0](https://github.com/bmartel/alacris/compare/v0.11.6...v0.12.0) (2026-11-12)
+
+### Features
+
+* **core:** .self event modifier, for handlers that should ignore events from children ([#27](https://github.com/bmartel/alacris/issues/27)) ([594e814](https://github.com/bmartel/alacris/commit/594e8149610387ab61a5a3ff3732b7bad06a935c))
+* **ui:** date and time pickers in the top layer, locale week start, keyboard grid, localizable strings ([6cb0766](https://github.com/bmartel/alacris/commit/6cb07669d717261c159a04a7339d830f55486e6e))
+* **ui:** ui-chat-composer, a Material 3 chat prompt box ([9e55b91](https://github.com/bmartel/alacris/commit/9e55b91e08c598c4a151c37eb37a271e7f98aa84))
+* **ui:** ui-chip-field, a text field of input chips with a filtering listbox ([b3a5c26](https://github.com/bmartel/alacris/commit/b3a5c26a83eeac2b3e1a5902afabd479f996659a))
+
+### Bug Fixes
+
+* **ui:** a press on the chat composer's surface focuses its text ([435621b](https://github.com/bmartel/alacris/commit/435621b7bcaf47b282e287b96958d9193deca274))
+* **ui:** date and time picker fields are comboboxes ([da29581](https://github.com/bmartel/alacris/commit/da29581360dc73b22f234a8f67d054377529458b))
+* **ui:** tabs overflow, indicator and ids; select, menu and autocomplete open in the top layer ([#26](https://github.com/bmartel/alacris/issues/26)) ([caf3866](https://github.com/bmartel/alacris/commit/caf3866b49da73a66cc76c6fb043cfc374bbe3a6))
+* **ui:** ui-chip-field drops the space typed after a comma ([64bba22](https://github.com/bmartel/alacris/commit/64bba228b676b988a1729a433f072b206cd82499))
+* **ui:** ui-list-item activates on Enter and Space again ([fc21c5b](https://github.com/bmartel/alacris/commit/fc21c5b5f9c3d30a1f31d25a7d9a73eda67f3508))
+* **ui:** ui-nav-item activates on Enter and Space when the host holds the focus ([f7dc603](https://github.com/bmartel/alacris/commit/f7dc60308328dc7cc5cfcc228fa8cdadceee8ad7))
+* **ui:** zoom-in has its plus (it was the search magnifier) ([b6785cc](https://github.com/bmartel/alacris/commit/b6785cca16a64c92cf39a00243a5dccd9e71e876))
+
 ## [0.11.5](https://github.com/bmartel/alacris/compare/v0.11.4...v0.11.5) (2026-09-01)
 
 ### Features
