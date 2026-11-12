@@ -14,6 +14,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as analyzer from '@semantic-release/commit-analyzer';
 import * as notes from '@semantic-release/release-notes-generator';
+import * as scoped from '../scripts/release-filter-scopes.js';
 import { filterCommits } from '../scripts/release-filter-scopes.js';
 
 const config = JSON.parse(readFileSync(new URL('../.releaserc.json', import.meta.url), 'utf8'));
@@ -22,8 +23,10 @@ const named = (name) => {
   assert.ok(found, `${name} is missing from .releaserc.json`);
   return Array.isArray(found) ? found[1] : {};
 };
-const analyzerOpts = named('@semantic-release/commit-analyzer');
-const notesOpts = named('@semantic-release/release-notes-generator');
+const FILTER = './scripts/release-filter-scopes.js';
+const scopedOpts = named(FILTER);
+const analyzerOpts = scopedOpts.analyzer;
+const notesOpts = scopedOpts.notes;
 
 const context = {
   cwd: process.cwd(),
@@ -32,6 +35,13 @@ const context = {
   lastRelease: { version: '1.2.3', gitTag: 'v1.2.3' },
   nextRelease: { version: '1.3.0', gitTag: 'v1.3.0' },
   options: { repositoryUrl: 'https://github.com/bmartel/alacris' },
+};
+// semantic-release gives each plugin step its own deep copy of the context, so
+// call the steps the same way. A plugin that narrowed `context.commits` for a
+// later plugin passed every test here and filtered nothing in a real release.
+const asSemanticRelease = (step, pluginConfig, ctx) => {
+  const { logger, ...rest } = ctx;
+  return step(structuredClone(pluginConfig), { ...structuredClone(rest), logger });
 };
 const commit = (message) => ({ hash: 'a'.repeat(40), message, committerDate: '2026-01-01' });
 const bump = (message) => analyzer.analyzeCommits(analyzerOpts, { ...context, commits: [commit(message)] });
@@ -77,6 +87,21 @@ test('the commit filter drops ui and starter scopes before notes run', () => {
     { exclude: ['ui', 'starter'] }
   );
   assert.deepEqual(kept.map((c) => c.message), ['feat(html): each()']);
+});
+
+test('a release made of both packages\' commits is decided by the library\'s alone', async () => {
+  const mixed = [commit('fix(html): keep focus on a keyed move'), commit('feat(ui): combobox'), commit('feat(starter)!: new layout')];
+  assert.equal(await asSemanticRelease(scoped.analyzeCommits, scopedOpts, { ...context, commits: mixed }), 'patch');
+  assert.equal(
+    await asSemanticRelease(scoped.analyzeCommits, scopedOpts, { ...context, commits: mixed.slice(1) }),
+    null,
+    'ui and starter commits alone must not release @alacris/core'
+  );
+
+  const md = await asSemanticRelease(scoped.generateNotes, scopedOpts, { ...context, commits: mixed });
+  assert.match(md, /keep focus on a keyed move/, 'the library commit must be in the notes');
+  assert.doesNotMatch(md, /combobox/, 'a ui commit must not be in the library changelog');
+  assert.doesNotMatch(md, /new layout/);
 });
 
 test('housekeeping types do not cut a release', async () => {
@@ -136,10 +161,13 @@ test('notes link the compare range and each commit', async () => {
 test('the release config still declares the plugins the workflow relies on', () => {
   const names = config.plugins.map((p) => (Array.isArray(p) ? p[0] : p));
   assert.equal(names[0], './scripts/release-filter-scopes.js');
-  assert.deepEqual(config.plugins[0][1], { exclude: ['ui', 'starter'] });
+  assert.deepEqual(config.plugins[0][1].exclude, ['ui', 'starter']);
+  // The filter runs these two itself. Listed on their own they would be handed
+  // every commit, and the highest bump any analyzer returns wins.
+  for (const banned of ['@semantic-release/commit-analyzer', '@semantic-release/release-notes-generator']) {
+    assert.ok(!names.includes(banned), `${banned} must only run through ${FILTER}`);
+  }
   for (const required of [
-    '@semantic-release/commit-analyzer',
-    '@semantic-release/release-notes-generator',
     '@semantic-release/changelog',
     '@semantic-release/npm',
     '@semantic-release/exec',
