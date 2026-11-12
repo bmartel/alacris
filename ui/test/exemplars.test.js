@@ -147,6 +147,23 @@ test('ui-text-field floats its label and emits input', async () => {
   unmountAll();
 });
 
+test('ui-text-field: a host listener hears each keystroke once, with the value', async () => {
+  // The native `input` event is composed, so it crosses the shadow boundary. Left
+  // alone it reaches the host's listeners as a second event whose `detail` is
+  // not `{ value }`, and `e.detail.value` reads as undefined.
+  for (const markup of ['<ui-text-field label="Name"></ui-text-field>', '<ui-text-field label="Notes" type="textarea"></ui-text-field>']) {
+    const el = mount(markup);
+    await tick();
+    const heard = [];
+    el.addEventListener('input', (e) => heard.push(e.detail?.value));
+    const input = el.shadowRoot.querySelector('input, textarea');
+    input.value = 'Ada';
+    input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    assert.deepEqual(heard, ['Ada']);
+    unmountAll();
+  }
+});
+
 test('ui-text-field error state and counter', async () => {
   const el = mount('<ui-text-field label="Name" maxlength="10" error="Required"></ui-text-field>');
   await tick();

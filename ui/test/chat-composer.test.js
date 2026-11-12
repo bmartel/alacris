@@ -50,6 +50,18 @@ test('ui-chat-composer: the placeholder names the text area when there is no lab
   unmountAll();
 });
 
+test('ui-chat-composer: a host listener hears each keystroke once, with the value', async () => {
+  const el = mount('<ui-chat-composer label="Message"></ui-chat-composer>');
+  await tick();
+  const heard = [];
+  el.addEventListener('input', (e) => heard.push(e.detail?.value));
+  const { textarea } = parts(el);
+  textarea.value = 'Hi';
+  textarea.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+  assert.deepEqual(heard, ['Hi']);
+  unmountAll();
+});
+
 test('ui-chat-composer: typing emits input; Send emits send and clears', async () => {
   const el = mount('<ui-chat-composer label="Message"></ui-chat-composer>');
   await tick();

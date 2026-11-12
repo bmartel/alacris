@@ -377,7 +377,7 @@ pasted or dropped on the surface are reported, a counter appears near
 
   &lt;ui-chat-composer label="Message" placeholder="Ask anything"
                     .value=${draft} ?busy=${streaming}
-                    @input=${(e) =&gt; e.detail && draft.set(e.detail.value)}
+                    @input=${(e) =&gt; draft.set(e.detail.value)}
                     @send=${(e) =&gt; ask(e.detail.value)} @stop=${stop}&gt;
     &lt;ui-menu-item slot="menu" value="file" icon="attach-file"&gt;Attach a file&lt;/ui-menu-item&gt;
     &lt;ui-menu slot="picker" placement="top-end"&gt;…a text button and its items…&lt;/ui-menu&gt;
