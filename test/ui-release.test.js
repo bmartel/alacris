@@ -6,6 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as analyzer from '@semantic-release/commit-analyzer';
+import * as scoped from '../scripts/release-filter-scopes.js';
 import { filterCommits, scopeOf } from '../scripts/release-filter-scopes.js';
 
 const ui = JSON.parse(readFileSync(new URL('../ui/.releaserc.json', import.meta.url), 'utf8'));
@@ -15,7 +16,9 @@ const named = (name) => {
   return Array.isArray(found) ? found[1] : {};
 };
 
-const analyzerOpts = named('@semantic-release/commit-analyzer');
+const FILTER = '../scripts/release-filter-scopes.js';
+const scopedOpts = named(FILTER);
+const analyzerOpts = scopedOpts.analyzer;
 const context = {
   cwd: process.cwd(),
   env: process.env,
@@ -23,6 +26,13 @@ const context = {
   lastRelease: { version: '0.1.0', gitTag: 'ui-v0.1.0' },
   nextRelease: { version: '0.2.0', gitTag: 'ui-v0.2.0' },
   options: { repositoryUrl: 'https://github.com/bmartel/alacris' },
+};
+// semantic-release gives each plugin step its own deep copy of the context, so
+// call the steps the same way. A plugin that narrowed `context.commits` for a
+// later plugin passed every test here and filtered nothing in a real release.
+const asSemanticRelease = (step, pluginConfig, ctx) => {
+  const { logger, ...rest } = ctx;
+  return step(structuredClone(pluginConfig), { ...structuredClone(rest), logger });
 };
 const commit = (message) => ({ hash: 'a'.repeat(40), message, committerDate: '2026-01-01' });
 
@@ -48,13 +58,35 @@ test('UI releases are tagged and named apart from @alacris/core', () => {
 test('the UI pipeline keeps only the ui scope', () => {
   const filter = ui.plugins[0];
   assert.equal(filter[0], '../scripts/release-filter-scopes.js');
-  assert.deepEqual(filter[1], { include: ['ui'] });
+  assert.deepEqual(filter[1].include, ['ui']);
+  const names = ui.plugins.map((p) => (Array.isArray(p) ? p[0] : p));
+  for (const banned of ['@semantic-release/commit-analyzer', '@semantic-release/release-notes-generator']) {
+    assert.ok(!names.includes(banned), `${banned} must only run through ${FILTER}`);
+  }
 
   const kept = filterCommits(
     [commit('feat(ui): combobox'), commit('feat(html): each()'), commit('docs(starter): next.js recipe')],
     filter[1]
   );
   assert.deepEqual(kept.map((c) => c.message), ['feat(ui): combobox']);
+});
+
+test('a library feature does not turn a UI patch into a minor, or reach the UI changelog', async () => {
+  // @alacris/ui 0.13.0: these two commits, analysed unfiltered, gave "minor".
+  const commits = [
+    commit('fix(ui): accept @alacris/core 0.12'),
+    commit('feat(core): .self event modifier'),
+  ];
+  assert.equal(await asSemanticRelease(scoped.analyzeCommits, scopedOpts, { ...context, commits }), 'patch');
+  assert.equal(
+    await asSemanticRelease(scoped.analyzeCommits, scopedOpts, { ...context, commits: [commits[1]] }),
+    null,
+    'a library commit alone must not release @alacris/ui'
+  );
+
+  const md = await asSemanticRelease(scoped.generateNotes, scopedOpts, { ...context, commits });
+  assert.match(md, /accept @alacris\/core 0\.12/, 'the ui commit must be in the notes');
+  assert.doesNotMatch(md, /\.self event modifier/, 'a library commit must not be in the UI changelog');
 });
 
 test('scopeOf reads the first-line scope', () => {

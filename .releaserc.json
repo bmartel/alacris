@@ -3,53 +3,49 @@
   "plugins": [
     [
       "./scripts/release-filter-scopes.js",
-      { "exclude": ["ui", "starter"] }
-    ],
-    [
-      "@semantic-release/commit-analyzer",
       {
-        "preset": "conventionalcommits",
-        "releaseRules": [
-          { "breaking": true, "scope": "ui", "release": false },
-          { "breaking": true, "scope": "starter", "release": false },
-          { "type": "feat", "scope": "ui", "release": false },
-          { "type": "feat", "scope": "starter", "release": false },
-          { "type": "fix", "scope": "ui", "release": false },
-          { "type": "fix", "scope": "starter", "release": false },
-          { "type": "perf", "scope": "ui", "release": false },
-          { "type": "perf", "scope": "starter", "release": false },
-          { "type": "refactor", "scope": "ui", "release": false },
-          { "type": "refactor", "scope": "starter", "release": false },
-          { "type": "revert", "scope": "ui", "release": false },
-          { "type": "revert", "scope": "starter", "release": false },
-          { "type": "perf", "release": "patch" },
-          { "type": "refactor", "release": "patch" },
-          { "type": "revert", "release": "patch" },
-          { "type": "docs", "release": false },
-          { "type": "test", "release": false },
-          { "type": "build", "release": false },
-          { "type": "ci", "release": false },
-          { "type": "chore", "release": false }
-        ]
-      }
-    ],
-    [
-      "@semantic-release/release-notes-generator",
-      {
-        "preset": "conventionalcommits",
-        "presetConfig": {
-          "types": [
-            { "type": "feat", "section": "Features" },
-            { "type": "fix", "section": "Bug Fixes" },
-            { "type": "perf", "section": "Performance" },
-            { "type": "refactor", "section": "Refactoring" },
-            { "type": "revert", "section": "Reverts" },
-            { "type": "docs", "section": "Documentation", "hidden": true },
-            { "type": "test", "section": "Tests", "hidden": true },
-            { "type": "build", "section": "Build", "hidden": true },
-            { "type": "ci", "section": "CI", "hidden": true },
-            { "type": "chore", "section": "Chores", "hidden": true }
+        "exclude": ["ui", "starter"],
+        "analyzer": {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            { "breaking": true, "scope": "ui", "release": false },
+            { "breaking": true, "scope": "starter", "release": false },
+            { "type": "feat", "scope": "ui", "release": false },
+            { "type": "feat", "scope": "starter", "release": false },
+            { "type": "fix", "scope": "ui", "release": false },
+            { "type": "fix", "scope": "starter", "release": false },
+            { "type": "perf", "scope": "ui", "release": false },
+            { "type": "perf", "scope": "starter", "release": false },
+            { "type": "refactor", "scope": "ui", "release": false },
+            { "type": "refactor", "scope": "starter", "release": false },
+            { "type": "revert", "scope": "ui", "release": false },
+            { "type": "revert", "scope": "starter", "release": false },
+            { "type": "perf", "release": "patch" },
+            { "type": "refactor", "release": "patch" },
+            { "type": "revert", "release": "patch" },
+            { "type": "docs", "release": false },
+            { "type": "test", "release": false },
+            { "type": "build", "release": false },
+            { "type": "ci", "release": false },
+            { "type": "chore", "release": false }
           ]
+        },
+        "notes": {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              { "type": "feat", "section": "Features" },
+              { "type": "fix", "section": "Bug Fixes" },
+              { "type": "perf", "section": "Performance" },
+              { "type": "refactor", "section": "Refactoring" },
+              { "type": "revert", "section": "Reverts" },
+              { "type": "docs", "section": "Documentation", "hidden": true },
+              { "type": "test", "section": "Tests", "hidden": true },
+              { "type": "build", "section": "Build", "hidden": true },
+              { "type": "ci", "section": "CI", "hidden": true },
+              { "type": "chore", "section": "Chores", "hidden": true }
+            ]
+          }
         }
       }
     ],

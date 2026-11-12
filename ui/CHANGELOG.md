@@ -6,10 +6,6 @@ Commits scoped `ui` (or the legacy `starter`).
 
 ## [0.13.0](https://github.com/bmartel/alacris/compare/ui-v0.12.2...ui-v0.13.0) (2026-11-12)
 
-### Features
-
-* **core:** .self event modifier, for handlers that should ignore events from children ([#27](https://github.com/bmartel/alacris/issues/27)) ([594e814](https://github.com/bmartel/alacris/commit/594e8149610387ab61a5a3ff3732b7bad06a935c))
-
 ### Bug Fixes
 
 * **ui:** accept @alacris/core 0.12 ([#28](https://github.com/bmartel/alacris/issues/28)) ([2e1cebc](https://github.com/bmartel/alacris/commit/2e1cebca0905aa519e4f3848ad27c32e9ace8bfe))
