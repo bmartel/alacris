@@ -4,6 +4,12 @@ All notable changes to **@alacris/ui** are documented here. Releases are cut
 independently of the Alacris library by semantic-release, from Conventional
 Commits scoped `ui` (or the legacy `starter`).
 
+## [0.14.0](https://github.com/bmartel/alacris/compare/ui-v0.13.1...ui-v0.14.0) (2026-11-22)
+
+### Features
+
+* **ui:** ship prebuilt files for pages that load the library without a bundler ([#32](https://github.com/bmartel/alacris/issues/32)) ([3730c9a](https://github.com/bmartel/alacris/commit/3730c9aa4e020309ba2fecbd66045b1e17116662))
+
 ## [0.13.1](https://github.com/bmartel/alacris/compare/ui-v0.13.0...ui-v0.13.1) (2026-11-12)
 
 ### Bug Fixes

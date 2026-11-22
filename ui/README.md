@@ -47,9 +47,9 @@ The published package is plain ESM. Point an import map at a pinned CDN build of
 {
   "imports": {
     "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.12.0/dist/alacris.js",
-    "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.13.1/src/index.js",
-    "@alacris/ui/theme": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.13.1/src/theme/index.js",
-    "@alacris/ui/components/": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.13.1/src/components/"
+    "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.14.0/src/index.js",
+    "@alacris/ui/theme": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.14.0/src/theme/index.js",
+    "@alacris/ui/components/": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.14.0/src/components/"
   }
 }
 </script>
@@ -72,10 +72,10 @@ Never mix two versions of `@alacris/core` on one page — two copies means two r
 {
   "imports": {
     "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.12.0/dist/alacris.js",
-    "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.13.1/dist/index.js",
-    "@alacris/ui/theme": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.13.1/dist/theme.js",
-    "@alacris/ui/motion": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.13.1/dist/motion.js",
-    "@alacris/ui/tokens": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.13.1/dist/tokens.js"
+    "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.14.0/dist/index.js",
+    "@alacris/ui/theme": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.14.0/dist/theme.js",
+    "@alacris/ui/motion": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.14.0/dist/motion.js",
+    "@alacris/ui/tokens": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.14.0/dist/tokens.js"
   }
 }
 </script>
