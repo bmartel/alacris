@@ -22,6 +22,7 @@
     },
     "./components/*": "./src/components/*",
     "./src/*": "./src/*",
+    "./dist/*": "./dist/*",
     "./package.json": "./package.json"
   },
   "module": "./src/index.js",
@@ -33,6 +34,7 @@
     "./src/components/**/*.js"
   ],
   "files": [
+    "dist",
     "src",
     "types",
     "README.md",
@@ -40,7 +42,9 @@
   ],
   "scripts": {
     "start": "node ../scripts/serve.js 5174",
-    "pretest": "node -e \"const fs=require('fs');fs.mkdirSync('node_modules/@alacris',{recursive:true});try{fs.symlinkSync('../../..','node_modules/@alacris/core')}catch{}\"",
+    "build": "node scripts/build.mjs",
+    "prepack": "node scripts/build.mjs",
+    "pretest": "node -e \"const fs=require('fs');fs.mkdirSync('node_modules/@alacris',{recursive:true});try{fs.symlinkSync('../../..','node_modules/@alacris/core')}catch{}\" && node scripts/build.mjs",
     "test": "node --import ./test/setup.js --test test/*.test.js",
     "test:chrome": "node test/chrome/run.mjs",
     "catalog": "node scripts/catalog.mjs"

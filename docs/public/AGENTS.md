@@ -46,6 +46,12 @@ npm path — code stays portable between the two setups:
 The URLs pin the current release. Never mix two versions of the module on one
 page — two copies means two reactive graphs that cannot see each other.
 
+`@alacris/ui` also ships prebuilt files: map `@alacris/ui` to `dist/index.js`
+(and `theme`, `motion`, `tokens` to `dist/theme.js`, `dist/motion.js`,
+`dist/tokens.js`) to load the whole design system in a handful of requests
+instead of one per component. Use `dist/` or `src/` for a page, never both — a
+second copy tries to define every element again.
+
 ### With a build system
 
 ```bash

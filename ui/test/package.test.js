@@ -25,15 +25,15 @@ test('@alacris/core is a dependency, never vendored', () => {
   assert.equal(existsSync(join(root, 'src', 'signal.js')), false);
 });
 
-test('the tarball is source ESM, not the demo or tests', () => {
-  assert.deepEqual(pkg.files, ['src', 'types', 'README.md', 'LICENSE']);
+test('the tarball is source ESM and the prebuilt files, not the demo or tests', () => {
+  assert.deepEqual(pkg.files, ['dist', 'src', 'types', 'README.md', 'LICENSE']);
   assert.ok(pkg.files.every((f) => existsSync(join(root, f))));
   assert.equal(pkg.files.includes('demo'), false);
   assert.equal(pkg.files.includes('test'), false);
 });
 
 test('entry points resolve to files that exist', () => {
-  const expected = ['.', './theme', './motion', './tokens', './components/*', './src/*', './package.json'];
+  const expected = ['.', './theme', './motion', './tokens', './components/*', './src/*', './dist/*', './package.json'];
   assert.deepEqual(Object.keys(pkg.exports), expected);
   for (const [subpath, target] of Object.entries(pkg.exports)) {
     if (typeof target === 'string') {
