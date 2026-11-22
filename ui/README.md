@@ -63,6 +63,26 @@ The published package is plain ESM. Point an import map at a pinned CDN build of
 
 Never mix two versions of `@alacris/core` on one page — two copies means two reactive graphs.
 
+### Fewer requests: the prebuilt files
+
+`src/index.js` imports one file per component, so a page that loads it through an import map makes about a hundred requests before the first element is defined. The package also ships the same entry points prebuilt in `dist/`, as a handful of files:
+
+```html
+<script type="importmap">
+{
+  "imports": {
+    "@alacris/core": "https://cdn.jsdelivr.net/npm/@alacris/core@0.12.0/dist/alacris.js",
+    "@alacris/ui": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.13.1/dist/index.js",
+    "@alacris/ui/theme": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.13.1/dist/theme.js",
+    "@alacris/ui/motion": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.13.1/dist/motion.js",
+    "@alacris/ui/tokens": "https://cdn.jsdelivr.net/npm/@alacris/ui@0.13.1/dist/tokens.js"
+  }
+}
+</script>
+```
+
+`dist/index.js` registers every component. Point every entry you import at `dist/`, and do not also import component files from `src/` on the same page: that is a second copy, and a browser refuses to define an element twice. `@alacris/core` stays its own import either way, so there is still one reactive graph.
+
 ## Theming
 
 ```js
